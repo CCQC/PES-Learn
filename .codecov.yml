@@ -1,0 +1,8 @@
+comment:
+  layout: header, changes, diff
+coverage:
+  ignore:
+  - test/.*
+  - setup.py
+  status:
+    patch: false
