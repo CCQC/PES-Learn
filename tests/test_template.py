@@ -27,3 +27,6 @@ def test_footer_xyz():
 def test_parse_xyz():
     x, y  = template_object.parse_xyz()
     assert ((x == 64) and (y == 115))
+
+def test_line_count():
+    assert template_object.count_lines(template_object.template) == 13 
