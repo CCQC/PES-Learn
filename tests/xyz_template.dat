@@ -1,0 +1,13 @@
+# a psi4 input file to text xyz extraction
+
+molecule test {
+0 1
+O 0.00 1.00 0.00
+H 0.00 0.00 1.00
+H 1.00 0.00 0.00
+}
+
+set basis cc-pvdz
+set reference rhf
+
+energy('hf')

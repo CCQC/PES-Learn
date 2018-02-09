@@ -31,5 +31,5 @@ def two_or_more(string):
 xyz_line_regex = r'[ \t]*' + letter + maybe(letter) + 3 * ws_double + ws_endline
 
 # an xyz style geometry block of any size
-xyz_block_regex = two_or_more(geom_line_regex)
+xyz_block_regex = two_or_more(xyz_line_regex)
 

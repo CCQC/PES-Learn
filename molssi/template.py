@@ -3,6 +3,7 @@ Contains the TemplateProcessor class for handling template input files
 """
 
 from . import regex
+import re
 
 class TemplateProcessor(object):
     """
