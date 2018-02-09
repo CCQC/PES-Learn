@@ -48,11 +48,13 @@ xyz_block_regex = two_or_more(xyz_line_regex)
 # H 1 1.0 2 104.5
 # H 1 1.0 2 100.00 3 180.0
 
-intcocompact_1 = letter + maybe(letter) + ws_endline
-intcocompact_2 = letter + maybe(letter) + ws_int + ws_double + ws_endline
-intcocompact_3 = letter + maybe(letter) + ws_int + ws_double + ws_int + ws_double + ws_endline
-intcocompact_4 = letter + maybe(letter) + ws_int + ws_double + ws_int + ws_double + ws_int + ws_double + ws_endline
+intcocompact_1 = r'[ \t]*' + letter + maybe(letter) + ws_endline
+intcocompact_2 = r'[ \t]*' + letter + maybe(letter) + ws_int + ws_double + ws_endline
+intcocompact_3 = r'[ \t]*' + letter + maybe(letter) + ws_int + ws_double + ws_int + ws_double + ws_endline
+intcocompact_4 = r'[ \t]*' + letter + maybe(letter) + ws_int + ws_double + ws_int + ws_double + ws_int + ws_double + ws_endline
 
+# assume at least two atoms
 intcoords_compact_regex = intcocompact_1 + intcocompact_2 + maybe(intcocompact_3) + maybe(one_or_more(intcocompact_4))
+
 
 
