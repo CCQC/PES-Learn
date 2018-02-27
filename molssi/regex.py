@@ -41,7 +41,7 @@ xyz_line_regex = r'[ \t]*' + letter + maybe(letter) + 3 * ws_double + ws_endline
 # an xyz style geometry block of any size
 xyz_block_regex = two_or_more(xyz_line_regex)
 
-# define compact internal coordinates regex identifier
+# define generalized compact internal coordinates regex identifier
 # e.g.
 # O
 # H 1 1.0
@@ -56,5 +56,27 @@ intcocompact_4 = r'[ \t]*' + letter + maybe(letter) + ws_int + ws_double + ws_in
 # assume at least two atoms
 intcoords_compact_regex = intcocompact_1 + intcocompact_2 + maybe(intcocompact_3) + maybe(one_or_more(intcocompact_4))
 
+# define generalized standard internal coordinates regex identifier
+# e.g.
+# O
+# H 1 ROH
+# H 1 R2 2 AHOH
+# H 1 R3 2 A2 3 D1
+# ...
+# ROH   = 1.0
+# R2    = 1.1
+# R3    = 1.2
+# AHOH  = 100.5
+# A2    = 90.0
+# D1    = 120.00
+
+coord_label = one_or_more(letter) + maybe(one_or_more(integer))
+
+intco_1 = r'[ \t]*' + letter + maybe(letter) + ws_endline
+intco_2 = r'[ \t]*' + letter + maybe(letter) + ws_int + coord_label + ws_endline
+intco_3 = r'[ \t]*' + letter + maybe(letter) + ws_int + coord_label + ws_int + coord_label + ws_endline
+intco_4 = r'[ \t]*' + letter + maybe(letter) + ws_int + coord_label + ws_int + coord_label + ws_int + coord_label + ws_endline
+
+intcoords_regex = intco_1 + intco_2 + maybe(intco_3) + maybe(one_or_more(intco_4))
 
 
