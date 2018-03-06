@@ -71,12 +71,14 @@ intcoords_compact_regex = intcocompact_1 + intcocompact_2 + maybe(intcocompact_3
 # D1    = 120.00
 
 coord_label = one_or_more(letter) + maybe(one_or_more(integer))
+ws_coord_label = r'\s+' + one_or_more(letter) + maybe(one_or_more(integer))
 
 intco_1 = r'[ \t]*' + letter + maybe(letter) + ws_endline
-intco_2 = r'[ \t]*' + letter + maybe(letter) + ws_int + coord_label + ws_endline
-intco_3 = r'[ \t]*' + letter + maybe(letter) + ws_int + coord_label + ws_int + coord_label + ws_endline
-intco_4 = r'[ \t]*' + letter + maybe(letter) + ws_int + coord_label + ws_int + coord_label + ws_int + coord_label + ws_endline
+intco_2 = r'[ \t]*' + letter + maybe(letter) + ws_int + ws_coord_label + ws_endline
+intco_3 = r'[ \t]*' + letter + maybe(letter) + ws_int + ws_coord_label + ws_int + ws_coord_label + ws_endline
+intco_4 = r'[ \t]*' + letter + maybe(letter) + ws_int + ws_coord_label + ws_int + ws_coord_label + ws_int + ws_coord_label + ws_endline
 
+# assume at least two atoms
 intcoords_regex = intco_1 + intco_2 + maybe(intco_3) + maybe(one_or_more(intco_4))
 
 
