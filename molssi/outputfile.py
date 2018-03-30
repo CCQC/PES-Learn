@@ -99,9 +99,13 @@ class OutputFile(object):
             to make it general enough. Must use capture groups () for the x, y, and z components
             For example, if the output file line for a gradient is 
             Atom 1 Cl 0.00000 0.23410 0.32398 
-            A valid regex would be "\w+\s\d+\s\w+\s(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"
+            A valid argument for grad_line_regex would be "\w+\s\d+\s\w+\s(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"
             Again, this can easily be tested with online utilities such as pythex (see pythex.org)
         """
+        # trim the string to begin with header
+        # scan string after header for gradient line regex 
+        # gradient = re.finall(grad_line_regex, trimmed_string) 
+        # this gradient is a list of tuples, each tuple is an x, y, z
         pass
 
     def extract_cartesian_gradient_with_cclib(self, grad_index=-1):
