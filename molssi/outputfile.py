@@ -1,21 +1,25 @@
 """
-Contains the OutputFile class for extracting information from outpute files producedby electronic structure theory codes
+Contains the OutputFile class for extracting information from output files produced by electronic structure theory codes
 """
 
 from . import regex
 import re
 import cclib.io.ccio as ccio
+from . import constants
 
 class OutputFile(object):
     """
     A class for extracting information from output (log) files produced by electronic structure theory codes 
         Parameters
         ----------
-        output : str
-            A file string of a output (log) file  
+        output_path : str
+            A file path string of an output (log) file  
     """
-    def __init__(self, output):
-        self.output = output
+    def __init__(self, output_path):
+        self.output_path = output_path
+        # save the output as a string 
+        with open(output_path, "r") as f:  
+            self.output_str = f.read()
 
     def extract_energy_with_regex(self, energy_regex):
         """
@@ -44,7 +48,7 @@ class OutputFile(object):
             The last energy value matching the regular expression identifier 
         """
         last_energy = 0.0
-        tmp = float(re.findall(energy_regex, output))
+        tmp = float(re.findall(energy_regex, output_str))
         if tmp is not None:
             last_energy = tmp[-1]
         return last_energy
@@ -61,7 +65,17 @@ class OutputFile(object):
             Which energy to grab from the output file which matches the cclib_attribute. 
             Default is -1, the last energy printed in the output file which matches the cclib_attribute. 
         """
-        pass
+        cclib_outputobj = ccio.ccread(output_path) 
+       
+        # cclib puts energies into eV... ugh 
+        if cclib_attribute == "scfenergies":
+            return cclib_outputobj.scfenergies[-1] / constants.hartree2ev
+
+        if cclib_attribute == "ccenergies":
+            return cclib_outputobj.ccenergies[-1] / constants.hartree2ev
+
+        if cclib_attribute == "mpenergies":
+            return cclib_outputobj.mpenergies[-1] / constants.hartree2ev
         
     
     def extract_cartesian_gradient_with_regex(self, header, grad_line_regex):
@@ -89,3 +103,23 @@ class OutputFile(object):
             Again, this can easily be tested with online utilities such as pythex (see pythex.org)
         """
         pass
+
+    def extract_cartesian_gradient_with_cclib(self, grad_index=-1):
+        """
+        Attempts to extract the cartesian gradient with cclib 
+        Parameters
+        ---------
+        grad_index : int
+            Which gradient to grab from the output file. 
+            Default is -1, the last gradient printed in the output file which matches the cclib_attribute. 
+        """
+        cclib_outputobj = ccio.ccread(output_path) 
+        if hasattr(cclib_outputobj, 'grads'):
+            # warning: reorientation by quantum chemistry software may mess this up
+            return cclib_outputobj.grads[-1]
+        else:
+            return None
+
+
+
+
