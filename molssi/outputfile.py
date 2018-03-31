@@ -48,7 +48,7 @@ class OutputFile(object):
             The last energy value matching the regular expression identifier 
         """
         last_energy = 0.0
-        tmp = float(re.findall(energy_regex, output_str))
+        tmp = float(re.findall(energy_regex, self.output_str))
         if tmp is not None:
             last_energy = tmp[-1]
         return last_energy
@@ -65,7 +65,7 @@ class OutputFile(object):
             Which energy to grab from the output file which matches the cclib_attribute. 
             Default is -1, the last energy printed in the output file which matches the cclib_attribute. 
         """
-        cclib_outputobj = ccio.ccread(output_path) 
+        cclib_outputobj = ccio.ccread(self.output_path) 
        
         # cclib puts energies into eV... ugh 
         if cclib_attribute == "scfenergies":
@@ -106,9 +106,9 @@ class OutputFile(object):
             Again, this can easily be tested with online utilities such as pythex (see pythex.org)
         """
         # grab all text after the header
-        trimmed_str = re.split(header, output_str)[-1]
+        trimmed_str = re.split(header, self.output_str)[-1]
         # isolate gradient data using footer
-        trimmed_str = re.split(footer, output_str)[0] 
+        trimmed_str = re.split(footer, self.output_str)[0] 
         # look for gradient line regex 
         gradient = re.findall(grad_line_regex, trimmed_str)
         # this gradient is a list of tuples, each tuple is an x, y, z for one atom
@@ -123,7 +123,7 @@ class OutputFile(object):
             Which gradient to grab from the output file. 
             Default is -1, the last gradient printed in the output file which matches the cclib_attribute. 
         """
-        cclib_outputobj = ccio.ccread(output_path) 
+        cclib_outputobj = ccio.ccread(self.output_path) 
         if hasattr(cclib_outputobj, 'grads'):
             # warning: reorientation by quantum chemistry software may mess this up
             return cclib_outputobj.grads[-1]
