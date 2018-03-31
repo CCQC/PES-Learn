@@ -7,7 +7,7 @@ import pytest
 import re
 
 # open an xyz style input file as file string
-with open('tests/xyz_template.dat', 'r') as f:
+with open('tests/datafiles/xyz_template', 'r') as f:
     testfile = f.read()
 
 template_object = molssi.template.TemplateProcessor(testfile)
