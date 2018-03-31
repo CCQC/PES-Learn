@@ -48,9 +48,9 @@ class OutputFile(object):
             The last energy value matching the regular expression identifier 
         """
         last_energy = 0.0
-        tmp = float(re.findall(energy_regex, self.output_str))
+        tmp = re.findall(energy_regex, self.output_str)
         if tmp is not None:
-            last_energy = tmp[-1]
+            last_energy = float(tmp[-1])
         return last_energy
 
     def extract_energy_with_cclib(self, cclib_attribute, energy_index=-1):
