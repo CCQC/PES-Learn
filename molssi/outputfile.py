@@ -78,7 +78,7 @@ class OutputFile(object):
             return cclib_outputobj.mpenergies[-1] / constants.hartree2ev
         
     
-    def extract_cartesian_gradient_with_regex(self, header, grad_line_regex):
+    def extract_cartesian_gradient_with_regex(self, header, footer, grad_line_regex):
         """
         Extracts cartesian gradients according to a user supplied regular expression.
         A bit more tedious to use than the energy regex extractor as the size of the regular expression string will be quite long.
@@ -86,6 +86,7 @@ class OutputFile(object):
         Example: 
         CARTESIAN GRADIENT:                 (header)
                                             (header)
+        optional extra text
         Atom 1 O 0.00000 0.23410 0.32398    (grad_line_regex)
         Atom 2 H 0.02101 0.09233 0.01342
         Atom 3 N 0.01531 0.04813 0.06118
@@ -93,20 +94,25 @@ class OutputFile(object):
         Parameters
         ----------
         header : str
-            A regex identifier for text that comes immediately before the gradient data
+            A regex identifier for unique text that comes immediately before the gradient data
+        footer : str
+            A regex identifier for text that comes immediately after the gradient data (does not need to be unique)
         grad_line_regex : str
             A regex identifier for one line of gradient data. The regex must work for ALL lines of the gradient, so be sure
             to make it general enough. Must use capture groups () for the x, y, and z components
             For example, if the output file line for a gradient is 
             Atom 1 Cl 0.00000 0.23410 0.32398 
-            A valid argument for grad_line_regex would be "\w+\s\d+\s\w+\s(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"
+            A valid argument for grad_line_regex would be "\[a-zA-Z]+\s\d+\s\D+\s(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"
             Again, this can easily be tested with online utilities such as pythex (see pythex.org)
         """
-        # trim the string to begin with header
-        # scan string after header for gradient line regex 
-        # gradient = re.finall(grad_line_regex, trimmed_string) 
-        # this gradient is a list of tuples, each tuple is an x, y, z
-        pass
+        # grab all text after the header
+        trimmed_str = re.split(header, output_str)[-1]
+        # isolate gradient data using footer
+        trimmed_str = re.split(footer, output_str)[0] 
+        # look for gradient line regex 
+        gradient = re.findall(grad_line_regex, trimmed_str)
+        # this gradient is a list of tuples, each tuple is an x, y, z for one atom
+        return gradient        
 
     def extract_cartesian_gradient_with_cclib(self, grad_index=-1):
         """
