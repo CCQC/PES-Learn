@@ -83,7 +83,7 @@ intco_4 = r'[ \t]*' + letter + maybe(letter) + ws_int + ws_coord_label + ws_int 
 intcoords_regex = intco_1 + intco_2 + maybe(intco_3) + maybe(one_or_more(intco_4))
 
 # this function should go in some class later
-def interpret_internal_coordinates(filestring):
+def find_internal_coordinates(filestring):
     """
     Finds the internal coordinates in a file string and creates a dictionary of geometry parameters and corresponding values
     """
