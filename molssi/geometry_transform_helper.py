@@ -19,7 +19,6 @@ def unit_cross_product(uvec1, uvec2):
     Returns unit cross product between two unit vectors
     Ensures the result is itself a unit vector
     """
-    #unit_cross_product = [0.0 for i in range(3)]
     cos = np.dot(uvec1, uvec2)
     sin = math.sqrt(1 - cos**2)
     # if the number of atoms is > 3 and there are 3 colinear atoms this will fail
