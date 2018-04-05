@@ -16,21 +16,7 @@ class TemplateProcessor(object):
 
     def __init__(self, template):
         self.template = template
-
-    def count_lines(self, string):
-        """
-`       Finds number of lines in a file string 
-        Parameters
-        ----------
-        string: str
-            A file string
-        Returns
-        -------
-        line_count : int 
-            The number of lines
-        """
-        line_count = len(string.splitlines())
-        return line_count 
+        self.start, self.end = self.parse_xyz()
 
     def parse_xyz(self):
         """
@@ -59,8 +45,7 @@ class TemplateProcessor(object):
         header : str
             All template input file text before xyz geometry specification 
         """
-        start, end = self.parse_xyz()
-        header = self.template[:start]
+        header = self.template[:self.start]
         return header 
 
     def footer_xyz(self):
@@ -72,8 +57,7 @@ class TemplateProcessor(object):
         header : str
             All template input file text after xyz geometry specification 
         """
-        start, end = self.parse_xyz()
-        footer = self.template[end:]
+        footer = self.template[self.end:]
         return footer
 
     def extract_xyz(self):
@@ -88,8 +72,7 @@ class TemplateProcessor(object):
             atom_label  x_coord y_coord z_coord 
             ...
         """
-        start, end = self.parse_xyz()
-        xyz = self.template[start:end]
+        xyz = self.template[self.start:self.end]
         return xyz
 
 
