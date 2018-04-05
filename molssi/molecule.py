@@ -7,6 +7,7 @@ from geometry_transform_helper import get_local_axes, get_bond_vector
 
 """
 Contains Atom and Molecule classes for reading, saving and editing the geometry of a molecule 
+Built around reading internal coordinates 
 """
 
 class Atom(object):
@@ -110,6 +111,7 @@ class Molecule(object):
     def zmat2xyz(self):
         """
         Convert Z-matrix representation to cartesian coordinates
+        Perserves the element ordering of the Z-matrix
         """
         if (self.n_atoms >= 1):
             self.atoms[0].coords = np.array([0.0, 0.0, 0.0])
