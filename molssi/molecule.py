@@ -23,24 +23,24 @@ class Atom(object):
             The angle connectivity index, as represented in a Z-matrix
         d_idx  : str
             The dihedral connectivity index, as represented in a Z-matrix
-        r  : dict
-            A dictionary of the bond label e.g. "R1" and the value 
-        a  : dict
-            A dictionary of the angle label e.g. "A1" and the value 
-        d  : dict
-            A dictionary of the dihedral label e.g. "D1" and the value 
+        intcoords  : dict
+            A dictionary of geometry parameter labels (e.g. "R1") and the value for this atom
     """
-    def __init__(self, label, r_idx=None, a_idx=None, d_idx=None, intcoords={None:None}):
+    def __init__(self, label, r_idx=None, a_idx=None, d_idx=None, intcoords={}):
         self.label = label
         self.r_idx = r_idx
         self.a_idx = a_idx
         self.d_idx = d_idx
         self.intcoords = intcoords
+        self.update_intcoords(intcoords)
+    
+    def update_intcoords(self, new_intcoords):
+        self.intcoords = new_intcoords
         self.geom_vals = list(self.intcoords.values())
         while len(self.geom_vals) < 3:
             self.geom_vals.append(None)
         self.rval, self.aval, self.dval = self.geom_vals[0], self.geom_vals[1], self.geom_vals[2]
-        self.coords = np.array([None, None, None]) 
+    
 
     
 # This framework is likely temporary. 
@@ -63,7 +63,7 @@ class Molecule(object):
         self.n_atoms         - the number of atoms in the molecule
         self.atom_labels     - a list of element labels 'H', 'O', etc.
         self.geom_parameters - a list of geometry labels 'R3', 'A2', etc.
-        self.atoms           - a list of Atom objects containing complete Z matrix information
+        self.atoms           - a list of Atom objects containing complete Z matrix information for each Atom
         """
         # grab array like representation of zmatrix and count the number of atoms 
         zmat_array = [line.split() for line in zmat_string.splitlines()]
@@ -96,6 +96,15 @@ class Molecule(object):
                 d_idx = int(zmat_array[i][5]) - 1
                 intcoords[zmat_array[i][6]] = None
             self.atoms.append(Atom(label, r_idx, a_idx, d_idx, intcoords))
+    
+    def update_intcoords(self, disp):
+        """
+        Disp is a list, by atom, of dictionaries of geometry parameters
+        [{}, {'R1': 1.01}, {'R2':2.01, 'A1':104.5} ...]
+        NOTE: allows geometry parameter labels to be changed by the disp
+        """
+        for i, atom in enumerate(mol.atoms):
+            atom.update_intcoords(disp[i])
 
     def zmat2xyz(self):
         """
@@ -139,17 +148,16 @@ mol = Molecule(zmatstring)
 for atom in mol.atoms:
     print(atom.intcoords)
 
-mol.atoms[1].rval = 1.1
 
-mol.atoms[2].rval = 1.1
-mol.atoms[2].aval = 150.0 * constants.deg2rad
+disp = [{}, {'R1': 1.1}, {'R2': 1.1, 'A2': 150.0 * constants.deg2rad}]
+mol.update_intcoords(disp)
 
-#mol.atoms[3].rval = 1.1
-#mol.atoms[3].aval = 180.0* constants.deg2rad
-#mol.atoms[3].dval = 1.0 * constants.deg2rad
+for atom in mol.atoms:
+    print(atom.intcoords)
 
-a = mol.zmat2xyz()
-print(a)
+#a = mol.zmat2xyz()
+#print(a)
+#print(mol.n_atoms)
 
 #print(zmatstring)
 #mol = Molecule(zmatstring)
