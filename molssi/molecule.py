@@ -30,25 +30,21 @@ class Atom(object):
         d  : dict
             A dictionary of the dihedral label e.g. "D1" and the value 
     """
-    def __init__(self, label, r_idx, a_idx, d_idx, r, a, d):
+    def __init__(self, label, r_idx=None, a_idx=None, d_idx=None, intcoords={None:None}):
         self.label = label
         self.r_idx = r_idx
         self.a_idx = a_idx
         self.d_idx = d_idx
-        self.r    = r
-        self.a    = a
-        self.d    = d
-        rlist     = list(self.r.values())
-        alist     = list(self.a.values())
-        dlist     = list(self.d.values())
-        self.rval = rlist[0]
-        self.aval = alist[0] 
-        self.dval = dlist[0]
-        
+        self.intcoords = intcoords
+        self.geom_vals = list(self.intcoords.values())
+        while len(self.geom_vals) < 3:
+            self.geom_vals.append(None)
+        self.rval, self.aval, self.dval = self.geom_vals[0], self.geom_vals[1], self.geom_vals[2]
         self.coords = np.array([None, None, None]) 
 
     
-
+# This framework is likely temporary. 
+# It is probably better to let github/mcocdawc/chemcoord handle internals and cartesians in the future.
 class Molecule(object):
     """
     The Molecule class holds geometry information about all the atoms in the molecule
@@ -88,25 +84,18 @@ class Molecule(object):
         self.atoms = []
         for i in range(self.n_atoms):
             label = zmat_array[i][0]
+            intcoords = {}
+            r_idx, a_idx, d_idx = None, None, None
             if (i >= 1):
                 r_idx = int(zmat_array[i][1]) - 1
-                r = {zmat_array[i][2]: None} 
-            else:
-                r_idx = None
-                r = {None: None}
+                intcoords[zmat_array[i][2]] = None
             if (i >= 2):
                 a_idx = int(zmat_array[i][3]) - 1
-                a = {zmat_array[i][4]: None}
-            else:
-                a_idx = None
-                a = {None: None}
+                intcoords[zmat_array[i][4]] = None
             if (i >= 3):
                 d_idx = int(zmat_array[i][5]) - 1
-                d = {zmat_array[i][6]: None}
-            else:
-                d_idx = None
-                d = {None: None}
-            self.atoms.append(Atom(label, r_idx, a_idx, d_idx, r, a, d))
+                intcoords[zmat_array[i][6]] = None
+            self.atoms.append(Atom(label, r_idx, a_idx, d_idx, intcoords))
 
     def zmat2xyz(self):
         """
@@ -121,8 +110,6 @@ class Molecule(object):
             r1,  r2  = self.atoms[1].rval, self.atoms[2].rval
             rn1, rn2 = self.atoms[1].r_idx, self.atoms[2].r_idx
             a1 = self.atoms[2].aval
-            print(a1)
-            print(r2)
             y = r2*math.sin(a1)
             z = self.atoms[rn2].coords[2] + (1-2*float(rn2==1))*r2*math.cos(a1)
             self.atoms[2].coords = np.array([0.0, y, z])
@@ -144,25 +131,43 @@ class Molecule(object):
 
  
 
-#zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\nH 1 R3 2 A2 3 D1\n'
-zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\nH 3 R3 1 A2 2 D1\n'
-#zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\n'
-print(zmatstring)
+##zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\nH 1 R3 2 A2 3 D1\n'
+#zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\nH 3 R3 1 A2 2 D1\n'
+zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\n'
+
 mol = Molecule(zmatstring)
-#mol.atoms[1].r["R1"] = 1.2
+for atom in mol.atoms:
+    print(atom.intcoords)
+
 mol.atoms[1].rval = 1.1
-#mol.atoms[2].r["R2"] = 1.1
+
 mol.atoms[2].rval = 1.1
-#mol.atoms[2].a["A1"] = -109.1
-mol.atoms[2].aval = 180.0 * constants.deg2rad
-##mol.atoms[3].r["R3"] = 1.1
-mol.atoms[3].rval = 1.1
-##mol.atoms[3].a["A2"] = 90.0
-mol.atoms[3].aval = 180.0* constants.deg2rad
-##mol.atoms[3].d["D1"] = 180.1
-mol.atoms[3].dval = 0.0* constants.deg2rad
+mol.atoms[2].aval = 150.0 * constants.deg2rad
+
+#mol.atoms[3].rval = 1.1
+#mol.atoms[3].aval = 180.0* constants.deg2rad
+#mol.atoms[3].dval = 1.0 * constants.deg2rad
+
 a = mol.zmat2xyz()
 print(a)
+
+#print(zmatstring)
+#mol = Molecule(zmatstring)
+#print(mol.geom_parameters)
+##mol.atoms[1].r["R1"] = 1.2
+#mol.atoms[1].rval = 1.1
+##mol.atoms[2].r["R2"] = 1.1
+#mol.atoms[2].rval = 1.1
+##mol.atoms[2].a["A1"] = -109.1
+#mol.atoms[2].aval = 150.0 * constants.deg2rad
+###mol.atoms[3].r["R3"] = 1.1
+#mol.atoms[3].rval = 1.1
+###mol.atoms[3].a["A2"] = 90.0
+#mol.atoms[3].aval = 180.0* constants.deg2rad
+###mol.atoms[3].d["D1"] = 180.1
+#mol.atoms[3].dval = 1.0 * constants.deg2rad
+#a = mol.zmat2xyz()
+#print(a)
 #for atom in mol.atoms:
 #    print(atom.coords)
 #    print(atom.rval)
