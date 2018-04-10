@@ -27,7 +27,7 @@ def test_extract_cartesian_gradient_with_regex():
                      [-0.000000000  ,      -0.000000019  ,      -0.000000013 ]])
     assert np.allclose(gradient,test)
 
-#cclib currently has poor gradient support, only psi4, qchem, and gaussian well supported. Molpro works rarely 
+#cclib currently has poor gradient support, only psi4, qchem, and gaussian well supported. Molpro works in fringe cases 
 # have to test with qchem for now
 path_2 = 'tests/datafiles/qchem_water_gradient'
 outputfile_2 = molssi.outputfile.OutputFile(path_2)
