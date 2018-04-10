@@ -142,18 +142,18 @@ class Molecule(object):
 
 ##zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\nH 1 R3 2 A2 3 D1\n'
 #zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\nH 3 R3 1 A2 2 D1\n'
-zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\n'
-
-mol = Molecule(zmatstring)
-for atom in mol.atoms:
-    print(atom.intcoords)
-
-
-disp = [{}, {'R1': 1.1}, {'R2': 1.1, 'A2': 150.0 * constants.deg2rad}]
-mol.update_intcoords(disp)
-
-for atom in mol.atoms:
-    print(atom.intcoords)
+#zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\n'
+#
+#mol = Molecule(zmatstring)
+#for atom in mol.atoms:
+#    print(atom.intcoords)
+#
+#
+#disp = [{}, {'R1': 1.1}, {'R2': 1.1, 'A2': 150.0 * constants.deg2rad}]
+#mol.update_intcoords(disp)
+#
+#for atom in mol.atoms:
+#    print(atom.intcoords)
 
 #a = mol.zmat2xyz()
 #print(a)
