@@ -40,7 +40,6 @@ class Atom(object):
     
     def update_intcoords(self):
         self.geom_vals = list(self.intcoords.values())
-        print(self.geom_vals)
         while len(self.geom_vals) < 3:
             self.geom_vals.append(None)
         self.rval = self.geom_vals[0]

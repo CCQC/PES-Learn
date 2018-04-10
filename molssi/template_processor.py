@@ -10,11 +10,13 @@ class TemplateProcessor(object):
     A class for handling template input files for electronic structure theory codes
         Parameters
         ----------
-        template : str
-            A file string of a template input file  
+        template_path : str
+            A path to a template input file  
     """
 
-    def __init__(self, template):
+    def __init__(self, template_path):
+        with open(template_path, 'r') as  f: 
+            template = f.read()
         self.template = template
         self.start, self.end = self.parse_xyz()
 

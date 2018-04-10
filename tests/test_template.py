@@ -6,11 +6,8 @@ import molssi
 import pytest
 import re
 
-# open an xyz style input file as file string
-with open('tests/datafiles/xyz_template', 'r') as f:
-    testfile = f.read()
-
-template_object = molssi.template_processor.TemplateProcessor(testfile)
+path = 'tests/datafiles/xyz_template'
+template_object = molssi.template_processor.TemplateProcessor(path)
 
 def test_extract_xyz():
     x = template_object.extract_xyz()
