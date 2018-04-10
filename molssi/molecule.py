@@ -1,9 +1,13 @@
 from . import constants
+#import constants
 from . import regex
+#import regex
 import re
 import math
 import numpy as np
 from . import geometry_transform_helper as gth 
+#import geometry_transform_helper as gth
+import collections
 
 """
 Contains Atom and Molecule classes for reading, saving and editing the geometry of a molecule 
@@ -26,21 +30,22 @@ class Atom(object):
         intcoords  : dict
             A dictionary of geometry parameter labels (e.g. "R1") and the value for this atom
     """
-    def __init__(self, label, r_idx=None, a_idx=None, d_idx=None, intcoords={}):
+    def __init__(self, label, r_idx=None, a_idx=None, d_idx=None, intcoords=collections.OrderedDict()):
         self.label = label
         self.r_idx = r_idx
         self.a_idx = a_idx
         self.d_idx = d_idx
         self.intcoords = intcoords
-        self.update_intcoords(intcoords)
+        self.update_intcoords
     
-    def update_intcoords(self, new_intcoords):
-        self.intcoords = new_intcoords
+    def update_intcoords(self):
         self.geom_vals = list(self.intcoords.values())
+        print(self.geom_vals)
         while len(self.geom_vals) < 3:
             self.geom_vals.append(None)
-        self.rval, self.aval, self.dval = self.geom_vals[0], self.geom_vals[1], self.geom_vals[2]
-    
+        self.rval = self.geom_vals[0]
+        self.aval = self.geom_vals[1]
+        self.dval = self.geom_vals[2]
 
     
 # This framework is likely temporary. 
@@ -84,7 +89,7 @@ class Molecule(object):
         self.atoms = []
         for i in range(self.n_atoms):
             label = zmat_array[i][0]
-            intcoords = {}
+            intcoords = collections.OrderedDict()
             r_idx, a_idx, d_idx = None, None, None
             if (i >= 1):
                 r_idx = int(zmat_array[i][1]) - 1
@@ -99,17 +104,22 @@ class Molecule(object):
     
     def update_intcoords(self, disp):
         """
-        Disp is a list, by atom, of dictionaries of geometry parameters
-        [{}, {'R1': 1.01}, {'R2':2.01, 'A1':104.5} ...]
-        NOTE: allows geometry parameter labels to be changed by the disp
+        Disp is a dictionary of geometry parameters and their new values, in angstrom and degrees
+        {'R1': 1.01, 'R2':2.01, 'A1':104.5 ...}
         """
-        for i, atom in enumerate(mol.atoms):
-            atom.update_intcoords(disp[i])
+        for key in disp:
+            for atom in self.atoms:
+                if key in atom.intcoords:
+                    atom.intcoords[key] = disp[key]
+        # update Atom variables since intcoords maybe was changed, some redundancy here
+        for atom in self.atoms:
+            atom.update_intcoords()
 
     def zmat2xyz(self):
         """
-        Convert Z-matrix representation to cartesian coordinates
+        Converts Z-matrix representation to cartesian coordinates
         Perserves the element ordering of the Z-matrix
+        Assumes Z-matrix is using degrees
         """
         if (self.n_atoms >= 1):
             self.atoms[0].coords = np.array([0.0, 0.0, 0.0])
@@ -118,7 +128,7 @@ class Molecule(object):
         if (self.n_atoms >= 3):
             r1,  r2  = self.atoms[1].rval, self.atoms[2].rval
             rn1, rn2 = self.atoms[1].r_idx, self.atoms[2].r_idx
-            a1 = self.atoms[2].aval
+            a1 = self.atoms[2].aval * constants.deg2rad 
             y = r2*math.sin(a1)
             z = self.atoms[rn2].coords[2] + (1-2*float(rn2==1))*r2*math.cos(a1)
             self.atoms[2].coords = np.array([0.0, y, z])
@@ -128,7 +138,8 @@ class Molecule(object):
             coords2 = self.atoms[atom.a_idx].coords
             coords3 = self.atoms[atom.d_idx].coords
             self.atoms[i].local_axes = gth.get_local_axes(coords1, coords2, coords3)
-            bond_vector = gth.get_bond_vector(atom.rval, atom.aval, atom.dval)
+            #here
+            bond_vector = gth.get_bond_vector(atom.rval, atom.aval * constants.deg2rad, atom.dval * constants.deg2rad)
             disp_vector = np.array(np.dot(bond_vector, self.atoms[i].local_axes))
             for p in range(3):
                 atom.coords[p] = self.atoms[atom.r_idx].coords[p] + disp_vector[p]
@@ -143,22 +154,28 @@ class Molecule(object):
 ##zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\nH 1 R3 2 A2 3 D1\n'
 #zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\nH 3 R3 1 A2 2 D1\n'
 #zmatstring = 'O\nH 1 R1\nH 1 R2 2 A1\n'
-#
+##
 #mol = Molecule(zmatstring)
 #for atom in mol.atoms:
 #    print(atom.intcoords)
 #
 #
-#disp = [{}, {'R1': 1.1}, {'R2': 1.1, 'A2': 150.0 * constants.deg2rad}]
+#disp =  {'R1': 1.1, 'R2': 1.1, 'A1': 180.0 * constants.deg2rad}
+#disp =  {'R1': 1.1, 'R2': 1.1, 'A1': 180.0}
+#disp = collections.OrderedDict()
+#disp['R1'] = 1.1
+#disp['R2'] = 1.1
+#disp['A1'] = 180.0
 #mol.update_intcoords(disp)
-#
+##
 #for atom in mol.atoms:
 #    print(atom.intcoords)
-
+#    print(atom.aval)
+#
 #a = mol.zmat2xyz()
 #print(a)
 #print(mol.n_atoms)
-
+#
 #print(zmatstring)
 #mol = Molecule(zmatstring)
 #print(mol.geom_parameters)
