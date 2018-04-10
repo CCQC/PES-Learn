@@ -1,9 +1,9 @@
-import constants
+from . import constants
+from . import regex
 import re
-import regex
 import math
 import numpy as np
-from geometry_transform_helper import get_local_axes, get_bond_vector
+from . import geometry_transform_helper as gth 
 
 """
 Contains Atom and Molecule classes for reading, saving and editing the geometry of a molecule 
@@ -127,8 +127,8 @@ class Molecule(object):
             coords1 = self.atoms[atom.r_idx].coords
             coords2 = self.atoms[atom.a_idx].coords
             coords3 = self.atoms[atom.d_idx].coords
-            self.atoms[i].local_axes = get_local_axes(coords1, coords2, coords3)
-            bond_vector = get_bond_vector(atom.rval, atom.aval, atom.dval)
+            self.atoms[i].local_axes = gth.get_local_axes(coords1, coords2, coords3)
+            bond_vector = gth.get_bond_vector(atom.rval, atom.aval, atom.dval)
             disp_vector = np.array(np.dot(bond_vector, self.atoms[i].local_axes))
             for p in range(3):
                 atom.coords[p] = self.atoms[atom.r_idx].coords[p] + disp_vector[p]

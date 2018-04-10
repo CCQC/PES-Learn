@@ -2,9 +2,9 @@
 A class for extracting information from the main input of the user
 """
 
-from regex import intcoords_regex
+from . import regex 
 import re
-import molecule
+from . import molecule
 import ast
 
 class InputProcessor(object):
@@ -18,7 +18,7 @@ class InputProcessor(object):
     def extract_zmat_string(self):
         with open(self.input_path, 'r') as f:
             self.full_string = f.read() 
-        return re.findall(intcoords_regex, self.full_string)[0] 
+        return re.findall(regex.intcoords_regex, self.full_string)[0] 
 
     def extract_intcos_ranges(self):
         """
