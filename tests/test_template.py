@@ -10,7 +10,7 @@ import re
 with open('tests/datafiles/xyz_template', 'r') as f:
     testfile = f.read()
 
-template_object = molssi.template.TemplateProcessor(testfile)
+template_object = molssi.template_processor.TemplateProcessor(testfile)
 
 def test_extract_xyz():
     x = template_object.extract_xyz()
