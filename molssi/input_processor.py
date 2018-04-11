@@ -35,15 +35,28 @@ class InputProcessor(object):
         ranges = collections.OrderedDict()
         # for every geometry label look for its range identifer, e.g. R1 = [0.5, 1.2]
         for label in geomlabels:
-            match = re.search(label+"\s*=\s*(\[.+\])", self.full_string).group(1)
-            ranges[label] = ast.literal_eval(match)
+            # if geom parameter has a geometry range, save it
+            match = re.search(label+"\s*=\s*(\[.+\])", self.full_string)
+            if match:
+                try:
+                    ranges[label] = ast.literal_eval(match.group(1))
+                except: 
+                    raise Exception("Something wrong with definition of parameter {} in input. Should be of the form [start, stop, # of points] or a fixed value".format(label))
+            # if it has a fixed value, save it
+            else:
+                match = re.search(label+"\s*=\s*(-?\d+\.?\d+)", self.full_string)
+                if not match:
+                    raise Exception("\nDefinition of parameter {} not found in geometry input.      \
+                                   \nThe definition is either missing or improperly formatted".format(label))
+                ranges[label] = [float(match.group(1))]
         self.intcos_ranges = ranges
     
     def generate_displacements(self):
         d = self.intcos_ranges
         for key, value in d.items():
-           d[key] = np.linspace(value[0], value[1], value[2])
-
+            if len(value) == 3:
+                d[key] = np.linspace(value[0], value[1], value[2])
+        #TODO fix cases when user inputs lists of length 2 or >3
         geom_values = list(it.product(*d.values()))
 
         disps = []
