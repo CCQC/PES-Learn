@@ -1,0 +1,314 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.2a1.dev429 
+
+                         Git: Rev {fixsym} 7838fc1 dirty
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Tuesday, 10 April 2018 07:17PM
+
+    Process ID:  30690
+    PSIDATADIR: /home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+# density-fitted hartree fock energies and gradients with 6-31g
+molecule h20 {
+0 1
+O 0.0000000000 0.0000000000 0.0000000000
+H 0.0000000000 0.0000000000 1.3000000000
+H 0.0000000000 0.4104241720 -1.1276311449
+}
+
+set basis 6-31g
+
+gradient('hf')
+--------------------------------------------------------------------------
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on adabbott
+*** at Tue Apr 10 19:17:44 2018
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   113 file /home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    22 file /home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.022966284599     0.009645319287     0.000000000000    15.994914619560
+           H          0.022966284599    -1.290354680713     0.000000000000     1.007825032070
+           H         -0.387457887401     1.137276464187     0.000000000000     1.007825032070
+
+  Running in cs symmetry.
+
+  Rotational constants: A =    200.84118  B =      5.51014  C =      5.36301 [cm^-1]
+  Rotational constants: A = 6021066.95335  B = 165189.90016  C = 160778.88009 [MHz]
+  Nuclear repulsion =    6.999254089264971
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 9
+    Number of basis function: 13
+    Number of Cartesian functions: 13
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+   => Loading Basis Set <=
+
+    Name: (6-31G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   221 file /home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        11      11       0       0       0       0
+     A"         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total      13      13       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31G AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 42
+    Number of basis function: 131
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: false
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 1.1852384912E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:   -75.46936704621316   -7.54694e+01   7.85666e-02 
+   @DF-RHF iter   1:   -75.78770019971378   -3.18333e-01   2.62161e-02 
+   @DF-RHF iter   2:   -75.81225997457240   -2.45598e-02   1.80562e-02 DIIS
+   @DF-RHF iter   3:   -75.82757032088948   -1.53103e-02   1.98129e-03 DIIS
+   @DF-RHF iter   4:   -75.82861994947137   -1.04963e-03   7.77665e-04 DIIS
+   @DF-RHF iter   5:   -75.82886695077335   -2.47001e-04   2.50337e-04 DIIS
+   @DF-RHF iter   6:   -75.82889819552619   -3.12448e-05   5.78031e-05 DIIS
+   @DF-RHF iter   7:   -75.82889953710310   -1.34158e-06   1.59160e-05 DIIS
+   @DF-RHF iter   8:   -75.82889961758248   -8.04794e-08   4.66557e-06 DIIS
+   @DF-RHF iter   9:   -75.82889962236371   -4.78123e-09   9.28441e-07 DIIS
+   @DF-RHF iter  10:   -75.82889962257728   -2.13575e-10   1.03165e-07 DIIS
+   @DF-RHF iter  11:   -75.82889962257870   -1.42109e-12   1.05338e-08 DIIS
+   @DF-RHF iter  12:   -75.82889962257873   -2.84217e-14   1.72492e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -20.529798     2Ap    -1.189359     3Ap    -0.588260  
+       1App   -0.437081     4Ap    -0.431837  
+
+    Virtual:                                                              
+
+       5Ap     0.062148     6Ap     0.252441     7Ap     0.886603  
+       8Ap     1.018738     2App    1.208966     9Ap     1.218789  
+      10Ap     1.558260    11Ap     1.660287  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:   -75.82889962257873
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              6.9992540892649711
+    One-Electron Energy =                -119.3036377344903798
+    Two-Electron Energy =                  36.4754840226466897
+    Total Energy =                        -75.8288996225787173
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.3416      Y:    -0.1435      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0675      Y:    -0.0155      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.4091      Y:    -0.1589      Z:     0.0000     Total:     0.4389
+
+  Dipole Moment: (Debye)
+     X:    -1.0399      Y:    -0.4040      Z:     0.0000     Total:     1.1156
+
+
+*** tstop() called on adabbott at Tue Apr 10 19:17:44 2018
+Module time:
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on adabbott
+*** at Tue Apr 10 19:17:44 2018
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.022966284599     0.009645319287     0.000000000000    15.994914619560
+           H          0.022966284599    -1.290354680713     0.000000000000     1.007825032070
+           H         -0.387457887401     1.137276464187     0.000000000000     1.007825032070
+
+  Nuclear repulsion =    6.999254089264971
+
+  ==> Basis Set <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 9
+    Number of basis function: 13
+    Number of Cartesian functions: 13
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> DFJKGrad: Density-Fitted SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Schwarz Cutoff:          0E+00
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31G AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 42
+    Number of basis function: 131
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: false
+    Max angular momentum: 3
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -0.011283165330     0.009167938044     0.000000000000
+       2        0.027814663458    -0.142689543737     0.000000000000
+       3       -0.016531498127     0.133521605693     0.000000000000
+
+
+*** tstop() called on adabbott at Tue Apr 10 19:17:44 2018
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.54 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** Psi4 exiting successfully. Buy a developer a beer!
