@@ -70,7 +70,7 @@ class Molecule(object):
         self.atoms           - a list of Atom objects containing complete Z matrix information for each Atom
         """
         # grab array like representation of zmatrix and count the number of atoms 
-        zmat_array = [line.split() for line in zmat_string.splitlines()]
+        zmat_array = [line.split() for line in zmat_string.splitlines() if line]
         self.n_atoms = len(zmat_array)
 
         # find geometry parameter labels 
