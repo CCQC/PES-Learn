@@ -18,13 +18,13 @@ mol = molssi.molecule.Molecule(input_obj.zmat_string)
 # take internal coordinate ranges, expand them, generate displacement dictionaries
 disps = input_obj.generate_displacements()
 
+# create displacement input files
+# this maybe should be a method in the TemplateProcessor class, but idk it needs InputProcessor disps
 # create a "data" directory and move into it
 if not os.path.exists("./data"):
     os.mkdir("./data")
 os.chdir("./data")
 
-# create displacement input files
-# this maybe should be a method in the TemplateProcessor class, but idk it needs InputProcessor disps
 for i, disp in enumerate(disps, start=1):
     mol.update_intcoords(disp)
     cart_array = mol.zmat2xyz()
