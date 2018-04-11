@@ -37,6 +37,7 @@ class Atom(object):
         self.d_idx = d_idx
         self.intcoords = intcoords
         self.update_intcoords
+        self.coords = np.array([None, None, None]) 
     
     def update_intcoords(self):
         self.geom_vals = list(self.intcoords.values())
