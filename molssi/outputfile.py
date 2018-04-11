@@ -52,7 +52,11 @@ class OutputFile(object):
         tmp = re.findall(energy_regex, self.output_str)
         if tmp is not None:
             last_energy = float(tmp[-1])
-        return last_energy
+            return last_energy
+        # how do we handle cases when output files do not produce the energy?
+        # we do not want to kill the program, but we also want to communicate that something went wrong during that computation 
+        else:
+            return None 
 
     def extract_energy_with_cclib(self, cclib_attribute, energy_index=-1):
         """
@@ -122,9 +126,12 @@ class OutputFile(object):
         trimmed_str = re.split(footer, trimmed_str)[0] 
         # look for gradient line regex 
         gradient = re.findall(grad_line_regex, trimmed_str)
-        # this gradient is a list of tuples, each tuple is an x, y, z for one atom
-        gradient = np.asarray(gradient).astype(np.float)
-        return gradient        
+        if gradient is not None:
+            # this gradient is a list of tuples, each tuple is an x, y, z for one atom
+            gradient = np.asarray(gradient).astype(np.float)
+            return gradient        
+        else:
+            return None
 
     def extract_cartesian_gradient_with_cclib(self, grad_index=-1):
         """
