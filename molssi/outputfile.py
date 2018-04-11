@@ -88,6 +88,7 @@ class OutputFile(object):
         Extracts cartesian gradients according to user supplied regular expressions.
         A bit more tedious to use than the energy regex extractor as the size of the regular expressions may be quite long.
         Requires that the electronic structure theory code prints the cartesian gradient in a logical way.
+        A "header" and "footer" identifier is needed so we don't accidentally parse things that *look like* gradients, like geometries
 
         Example: 
         CARTESIAN GRADIENT:                 (header)
