@@ -50,7 +50,7 @@ class OutputFile(object):
         """
         last_energy = 0.0
         tmp = re.findall(energy_regex, self.output_str)
-        if tmp is not None:
+        if tmp:
             last_energy = float(tmp[-1])
             return last_energy
         # how do we handle cases when output files do not produce the energy?
@@ -127,7 +127,8 @@ class OutputFile(object):
         trimmed_str = re.split(footer, trimmed_str)[0] 
         # look for gradient line regex 
         gradient = re.findall(grad_line_regex, trimmed_str)
-        if gradient is not None:
+        #TODO add catch for when only some lines of the gradient are parsed but not all, check against number of atoms or something
+        if gradient:
             # this gradient is a list of tuples, each tuple is an x, y, z for one atom
             gradient = np.asarray(gradient).astype(np.float)
             return gradient        
