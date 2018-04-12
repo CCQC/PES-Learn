@@ -9,9 +9,9 @@ integer          = r'\d+'
 whitespace       = r'\s'
 endline          = r'\n'
 # zero or more whitespace (ws) followed by the regex feature 
-ws_double  = r'\s*' + double 
-ws_endline = r'\s*' + endline 
-ws_int     = r'\s*' + integer 
+ws_double  = r'[ \t]*' + double 
+ws_endline = r'[ \t]*' + endline 
+ws_int     = r'[ \t]*' + integer 
 
 
 def maybe(string):
