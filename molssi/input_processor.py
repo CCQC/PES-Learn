@@ -40,7 +40,6 @@ class InputProcessor(object):
             if match:
                 try:
                     ranges[label] = ast.literal_eval(match.group(1))
-                    print(ranges)
                 except: 
                     raise Exception("Something wrong with definition of parameter {} in input. Should be of the form [start, stop, # of points] or a fixed value".format(label))
             # if it has a fixed value, save it
