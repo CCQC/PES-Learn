@@ -1,0 +1,308 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.2a1.dev429 
+
+                         Git: Rev {fixsym} 7838fc1 dirty
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 12 April 2018 01:57PM
+
+    Process ID:   2512
+    PSIDATADIR: /home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+# density-fitted MP2 energies and gradients with 6-31g
+
+molecule h20 {
+0 2
+C 0.0000000000 0.0000000000 0.0000000000
+H 0.0000000000 0.0000000000 1.8000000000
+H 0.0000000000 0.8660254038 -0.5000000000
+H 0.0000000000 -0.8660254038 -0.5000000000
+}
+
+set guess sad
+set reference uhf
+set basis 6-31g
+
+gradient('mp2')
+--------------------------------------------------------------------------
+gradient() will perform analytic gradient computation.
+    SCF Algorithm Type (re)set to DF.
+
+*** tstart() called on adabbott
+*** at Thu Apr 12 13:57:19 2018
+
+  A requested method does not make use of molecular symmetry: further calculations in C1 point group.
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    83 file /home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 2-4 entry H          line    22 file /home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.053666679679    12.000000000000
+           H          0.000000000000     0.000000000000     1.746333320321     1.007825032070
+           H         -0.000000000000     0.866025403800    -0.553666679679     1.007825032070
+           H          0.000000000000    -0.866025403800    -0.553666679679     1.007825032070
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     11.15116  B =      4.52433  C =      3.21850 [cm^-1]
+  Rotational constants: A = 334303.40181  B = 135635.93772  C =  96488.10298 [MHz]
+  Nuclear repulsion =    8.850209440445036
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 11
+    Number of basis function: 15
+    Number of Cartesian functions: 15
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+   => Loading Basis Set <=
+
+    Name: (6-31G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry C          line   121 file /home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-4 entry H          line    51 file /home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         15      15       0       0       0       0
+   -------------------------------------------------------
+    Total      15      15       5       4       4       1
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           SAVE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31G AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 51
+    Number of basis function: 156
+    Number of Cartesian functions: 156
+    Spherical Harmonics?: false
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 2.9685174802E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   0:   -39.37751887892360   -3.93775e+01   8.61299e-02 
+   @DF-UHF iter   1:   -39.36969410375968    7.82478e-03   1.27997e-02 
+   @DF-UHF iter   2:   -39.40487692724830   -3.51828e-02   4.78278e-03 DIIS
+   @DF-UHF iter   3:   -39.40944761699628   -4.57069e-03   1.98199e-03 DIIS
+   @DF-UHF iter   4:   -39.41155735148386   -2.10973e-03   1.54607e-03 DIIS
+   @DF-UHF iter   5:   -39.41357584839492   -2.01850e-03   1.60843e-03 DIIS
+   @DF-UHF iter   6:   -39.40725490640851    6.32094e-03   1.10133e-03 DIIS
+   @DF-UHF iter   7:   -39.40337212999473    3.88278e-03   5.25247e-04 DIIS
+   @DF-UHF iter   8:   -39.40175042110637    1.62171e-03   5.68524e-04 DIIS
+   @DF-UHF iter   9:   -39.39414002548141    7.61040e-03   2.30757e-03 DIIS
+   @DF-UHF iter  10:   -39.39982963510717   -5.68961e-03   1.02035e-03 DIIS
+   @DF-UHF iter  11:   -39.40006802882922   -2.38394e-04   9.61846e-04 DIIS
+   @DF-UHF iter  12:   -39.40101018406327   -9.42155e-04   7.17716e-04 DIIS
+   @DF-UHF iter  13:   -39.40186989282442   -8.59709e-04   5.22400e-04 DIIS
+   @DF-UHF iter  14:   -39.40231948783615   -4.49595e-04   4.39428e-04 DIIS
+   @DF-UHF iter  15:   -39.40285535526985   -5.35867e-04   3.89459e-04 DIIS
+   @DF-UHF iter  16:   -39.40230367874159    5.51677e-04   4.29649e-04 DIIS
+   @DF-UHF iter  17:   -39.40237322884322   -6.95501e-05   4.19523e-04 DIIS
+   @DF-UHF iter  18:   -39.40304810606106   -6.74877e-04   3.80485e-04 DIIS
+   @DF-UHF iter  19:   -39.39987121008438    3.17690e-03   9.78357e-04 DIIS
+   @DF-UHF iter  20:   -39.40224171453384   -2.37050e-03   4.34621e-04 DIIS
+   @DF-UHF iter  21:   -39.40148676434307    7.54950e-04   5.86823e-04 DIIS
+   @DF-UHF iter  22:   -39.40389941860565   -2.41265e-03   4.73409e-04 DIIS
+   @DF-UHF iter  23:   -39.40323429735563    6.65121e-04   3.95582e-04 DIIS
+   @DF-UHF iter  24:   -39.40323263682932    1.66053e-06   3.95549e-04 DIIS
+   @DF-UHF iter  25:   -39.40301075504121    2.21882e-04   3.85013e-04 DIIS
+   @DF-UHF iter  26:   -39.40304703430002   -3.62793e-05   3.86079e-04 DIIS
+   @DF-UHF iter  27:   -39.40292264909588    1.24385e-04   3.82599e-04 DIIS
+   @DF-UHF iter  28:   -39.40292591076870   -3.26167e-06   3.82968e-04 DIIS
+   @DF-UHF iter  29:   -39.40342506455063   -4.99154e-04   4.09924e-04 DIIS
+   @DF-UHF iter  30:   -39.40266476951128    7.60295e-04   3.91536e-04 DIIS
+   @DF-UHF iter  31:   -39.39269526387257    9.96951e-03   2.51189e-03 DIIS
+   @DF-UHF iter  32:   -39.39883954180314   -6.14428e-03   1.22606e-03 DIIS
+   @DF-UHF iter  33:   -39.40108482920616   -2.24529e-03   6.82875e-04 DIIS
+   @DF-UHF iter  34:   -39.40212996828880   -1.04514e-03   4.56029e-04 DIIS
+   @DF-UHF iter  35:   -39.40282248385817   -6.92516e-04   3.83257e-04 DIIS
+   @DF-UHF iter  36:   -39.40185321259485    9.69271e-04   5.14584e-04 DIIS
+   @DF-UHF iter  37:   -39.40294305725497   -1.08984e-03   3.82683e-04 DIIS
+   @DF-UHF iter  38:   -39.40290058718034    4.24701e-05   3.87659e-04 DIIS
+   @DF-UHF iter  39:   -39.41840027827693   -1.54997e-02   2.02510e-03 DIIS
+   @DF-UHF iter  40:   -39.40321252947601    1.51877e-02   4.89003e-04 DIIS
+   @DF-UHF iter  41:   -39.40291965919994    2.92870e-04   3.74336e-04 DIIS
+   @DF-UHF iter  42:   -39.39671056089031    6.20910e-03   1.70297e-03 DIIS
+   @DF-UHF iter  43:   -39.40201324568079   -5.30268e-03   4.75587e-04 DIIS
+   @DF-UHF iter  44:   -39.40443953783448   -2.42629e-03   5.66210e-04 DIIS
+   @DF-UHF iter  45:   -39.40063720537375    3.80233e-03   7.99781e-04 DIIS
+   @DF-UHF iter  46:   -39.40343316423005   -2.79596e-03   4.09524e-04 DIIS
+   @DF-UHF iter  47:   -39.37871200000226    2.47212e-02   4.76946e-03 DIIS
+   @DF-UHF iter  48:   -39.40085804993798   -2.21460e-02   7.36590e-04 DIIS
+   @DF-UHF iter  49:   -39.40329739549360   -2.43935e-03   3.96885e-04 DIIS
+   @DF-UHF iter  50:   -39.36527338589975    3.80240e-02   6.54053e-03 DIIS
+   @DF-UHF iter  51:   -39.39980833623989   -3.45350e-02   9.93894e-04 DIIS
+   @DF-UHF iter  52:   -39.40294313055561   -3.13479e-03   3.80183e-04 DIIS
+   @DF-UHF iter  53:   -39.40100899634425    1.93413e-03   7.03383e-04 DIIS
+   @DF-UHF iter  54:   -39.40131234046887   -3.03344e-04   6.29204e-04 DIIS
+   @DF-UHF iter  55:   -39.40250309272108   -1.19075e-03   4.03828e-04 DIIS
+   @DF-UHF iter  56:   -39.40505289112261   -2.54980e-03   6.80079e-04 DIIS
+   @DF-UHF iter  57:   -39.40284282090469    2.21007e-03   3.89530e-04 DIIS
+   @DF-UHF iter  58:   -39.40222829672508    6.14524e-04   4.45399e-04 DIIS
+   @DF-UHF iter  59:   -39.39375254541665    8.47575e-03   2.30483e-03 DIIS
+   @DF-UHF iter  60:   -39.39926588676576   -5.51334e-03   1.12545e-03 DIIS
+   @DF-UHF iter  61:   -39.40158943454859   -2.32355e-03   5.64902e-04 DIIS
+   @DF-UHF iter  62:   -39.40294863742138   -1.35920e-03   3.81982e-04 DIIS
+   @DF-UHF iter  63:   -39.40202105741549    9.27580e-04   4.80197e-04 DIIS
+   @DF-UHF iter  64:   -39.40298053150726   -9.59474e-04   3.76296e-04 DIIS
+   @DF-UHF iter  65:   -39.40695456472837   -3.97403e-03   9.72691e-04 DIIS
+   @DF-UHF iter  66:   -39.40307169538643    3.88287e-03   3.94595e-04 DIIS
+   @DF-UHF iter  67:   -39.41010178265253   -7.03009e-03   1.36580e-03 DIIS
+   @DF-UHF iter  68:   -39.40340734351119    6.69444e-03   4.29609e-04 DIIS
+   @DF-UHF iter  69:   -39.40041968923104    2.98765e-03   8.42872e-04 DIIS
+   @DF-UHF iter  70:   -39.40353623295395   -3.11654e-03   4.21106e-04 DIIS
+   @DF-UHF iter  71:   -39.40208227857649    1.45395e-03   4.70625e-04 DIIS
+   @DF-UHF iter  72:   -39.41636714216875   -1.42849e-02   1.87873e-03 DIIS
+   @DF-UHF iter  73:   -39.40438555754691    1.19816e-02   6.06038e-04 DIIS
+   @DF-UHF iter  74:   -39.40263958038616    1.74598e-03   3.94670e-04 DIIS
+   @DF-UHF iter  75:   -39.41248601061955   -9.84643e-03   1.59592e-03 DIIS
+   @DF-UHF iter  76:   -39.40356244737089    8.92356e-03   4.56965e-04 DIIS
+   @DF-UHF iter  77:   -39.40143661900675    2.12583e-03   5.99062e-04 DIIS
+   @DF-UHF iter  78:   -39.40418527462219   -2.74866e-03   5.20829e-04 DIIS
+   @DF-UHF iter  79:   -39.40132842094638    2.85685e-03   6.32266e-04 DIIS
+   @DF-UHF iter  80:   -39.40524126598959   -3.91285e-03   7.06585e-04 DIIS
+   @DF-UHF iter  81:   -39.40213904951410    3.10222e-03   4.65261e-04 DIIS
+   @DF-UHF iter  82:   -39.41050623359691   -8.36718e-03   1.42943e-03 DIIS
+   @DF-UHF iter  83:   -39.40338984918325    7.11638e-03   4.31341e-04 DIIS
+   @DF-UHF iter  84:   -39.40436224414947   -9.72395e-04   5.45347e-04 DIIS
+   @DF-UHF iter  85:   -39.40238957302869    1.97267e-03   4.27543e-04 DIIS
+   @DF-UHF iter  86:   -39.41634041818469   -1.39508e-02   1.86558e-03 DIIS
+   @DF-UHF iter  87:   -39.40444390675513    1.18965e-02   6.16433e-04 DIIS
+   @DF-UHF iter  88:   -39.40260381773477    1.84009e-03   3.97832e-04 DIIS
+   @DF-UHF iter  89:   -39.41244798653155   -9.84417e-03   1.59816e-03 DIIS
+   @DF-UHF iter  90:   -39.40348247729778    8.96551e-03   4.47670e-04 DIIS
+   @DF-UHF iter  91:   -39.40188590528307    1.59657e-03   4.98737e-04 DIIS
+   @DF-UHF iter  92:   -39.40496819329745   -3.08229e-03   6.61675e-04 DIIS
+   @DF-UHF iter  93:   -39.40214404138833    2.82415e-03   4.61204e-04 DIIS
+   @DF-UHF iter  94:   -39.41040850926570   -8.26447e-03   1.41974e-03 DIIS
+   @DF-UHF iter  95:   -39.40337892784950    7.02958e-03   4.29401e-04 DIIS
+   @DF-UHF iter  96:   -39.40436649913831   -9.87571e-04   5.47623e-04 DIIS
+   @DF-UHF iter  97:   -39.40267271706741    1.69378e-03   3.99295e-04 DIIS
+   @DF-UHF iter  98:   -39.41660866420696   -1.39359e-02   1.87096e-03 DIIS
+   @DF-UHF iter  99:   -39.40445581450177    1.21528e-02   6.20566e-04 DIIS
+   @DF-UHF iter 100:   -39.40255012183422    1.90569e-03   4.02872e-04 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   2.557324466E-02
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.755732447E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+  Failed to converge.
+Iterations did not converge.
+Traceback (most recent call last):
+  File "/home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/bin/psi4", line 260, in <module>
+    exec(content)
+  File "<string>", line 32, in <module>
+  File "/home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/lib/psi4/driver/driver.py", line 606, in gradient
+    wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
+  File "/home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/lib/psi4/driver/procrouting/proc.py", line 165, in select_mp2_gradient
+    return func(name, **kwargs)
+  File "/home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/lib/psi4/driver/procrouting/proc.py", line 1630, in run_dfocc_gradient
+    ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
+  File "/home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/lib/psi4/driver/procrouting/proc.py", line 1352, in scf_helper
+    e_scf = scf_wfn.compute_energy()
+
+RuntimeError: 
+Fatal Error: Iterations did not converge.
+Error occurred in file: /home/adabbott/Git/psi4/psi4/src/psi4/libpsi4util/process.cc on line: 175
+The most recent 5 function calls were:
+
+psi::PsiException::PsiException(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, char const*, int)
+psi::die_if_not_converged()
+psi::scf::HF::finalize_E()
+void pybind11::cpp_function::initialize<pybind11::cpp_function::initialize<double, psi::Wavefunction, , pybind11::name, pybind11::is_method, pybind11::sibling, char [41]>(double (psi::Wavefunction::*)(), pybind11::name const&, pybind11::is_method const&, pybind11::sibling const&, char const (&) [41])::{lambda(psi::Wavefunction*)#1}, double, psi::Wavefunction*, pybind11::name, pybind11::is_method, pybind11::sibling, char [41]>(pybind11::cpp_function::initialize<double, psi::Wavefunction, , pybind11::name, pybind11::is_method, pybind11::sibling, char [41]>(double (psi::Wavefunction::*)(), pybind11::name const&, pybind11::is_method const&, pybind11::sibling const&, char const (&) [41])::{lambda(psi::Wavefunction*)#1}&&, double (*)(psi::Wavefunction*), pybind11::name const&, pybind11::is_method const&, pybind11::sibling const&, char const (&) [41])::{lambda(pybind11::detail::function_record*, pybind11::handle, pybind11::detail::function_record*, pybind11::detail::function_record*)#3}::_FUN(pybind11::detail::function_record, pybind11::detail::function_record*, pybind11::detail::function_record*, pybind11::detail::function_record*)
+pybind11::cpp_function::dispatcher(_object*, _object*, _object*)
+
+
+*** Psi4 encountered an error. Buy a developer more coffee!
+*** Resources and help at github.com/psi4/psi4.
