@@ -63,7 +63,7 @@ if text == 'parse':
     ndirs = sum(os.path.isdir(d) for d in os.listdir("."))
 
     E = []
-    grad_stds = []
+    grad_vars = []
     # parse output files after running jobs
     for i in range(1, ndirs+1):
         # get geometry data
@@ -87,16 +87,18 @@ if text == 'parse':
         "Total Gradient:", "\*\*\* tstop() called on", "\s+\d+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)")
         # handle cases when gradient doesn't exist
         try:
-            grad_std_dev = np.std(gradient)
-            grad_stds.append(grad_std_dev)
+            grad_var = np.var(gradient)
+            grad_vars.append(grad_var)
         except:
-            grad_std_dev = None
-            grad_stds.append(grad_std_dev)
+            grad_var = None
+            grad_vars.append(grad_var)
         DATA = DATA.append(df)
         
     DATA['E'] = E
-    DATA['grad_SD'] = grad_stds
+    DATA['grad_variance'] = grad_vars
     os.chdir('../')
-    DATA.to_csv("PES.dat", sep='\t', index=False, float_format='%12.12f')
-    print("Parsed data has been written to PES.dat")
+    DATA.to_csv("PES.csv", sep=',', index=False, float_format='%12.12f')
+    with open('./PES.dat', 'w') as f:
+        f.write(DATA.__repr__())
+    print("Parsed data has been written")
     
