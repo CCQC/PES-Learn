@@ -43,6 +43,7 @@ for i in range(1, ndirs+1):
 
 data['Energy'] = E
 # shuffle the dataframe randomly so that validation set changes (lazy)
+# validation split takes last x% of dataset so we randomize so it validates over roughly the same space as the training set
 data = shuffle(data)
 
 x = data.iloc[:, :-1].values
