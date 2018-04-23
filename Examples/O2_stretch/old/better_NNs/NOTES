@@ -1,0 +1,5 @@
+It is not clear how to handle the gradients
+
+Should the energies and gradients be scaled together? Probably not. The gradients are much smaller than the energies
+
+Should the gradients be scaled -1 to 1 like the energy? If so, then the smallest gradient does not correspond to the smallest energy

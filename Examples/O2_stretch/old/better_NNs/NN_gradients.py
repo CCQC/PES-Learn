@@ -51,8 +51,8 @@ for i in range(1, ndirs+1):
     output_obj = molssi.outputfile.OutputFile(path)
     energy = output_obj.extract_energy_with_regex("Final Energy:\s+(-\d+\.\d+)") 
     gradient = output_obj.extract_cartesian_gradient_with_cclib()
-    gradient = cartesian_grad_to_idm(gradient)
-    gradient = gradient[0,1]
+    #gradient = cartesian_grad_to_idm(gradient)
+    gradient = gradient[1,2]
     data = data.append(df)
     E.append(energy)
     G.append(gradient)
@@ -64,25 +64,39 @@ data['Gradient'] = G
 # we have 100 datapoints of geometry, energy pairs
 # take one third for test, validate, train, sample each set evenly along the surface
 
-test_x = data.iloc[::3, :-2].values
-test_y = data.iloc[::3, -2:].values
+test_x = data.iloc[1::3, :-2].values
+test_e = data.iloc[1::3, -2].values
+test_g = data.iloc[1::3, -1].values
 
-valid_x = data.iloc[1::3, :-2].values
-valid_y = data.iloc[1::3, -2:].values
+valid_x = data.iloc[2::3, :-2].values
+valid_e = data.iloc[2::3, -2].values
+valid_g = data.iloc[2::3, -1].values
 
-train_x = data.iloc[2::3, :-2].values
-train_y = data.iloc[2::3, -2:].values
+train_x = data.iloc[0::3, :-2].values
+train_e = data.iloc[0::3, -2].values
+train_g = data.iloc[0::3, -1].values
 
-# scale the data
+
+## scale the data
 scaler = MinMaxScaler(feature_range=(-1,1))
 test_x = scaler.fit_transform((test_x).reshape(-1,1))
-test_y = scaler.fit_transform((test_y))
+# scaling the gradients causes the minimum energy to not correspond to the minimum gradient
+test_e = scaler.fit_transform((test_e.reshape(-1,1)))
+test_g = test_g.reshape(-1,1)
+#test_g = scaler.fit_transform((test_g.reshape(-1,1)))
+test_y = np.hstack((test_e, test_g))
 
-train_x = scaler.fit_transform((train_x).reshape(-1,1))
-train_y = scaler.fit_transform((train_y))
+train_x = scaler.fit_transform(train_x.reshape(-1,1))
+train_e = scaler.fit_transform(train_e.reshape(-1,1))
+train_g = train_g.reshape(-1,1)
+#train_g = scaler.fit_transform(train_g.reshape(-1,1))
+train_y = np.hstack((train_e, train_g))
 
-valid_x = scaler.fit_transform((valid_x).reshape(-1,1))
-valid_y = scaler.fit_transform((valid_y))
+valid_x = scaler.fit_transform(valid_x.reshape(-1,1))
+valid_e = scaler.fit_transform(valid_e.reshape(-1,1))
+valid_g = valid_g.reshape(-1,1)
+#valid_g = scaler.fit_transform(valid_g.reshape(-1,1))
+valid_y = np.hstack((valid_e, valid_g))
 valid_set = tuple([valid_x, valid_y])
 
 in_dim = train_x.shape[1]
@@ -97,11 +111,11 @@ for i in range(1):
     Dense(units=100, activation='softsign'),
     Dense(units=100, activation='softsign'),
     Dense(units=100, activation='softsign'),
-    Dense(units=out_dim, activation = 'softsign'),
+    Dense(units=out_dim, activation = 'linear'),
     ])
     
     model.compile(loss='mse', optimizer='Adam', metrics=['mae'])
-    model.fit(x=train_x,y=train_y,epochs=100,validation_data=valid_set,batch_size=25,verbose=1)
+    model.fit(x=train_x,y=train_y,epochs=10000,validation_data=valid_set,batch_size=25,verbose=1)
     
     performance = model.evaluate(x=test_x,y=test_y)
     models.append(model)
@@ -109,13 +123,13 @@ for i in range(1):
 
 p = model.predict(np.array(test_x))
 
-print(p)
-predicted_y = scaler.inverse_transform(p)
-actual_y = scaler.inverse_transform(test_y)
-print(predicted_y[:,0] - actual_y[:,0])
-print(len(predicted_y[:,0]))
-print(np.hstack((predicted_y,actual_y)))
+predicted_e = scaler.inverse_transform(p[:,0].reshape(-1,1))
+#print(predicted_e)
+predicted_g = scaler.inverse_transform(p[:,1].reshape(-1,1))
+#print(predicted_g)
+actual_e = scaler.inverse_transform(test_e)
+print(np.hstack((predicted_e,actual_e)))
 #
-print("Mean absolute error of the actual energies: ", np.sum(np.absolute((predicted_y[:,0] - actual_y[:,0]))) / len(predicted_y[:,0]))
-print("Percent error of actual energies is: ", np.mean((predicted_y[:,0] - actual_y[:,0]) / actual_y[:,0]))
-#
+print("Mean absolute error of the actual energies: ", np.sum(np.absolute((predicted_e - actual_e))) / len(predicted_g))
+print("Percent error of actual energies is: ", np.mean((predicted_e - actual_e) / actual_e))
+
