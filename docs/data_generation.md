@@ -1,8 +1,8 @@
 # Data Generation
 
-For automated data generation across a PES, one only needs two files:
-    1. `input.dat`  
-    2. `template.dat`
+For automated data generation across a PES, one only needs two files:    
+    1. `input.dat`   
+    2. `template.dat`  
 
 The file `template.dat` is an input file for any electronic structure theory package that computes a single point energy or gradient.
 Currently, the only constraint is that it uses an xyz-style geometry definition.
@@ -40,4 +40,11 @@ a1 = [90, 180, 10]
 extract = 'cclib'
 energy  = 'scfenergies'
 
+```
+
+alternatively one can use regular expressions with: 
+
+```
+extract = 'regex'
+energy = 'Final Energy:\s+(-\d+\.\d+)'`. 
 ```
