@@ -26,6 +26,8 @@ before_install:
   - pip install codecov
   - pip install numpy
   - pip install cclib 
+  - pip install keras
+  - pip install tensorflow
 
 # Install the plugin locally
   - pip install -e .
