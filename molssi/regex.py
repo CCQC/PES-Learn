@@ -81,36 +81,3 @@ intco_4 = r'[ \t]*' + letter + maybe(letter) + ws_int + ws_coord_label + ws_int 
 
 # assume at least two atoms
 intcoords_regex = intco_1 + intco_2 + maybe(intco_3) + maybe(one_or_more(intco_4))
-
-# this function should go in some class later
-def find_internal_coordinates(filestring):
-    """
-    Finds the internal coordinates in a file string and creates a dictionary of geometry parameters and corresponding values
-    """
-    # find internal coordinate definition block
-    intcoord = re.findall(intcoords_regex, filestring)[0]
-    # isolate atom labels and geometry parameter labels
-    # atom labels will always be at index 0, 1, 3, 6, 6++4...
-    tmp = re.findall(coord_label, intcoord)
-    atoms = []
-    for i, s in enumerate(tmp):
-            if (i == 0) or (i == 1) or (i == 3):
-                atoms.append(tmp[i])
-            if ((i >= 6) and ((i-6) % 4 == 0)):
-                atoms.append(tmp[i])
-    parameters = [x for x in tmp if x not in atoms]
-    
-    # create a dictionary of geometry parameters without values set
-    coord_dict = {key: None for key in parameters}
-    # and find the values of these geometry parameters in the file
-    for label in coord_dict:
-        match = "{}\s*=\s*(-?\d+\.\d+".format(label)
-        tmp = re.findall(match, inp)
-        if len(tmp) > 1:
-            raise Exception("More than one definition for internal coordinate parameter {} found".format(label))
-        if len(tmp) == 0:
-            raise Exception("Geometry parameter {} not defined in the input".format(label))
-        else:
-            value = float(tmp[0])
-            coord_dict[label] = value
-    return coord_dict
