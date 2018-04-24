@@ -1,15 +1,16 @@
 # Data Generation
 
+# Initial set up
 For automated data generation across a PES, one only needs two files:    
     1. `input.dat`   
     2. `template.dat`  
-
-To run the software, simply run `python /path/to/molssi/molssi/driver.py` while in the directory containing `input.dat` and `template.dat` and follow the instructions.
 
 The file `template.dat` is an input file for any electronic structure theory package that computes a single point energy or gradient.
 Currently, the only constraint is that it uses an xyz-style geometry definition.
 
 The file `input.dat` defines the molecular configuration space you wish to scan over as well as other keyword options. 
+### Running the software
+To run the software, simply run `python /path/to/molssi/molssi/driver.py` while in the directory containing `input.dat` and `template.dat` and follow the instructions.
 ### Defining a configuration space
 The configuration space is specified with internal coordinates, a "Z-Matrix." 
 Parameter ranges such as bond lengths, angles, and dihedrals are indicated by a bracketed list of the form `param =  [start, stop, number of points]`. 
@@ -20,10 +21,10 @@ See below for an example configuration space definition.
 
 ### Extracting energy values
 The keyword `energy` dictates whether one wishes to use cclib `energy = 'cclib'` or regular expressions `energy = 'regex'` to obtain the energies from output files. 
-If using cclib, one must set `energy_cclib`   the appropriate [cclib parsing variable must be used](https://cclib.github.io/data.html), such as `energy_cclib = 'scfenergies'` for DFT and Hartree-Fock, `'mpenergies'` for perturbation theory methods, and `'ccenergies'` for coupled cluster theory methods.
+If using cclib, one must set `energy_cclib` to the appropriate [cclib parsing variable](https://cclib.github.io/data.html), such as `energy_cclib = 'scfenergies'` for DFT and Hartree-Fock, `'mpenergies'` for perturbation theory methods, or `'ccenergies'` for coupled cluster theory methods.
 
 If using regular expressions, a regex identifier for the energy desired from the output file is needed.  
-This is assigned to `energy_regex` keyword. 
+This is assigned to the `energy_regex` keyword. 
 For example, suppose an electronic structure theory package prints the energy in the following manner, `  @DF-RHF Final Energy:   -75.91652851796150`
 then one could input `energy_regex = 'Final Energy:\s+(-\d+\.\d+)'`. 
 Notice we use a capture group `()` to obtain the energy value.
