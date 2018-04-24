@@ -4,6 +4,8 @@ For automated data generation across a PES, one only needs two files:
     1. `input.dat`   
     2. `template.dat`  
 
+To run the software, simply run `python /path/to/molssi/molssi/driver.py` while in the directory containing `input.dat` and `template.dat` and follow the instructions.
+
 The file `template.dat` is an input file for any electronic structure theory package that computes a single point energy or gradient.
 Currently, the only constraint is that it uses an xyz-style geometry definition.
 
