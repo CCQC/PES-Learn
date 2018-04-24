@@ -1,6 +1,6 @@
 # Data Generation
 
-# Initial set up
+### Initial set up
 For automated data generation across a PES, one only needs two files:    
     1. `input.dat`   
     2. `template.dat`  
@@ -11,6 +11,7 @@ Currently, the only constraint is that it uses an xyz-style geometry definition.
 The file `input.dat` defines the molecular configuration space you wish to scan over as well as other keyword options. 
 ### Running the software
 To run the software, simply run `python /path/to/molssi/molssi/driver.py` while in the directory containing `input.dat` and `template.dat` and follow the instructions.
+
 ### Defining a configuration space
 The configuration space is specified with internal coordinates, a "Z-Matrix." 
 Parameter ranges such as bond lengths, angles, and dihedrals are indicated by a bracketed list of the form `param =  [start, stop, number of points]`. 
@@ -28,7 +29,7 @@ This is assigned to the `energy_regex` keyword.
 For example, suppose an electronic structure theory package prints the energy in the following manner, `  @DF-RHF Final Energy:   -75.91652851796150`
 then one could input `energy_regex = 'Final Energy:\s+(-\d+\.\d+)'`. 
 Notice we use a capture group `()` to obtain the energy value.
-The software will take the last match, so uniqueness of the regular expression match is not entirely crucial.
+The software will take the last match, so uniqueness of the regular expression match is not critical.
 Regular expressions can be easily checked beforehand with online utilities such as [pythex](https://pythex.org/).
 
 
@@ -60,32 +61,35 @@ The software supports extracting cartesian gradients from output files to improv
 For the handful of codes which cclib supports, gradient extraction is very easy. Just add the keyword `gradient = 'cclib'` to the input file.
 For everything other code, regular expressions are the only way to automate gradient extraction.
 This can be tedious and messy, but it works and it's general. 
-The software requires three keywords to extract a gradient:
-    1. `gradient_header`
-    2. `gradient_footer`
-    3. `gradient_line`
+The software requires three keywords to extract a gradient:  
+    1. `gradient_header`   
+    2. `gradient_footer`  
+    3. `gradient_line`  
 
 The `gradient_header` is just some string that matches text that is before and close to the gradient data, and is *unique*.
 The `gradient_footer` is just some string that matches text that is after and close to the gradient data, but does not need to be unique.
 The `gradient_line` is a regular expression for identifying a line the of gradient, with capture groups around the x, y, and z values. 
 For example, if the output file gradient is printed as 
 ```
+    Cartesian Gradient:
     1    0.00000 -0.23410 0.32398 
     2   -0.02101 0.09233 0.01342   
     3   -0.01531 -0.04813 -0.06118
+
+allocating 5.0 GB of memory
 ```
-A valid argument for `grad_line_regex` would be `"\s+\d+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"`.
+Variables may be set as:  
+    1. `gradient_header = "Cartesian Gradient:"`  
+    2. `gradient_footer = "allocating"`  
+    3. `grad_line_regex = "\s+\d+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"`  
 Note the three capture groups corresponding to the x, y, and z floats, and the allowence of negative values `-?`
 
-A more complicated case,
+A more complicated example:
 ```
 Atom 1 Cl 0.00000 -0.23410 0.32398 
 Atom 2 H  -0.02101 0.09233 0.01342   
 Atom 3 N  -0.01531 -0.04813 -0.06118
 ```
 A valid argument for `grad_line_regex` would be `"Atom\s+\d+\s+[A-Z,a-z]+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"`
-
-
-    
-
+Again, its incredibly useful to test these before hand with online utilities such as [pythex](https://pythex.org/).
 
