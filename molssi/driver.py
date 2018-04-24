@@ -29,7 +29,8 @@ if text == 'generate':
     disps = input_obj.generate_displacements()
     
     # create displacement input files
-    # this maybe should be a method in the TemplateProcessor class, but idk it needs InputProcessor disps
+    # this should maybe be implemented in it a class
+
     # create a "data" directory and move into it
     if not os.path.exists("./PES_data"):
         os.mkdir("./PES_data")
@@ -67,7 +68,10 @@ if text == 'parse':
     os.chdir("./PES_data")
     ndirs = sum(os.path.isdir(d) for d in os.listdir("."))
 
+
+    #TODO remove all these logic statements from for loop, they are not necessary and slowing it down. Most only need to be checked once
     E = []
+    G = []
     # parse output files after running jobs
     for i in range(1, ndirs+1):
         # get geometry data
@@ -80,31 +84,60 @@ if text == 'parse':
         path = str(i) + "/output.dat"
         # get output data (energies and/or gradients)
         output_obj = molssi.outputfile.OutputFile(path)
-        if input_obj.keywords['extract'] == 'cclib':
-            try:
-                energy = output_obj.extract_energy_with_cclib(input_obj.keywords['energy'])
-            except:
-                raise Exception("Either the cclib option is not valid, or cclib is having trouble parsing your data. Try using regular expressions instead.")
-        if input_obj.keywords['extract'] == 'regex':
-            energy = output_obj.extract_energy_with_regex(input_obj.keywords['energy'])
 
-        #TODO add gradient keyword checks 
+
+        # parse energies
+        if input_obj.keywords['energy'] == 'cclib':
+            if input_obj.keywords['energy_cclib']:
+                try:
+                    energy = output_obj.extract_energy_with_cclib(input_obj.keywords['energy_cclib'])
+                    E.append(energy)
+                except:
+                    raise Exception("\n Looks like cclib failed to parse your data. Try using regular expressions instead.") 
+            else:
+                raise Exception("\n Please select which cclib energy to parse; e.g. energy_cclib = 'scfenergies', energy_cclib = 'ccenergies' ")
+
+        if input_obj.keywords['energy'] == 'regex':
+            if input_obj.keywords['energy_regex']:
+                energy = output_obj.extract_energy_with_regex(input_obj.keywords['energy_regex'])
+                E.append(energy)
+            else:
+                raise Exception("\n energy_regex value not assigned in input. Please add a regular expression which captures the energy value, e.g. energy_regex = 'RHF Final Energy is: \s+(-\d+\.\d+)'")
+
+        # parse gradients 
+        if input_obj.keywords['gradient'] == 'cclib':
+            try:
+                gradient = output_obj.extract_cartesian_gradient_with_cclib()
+                gradient = np.asarray(gradient)
+                G.append(gradient)
+            except:
+                raise Exception("cclib failed to parse your gradient. Try using regular expressions instead.")
+
+        if input_obj.keywords['gradient'] == 'regex':
+            header = input_obj.keywords['gradient_header']
+            footer = input_obj.keywords['gradient_footer']
+            grad_line_regex = input_obj.keywords['gradient_line']
+            if header and footer and grad_line_regex:
+                try:
+                    gradient = output_obj.extract_cartesian_gradient_with_regex(header, footer, grad_line_regex)
+                    gradient = np.asarray(gradient)
+                    G.append(gradient)
+                except:
+                #TODO
+                    raise Exception("")
+            else:
+                raise Exception("For regular expression gradient extraction, gradient_header, gradient_footer, and gradient_line string identifiers are required to isolate the cartesian gradient block. See documentation for details")
+
         #gradient = output_obj.extract_cartesian_gradient_with_regex(
         #"Total Gradient:", "\*\*\* tstop() called on", "\s+\d+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)")
-        E.append(energy)
 
-        # handle cases when gradient doesn't exist
-        #try:
-        #    grad_std_dev = np.std(gradient)
-        #    grad_stds.append(grad_std_dev)
-        #except:
-        #    grad_std_dev = None
-        #    grad_stds.append(grad_std_dev)
         DATA = DATA.append(df)
-        
-    DATA['E'] = E
+    if E:
+        DATA['E'] = E
+    if G:   
+        DATA['G'] = G
     os.chdir('../')
-    DATA.to_csv("PES.csv", sep=',', index=False, float_format='%12.12f')
+    DATA.to_csv("PES.dat", sep=',', index=False, float_format='%12.12f')
     # this method skips data that is too long
     #with open('./PES.dat', 'w') as f:
     #    f.write(DATA.__repr__())
