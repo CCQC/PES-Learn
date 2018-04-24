@@ -56,10 +56,14 @@ energy = 'regex'
 energy_regex = 'Final Energy:\s+(-\d+\.\d+)'. 
 ```
 
-### Extracting gradient values
+### Extracting gradient values...
 The software supports extracting cartesian gradients from output files to improve machine learning models of potential energy surfaces.
+
+#### ... with cclib
 For the handful of codes which cclib supports, gradient extraction is very easy. Just add the keyword `gradient = 'cclib'` to the input file.
-For everything other code, regular expressions are the only way to automate gradient extraction.
+
+#### ... with regular expressions 
+For every other code, regular expressions are the only way to automate gradient extraction.
 This can be tedious and messy, but it works and it's general. 
 The software requires three keywords to extract a gradient:  
     1. `gradient_header`   
@@ -68,7 +72,8 @@ The software requires three keywords to extract a gradient:
 
 The `gradient_header` is just some string that matches text that is before and close to the gradient data, and is *unique*.
 The `gradient_footer` is just some string that matches text that is after and close to the gradient data, but does not need to be unique.
-The `gradient_line` is a regular expression for identifying a line the of gradient, with capture groups around the x, y, and z values. 
+The `gradient_line` is a regular expression for identifying a line of the gradient, with capture groups around the x, y, and z values.  
+  
 For example, if the output file gradient is printed as 
 ```
     Cartesian Gradient:
@@ -82,7 +87,7 @@ Variables may be set as:
     1. `gradient_header = "Cartesian Gradient:"`  
     2. `gradient_footer = "allocating"`  
     3. `grad_line_regex = "\s+\d+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"`  
-Note the three capture groups corresponding to the x, y, and z floats, and the allowence of negative values `-?`
+Note the three capture groups corresponding to the x, y, and z floats, and the allowence of both positive and negative values with `-?`
 
 A more complicated example:
 ```
@@ -91,5 +96,5 @@ Atom 2 H  -0.02101 0.09233 0.01342
 Atom 3 N  -0.01531 -0.04813 -0.06118
 ```
 A valid argument for `grad_line_regex` would be `"Atom\s+\d+\s+[A-Z,a-z]+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"`
-Again, its incredibly useful to test these before hand with online utilities such as [pythex](https://pythex.org/).
+Again, its incredibly useful to test these beforehand with online utilities such as [pythex](https://pythex.org/).
 
