@@ -12,6 +12,7 @@ import ast
 
 class InputProcessor(object):
     """
+    A Class which handles information contained within an input file
     """
     def __init__(self, input_path):
         self.input_path = input_path
@@ -20,6 +21,30 @@ class InputProcessor(object):
         self.zmat_string = re.findall(regex.intcoords_regex, self.full_string)[0] 
         self.intcos_ranges = None 
         self.extract_intcos_ranges()
+        self.keywords = self.get_keywords()
+        
+    def get_keywords(self):
+        """
+        Find keyword definitions within the input file
+        """
+        # keywords which have values that are strings, not other datatypes
+        string_keywords = {'extract': None, 'energy': None, 'gradient': None}
+        for k in string_keywords:
+            match = re.search(k+"\s*=\s*(.+)", self.full_string)
+            # if the keyword is mentioned
+            if match:
+                value = str(match.group(1))
+                try:
+                    value = ast.literal_eval(value)
+                    string_keywords[k] = value
+                except:
+                    raise Exception("\n'{}' is not a valid option for {}. Entry should be a string, surrounded by single or double quotes.".format(value,k))
+                #except:
+                #    value = str(match.group(1))
+                #    string_keywords[k] = value
+
+        return string_keywords
+        
 
     def extract_intcos_ranges(self):
         """
