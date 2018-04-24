@@ -1,0 +1,10 @@
+O
+H 1 r1
+H 1 r2 2 a1
+
+r1 = [0.8, 1.5, 8]
+r2 = [0.8, 1.5, 8]
+a1 = [90, 180, 10]
+
+energy = 'cclib'
+energy_cclib = 'mpenergies'

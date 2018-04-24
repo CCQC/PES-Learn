@@ -1,0 +1,11 @@
+# density-fitted hartree fock energies and gradients with 6-31g
+molecule h2o {
+0 1
+O 0.0000 0.0000 0.000
+H 0.000 0.000 1.000
+H 0.000 1.000 0.000
+}
+
+set basis 6-31g
+
+gradient('mp2')

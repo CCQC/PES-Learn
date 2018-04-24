@@ -2,3 +2,11 @@ O
 O 1 r1
 
 r1 = [0.8, 1.5, 100]
+
+energy = 'regex'
+energy_regex = 'Final Energy:\s+(-\d+\.\d+)'
+
+gradient = 'regex'
+gradient_header = "Total Gradient:"
+gradient_footer = "\*\*\* tstop() called on"
+gradient_line =  "\s+\d+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"

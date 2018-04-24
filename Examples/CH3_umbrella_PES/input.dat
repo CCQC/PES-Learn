@@ -9,4 +9,7 @@ RDUM   =      1.0
 R      =    1.129
 A90    =  [40.0, 140.0, 21]
 D120   =     120.0
-~                                           
+
+extract = 'regex' 
+energy = 'Final Energy:\s+(-\d+\.\d+)'
+
