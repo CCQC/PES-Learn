@@ -12,7 +12,6 @@ sys.path.insert(0, "../../")
 import molssi
 
 input_obj = molssi.input_processor.InputProcessor("./input.dat")
-print(input_obj.keywords['energy'])
 template_obj = molssi.template_processor.TemplateProcessor("./template.dat")
 mol = molssi.molecule.Molecule(input_obj.zmat_string)
 disps = input_obj.generate_displacements()
