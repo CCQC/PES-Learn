@@ -105,6 +105,9 @@ if text == 'parse':
         
     DATA['E'] = E
     os.chdir('../')
-    DATA.to_csv("PES.dat", sep='\t', index=False, float_format='%12.12f')
+    DATA.to_csv("PES.csv", sep=',', index=False, float_format='%12.12f')
+    with open('./PES.dat', 'w') as f:
+        f.write(DATA.__repr__())
+
     print("Parsed data has been written to PES.dat")
     
