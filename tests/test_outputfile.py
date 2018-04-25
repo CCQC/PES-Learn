@@ -2,14 +2,14 @@
 Test the OutputFile class methods
 """
 import numpy as np
-import molssi
+import MLChem
 import pytest
 import re
 
 
 # open an output file
 path = 'tests/datafiles/molpro_water_gradient'
-outputfile = molssi.outputfile.OutputFile(path)
+outputfile = MLChem.outputfile.OutputFile(path)
 
 def test_extract_energy_with_regex():
     energy = outputfile.extract_energy_with_regex("!CCSD\(T\) total energy\s+(-?\d+.\d+)")
@@ -30,7 +30,7 @@ def test_extract_cartesian_gradient_with_regex():
 #cclib currently has poor gradient support, only psi4, qchem, and gaussian well supported. Molpro works in fringe cases 
 # have to test with qchem for now
 path_2 = 'tests/datafiles/qchem_water_gradient'
-outputfile_2 = molssi.outputfile.OutputFile(path_2)
+outputfile_2 = MLChem.outputfile.OutputFile(path_2)
 def test_extract_cartesian_gradient_with_cclib():
     gradient = outputfile_2.extract_cartesian_gradient_with_cclib()
     test = np.array([[ 0.0000000,  0.000000,   0.1273959],

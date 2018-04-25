@@ -2,14 +2,14 @@
 Test the Atom/Molecule classes 
 """
 
-import molssi
+import MLChem 
 import pytest
 
 
 path = 'tests/datafiles/input_zmat_1'
-input_obj = molssi.input_processor.InputProcessor(path)
+input_obj = MLChem.input_processor.InputProcessor(path)
 
-mol = molssi.molecule.Molecule(input_obj.zmat_string)
+mol = MLChem.molecule.Molecule(input_obj.zmat_string)
 
 
 def test_extract_zmat():
@@ -18,7 +18,7 @@ def test_extract_zmat():
     assert mol.geom_parameters == ['RCH1', 'r2', 'a1', 'r3', 'a2', 'D1']
 
 def test_molecule_update_intcoords():
-    newmol = molssi.molecule.Molecule(input_obj.zmat_string)
+    newmol = MLChem.molecule.Molecule(input_obj.zmat_string)
     disp = {'RCH1': 2.0, 'r2': 1.0}
     newmol.update_intcoords(disp)
     assert newmol.atoms[1].intcoords['RCH1'] == 2.0

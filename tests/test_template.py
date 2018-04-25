@@ -2,16 +2,16 @@
 Test the TemplateProcessor class methods
 """
 
-import molssi
+import MLChem
 import pytest
 import re
 
 path = 'tests/datafiles/xyz_template'
-template_object = molssi.template_processor.TemplateProcessor(path)
+template_object = MLChem.template_processor.TemplateProcessor(path)
 
 def test_extract_xyz():
     x = template_object.extract_xyz()
-    assert re.match(molssi.regex.xyz_block_regex, x)
+    assert re.match(MLChem.regex.xyz_block_regex, x)
    
 def test_header_xyz():
     x = template_object.header_xyz()

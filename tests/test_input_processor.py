@@ -2,13 +2,13 @@
 Test the TemplateProcessor class methods
 """
 
-import molssi
+import MLChem
 import pytest
 
 path = 'tests/datafiles/input_zmat_1'
-input_object = molssi.input_processor.InputProcessor(path)
+input_object = MLChem.input_processor.InputProcessor(path)
 
-mol = molssi.molecule.Molecule(input_object.zmat_string)
+mol = MLChem.molecule.Molecule(input_object.zmat_string)
 
 def test_extract_intcos_ranges():
     x = input_object.intcos_ranges 

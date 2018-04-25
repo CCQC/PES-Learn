@@ -10,7 +10,7 @@ Currently, the only constraint is that it uses an xyz-style geometry definition.
 
 The file `input.dat` defines the molecular configuration space you wish to scan over as well as other keyword options. 
 ### Running the software
-To run the software, simply run `python /path/to/molssi/molssi/driver.py` while in the directory containing `input.dat` and `template.dat` and follow the instructions.
+To run the software, simply run `python /path/to/MLChem/driver.py` while in the directory containing `input.dat` and `template.dat` and follow the instructions.
 
 ### Defining a configuration space
 The configuration space is specified with internal coordinates, a "Z-Matrix." 

@@ -7,24 +7,24 @@ import os
 import json
 # python 2 and 3 command line input compatibility
 from six.moves import input
-# find molssi module
+# find MLChem module
 sys.path.insert(0, "../../")
-import molssi
+import MLChem
 
-input_obj = molssi.input_processor.InputProcessor("./input.dat")
-template_obj = molssi.template_processor.TemplateProcessor("./template.dat")
-mol = molssi.molecule.Molecule(input_obj.zmat_string)
+input_obj = MLChem.input_processor.InputProcessor("./input.dat")
+template_obj = MLChem.template_processor.TemplateProcessor("./template.dat")
+mol = MLChem.molecule.Molecule(input_obj.zmat_string)
 disps = input_obj.generate_displacements()
 
 text = input("Do you want to 'generate' or 'parse' your data? Type one option and hit enter: ")
 
 if text == 'generate':
     # get data from input file containing internal coordinate configuration space
-    input_obj = molssi.input_processor.InputProcessor("./input.dat")
+    input_obj = MLChem.input_processor.InputProcessor("./input.dat")
     # get template file data
-    template_obj = molssi.template_processor.TemplateProcessor("./template.dat")
+    template_obj = MLChem.template_processor.TemplateProcessor("./template.dat")
     # create a molecule
-    mol = molssi.molecule.Molecule(input_obj.zmat_string)
+    mol = MLChem.molecule.Molecule(input_obj.zmat_string)
     # take internal coordinate ranges, expand them, generate displacement dictionaries
     disps = input_obj.generate_displacements()
     
@@ -60,8 +60,8 @@ if text == 'parse':
     import pandas as pd
     import numpy as np
     # get geom labels, intialize data frame
-    input_obj = molssi.input_processor.InputProcessor("./input.dat")
-    mol = molssi.molecule.Molecule(input_obj.zmat_string)
+    input_obj = MLChem.input_processor.InputProcessor("./input.dat")
+    mol = MLChem.molecule.Molecule(input_obj.zmat_string)
     geom_labels = mol.geom_parameters
     DATA = pd.DataFrame(columns = geom_labels)
 
@@ -83,7 +83,7 @@ if text == 'parse':
         df = pd.DataFrame([new], columns = geom_labels)
         path = str(i) + "/output.dat"
         # get output data (energies and/or gradients)
-        output_obj = molssi.outputfile.OutputFile(path)
+        output_obj = MLChem.outputfile.OutputFile(path)
 
 
         # parse energies

@@ -11,12 +11,12 @@ import sys
 import os
 import json
 
-# use molssi 
+# use MLChem 
 sys.path.insert(0, "../../../")
-import molssi
+import MLChem
 
-input_obj = molssi.input_processor.InputProcessor("../input.dat")
-mol = molssi.molecule.Molecule(input_obj.zmat_string)
+input_obj = MLChem.input_processor.InputProcessor("../input.dat")
+mol = MLChem.molecule.Molecule(input_obj.zmat_string)
 geom_labels = mol.geom_parameters
 data = pd.DataFrame(columns = geom_labels)
 
@@ -35,7 +35,7 @@ for i in range(1, ndirs+1):
     df = pd.DataFrame([new], columns = geom_labels)
     path = str(i) + "/output.dat"
     # get output data (energies and/or gradients)
-    output_obj = molssi.outputfile.OutputFile(path)
+    output_obj = MLChem.outputfile.OutputFile(path)
     energy = output_obj.extract_energy_with_regex("Final Energy:\s+(-\d+\.\d+)") 
     data = data.append(df)
     E.append(energy)

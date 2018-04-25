@@ -28,7 +28,8 @@ class InputProcessor(object):
         Find keyword definitions within the input file
         """
         # keywords which have values that are strings, not other datatypes
-        string_keywords = {'extract': None, 'energy': None, 'gradient': None}
+        string_keywords = {'energy': None, 'energy_regex': None, 'energy_cclib': None,
+        'gradient': None, 'gradient_header': None, 'gradient_footer': None, 'gradient_line': None}
         for k in string_keywords:
             match = re.search(k+"\s*=\s*(.+)", self.full_string)
             # if the keyword is mentioned
@@ -38,11 +39,10 @@ class InputProcessor(object):
                     value = ast.literal_eval(value)
                     string_keywords[k] = value
                 except:
-                    raise Exception("\n'{}' is not a valid option for {}. Entry should be a string, surrounded by single or double quotes.".format(value,k))
-                #except:
-                #    value = str(match.group(1))
-                #    string_keywords[k] = value
-
+                    raise Exception("\n'{}' is not a valid option for {}. Entry should be plain text or a string, surrounded by single or double quotes.".format(value,k))
+                # make sure it isn't some other datatype like a list  
+                if not isinstance(value, str):
+                    raise Exception("\n'{}' is not a valid option for {}. Entry should be plain text or a string, surrounded by single or double quotes.".format(value,k))
         return string_keywords
         
 

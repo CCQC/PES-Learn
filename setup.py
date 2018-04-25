@@ -2,12 +2,12 @@ import setuptools
 
 if __name__ == "__main__":
     setuptools.setup(
-        name='molssi',
+        name='MLChem',
         version="0.0.1",
         description='A project in collaboration with the Molecular Sciences Software Institute',
         author='Adam Abbott',
         author_email='adabbott@uga.edu',
-        url="https://github.com/adabbott/molssi",
+        url="https://github.com/adabbott/MLChem",
         license='BSD-3C',
         packages=setuptools.find_packages(),
         install_requires=[
