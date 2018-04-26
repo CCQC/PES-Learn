@@ -1,5 +1,12 @@
 # Data Generation
 
+### Quick install
+MLChem requires python 2.7 or greater. Cclib is a requirement for the test suite and some features. To install cclib: `pip install cclib`
+    1. Clone the repository 
+    2. Move into MLChem top level directory
+    3. Install MLChem: `pip install -e .`
+    4. Run the test suite: `py.test -v`
+
 ### Initial set up
 For automated data generation across a PES, one only needs two files:    
     1. `input.dat`   
