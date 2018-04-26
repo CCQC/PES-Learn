@@ -1,6 +1,6 @@
 # MLChem 
-[![Build Status](https://travis-ci.org/adabbott/molssi.svg?branch=master)](https://travis-ci.org/adabbott/molssi)
-[![codecov](https://codecov.io/gh/adabbott/molssi/branch/master/graph/badge.svg)](https://codecov.io/gh/adabbott/molssi)
+[![Build Status](https://travis-ci.org/adabbott/MLChem.svg?branch=master)](https://travis-ci.org/adabbott/MLChem)
+[![codecov](https://codecov.io/gh/adabbott/MLChem/branch/master/graph/badge.svg)](https://codecov.io/gh/adabbott/MLChem)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 
