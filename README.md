@@ -28,5 +28,5 @@ Anticipated features include:
 * Hyperparameter optimization
 
 
-This project is a collaboration with the [Molecular Sciences Software Institute](molssi.org).
+This project is a collaboration with the [Molecular Sciences Software Institute](http://molssi.org).
 The author gratefully acknowledges MolSSI for funding the development of this software.
