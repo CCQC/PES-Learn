@@ -60,7 +60,7 @@ alternatively one can use regular expressions with:
 
 ```
 energy = 'regex'
-energy_regex = 'Final Energy:\s+(-\d+\.\d+)'. 
+energy_regex = 'Final Energy:\s+(-\d+\.\d+)'
 ```
 
 ### Extracting gradient values...
