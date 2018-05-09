@@ -71,17 +71,27 @@ class OutputFile(object):
             Default is -1, the last energy printed in the output file which matches the cclib_attribute. 
         """
         cclib_outputobj = ccio.ccread(self.output_path) 
-       
-        # cclib puts energies into eV... ugh 
+        e = None 
+        # also, cclib does not handle things well if something fails to parse, needtry/except pairs 
         if cclib_attribute == "scfenergies":
-            return cclib_outputobj.scfenergies[-1] / constants.hartree2ev
-
-        if cclib_attribute == "ccenergies":
-            return cclib_outputobj.ccenergies[-1] / constants.hartree2ev
-
+            try:
+                e = cclib_outputobj.scfenergies[-1] 
+            except:
+                e = None 
         if cclib_attribute == "mpenergies":
-            return cclib_outputobj.mpenergies[-1] / constants.hartree2ev
-        
+            try:
+                e = cclib_outputobj.mpenergies[-1] 
+            except:
+                e = None 
+        if cclib_attribute == "ccenergies":
+            try:
+                e = cclib_outputobj.ccenergies[-1] 
+            except:
+                e = None 
+        # cclib puts energies into eV... ugh 
+        if e: 
+            e /= constants.hartree2ev
+        return e 
     
     def extract_cartesian_gradient_with_regex(self, header, footer, grad_line_regex):
         """
