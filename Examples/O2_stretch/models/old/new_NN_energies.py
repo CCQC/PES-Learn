@@ -17,11 +17,15 @@ sys.path.insert(0, "../../../")
 import MLChem
 
 data = pd.read_csv("PES.dat") 
+
 X = data.iloc[:, 0].values
 y = data.iloc[:, 1].values
+
 scaler = MinMaxScaler(feature_range=(-1,1))
+
 X = scaler.fit_transform((X).reshape(-1,1)) 
 y = scaler.fit_transform((y).reshape(-1,1)) 
+
 X_train, X_fulltest, y_train, y_fulltest = train_test_split(X, y, test_size = 0.5, random_state=42)
 X_valid, X_test, y_valid, y_test = train_test_split(X_fulltest, y_fulltest, test_size = 0.5, random_state=42)
 
@@ -34,7 +38,7 @@ valid_set = tuple([X_valid, y_valid])
 models = []
 MAE = []
 percent_error = []
-for i in range(50):
+for i in range(10):
     model = Sequential([
     Dense(units=10, input_shape=(1,), activation='softsign'),
     Dense(units=10, activation='softsign'),
