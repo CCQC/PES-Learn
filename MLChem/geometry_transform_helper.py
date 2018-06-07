@@ -48,7 +48,7 @@ def get_bond_vector(r, a, d):
     bond_vector = np.array([x, y, z])
     return bond_vector
 
-def get_interatom_distance(cart):
+def get_interatom_distances(cart):
     matrix = np.zeros_like(cart)
     for i,j in combinations(range(len(cart)),2):
         R = np.linalg.norm(cart[i]-cart[j])

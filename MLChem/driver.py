@@ -7,9 +7,12 @@ import os
 import json
 # python 2 and 3 command line input compatibility
 from six.moves import input
+from geometry_transform_helper import get_interatom_distances 
 # find MLChem module
 sys.path.insert(0, "../../")
 import MLChem
+import numpy as np
+import pandas as pd
 
 input_obj = MLChem.input_processor.InputProcessor("./input.dat")
 template_obj = MLChem.template_processor.TemplateProcessor("./template.dat")
@@ -28,17 +31,32 @@ if text == 'generate':
     # take internal coordinate ranges, expand them, generate displacement dictionaries
     disps = input_obj.generate_displacements()
 
-    # create displacement input files
-    # this should maybe be implemented in a class
-
-    # create a "data" directory and move into it
+    # Automated Redundant Geometry Removal
+    n_interatomics =  int(0.5 * (mol.n_atoms * mol.n_atoms - mol.n_atoms))
+    data_columns = []
+    for i in range(n_interatomics):
+        data_columns.append("r%d" % (i))
+    # preallocate df space, much faster
+    df = pd.DataFrame(index=np.arange(0, len(disps)), columns=data_columns)
+    # grab cartesians for input file construction later
+    cartesians = []
+    for i, disp in enumerate(disps):
+        mol.update_intcoords(disp)
+        cart = mol.zmat2xyz()
+        cartesians.append(cart)
+        idm = get_interatom_distances(cart)
+        idm = idm[np.tril_indices(len(idm),-1)]
+        # remove float noise for duplicate detection
+        df.iloc[i] = np.round(idm,10) 
+    df['cartesians'] = cartesians
+    df.drop_duplicates(subset=data_columns, inplace=True)
+    
+    # create a "PES_data" directory and move into it
     if not os.path.exists("./PES_data"):
         os.mkdir("./PES_data")
     os.chdir("./PES_data")
 
-    for i, disp in enumerate(disps, start=1):
-        mol.update_intcoords(disp)
-        cart_array = mol.zmat2xyz()
+    for i, cart_array in enumerate(df['cartesians'], start=1):
         # build xyz input file
         xyz = ''
         xyz += template_obj.header_xyz()
@@ -51,11 +69,33 @@ if text == 'generate':
         os.chdir(str(i))
         # keep internal coordinates handy
         with open("geom", 'w') as f:
-            f.write(json.dumps(disp))
+            f.write(json.dumps(disps[i-1]))
         # write input file 
         with open("input.dat", 'w') as f:
             f.write(xyz)
         os.chdir("../.")
+
+
+    #for i, disp in enumerate(disps, start=1):
+    #    mol.update_intcoords(disp)
+    #    cart_array = mol.zmat2xyz()
+    #    # build xyz input file
+    #    xyz = ''
+    #    xyz += template_obj.header_xyz()
+    #    for j in range(len(mol.atom_labels)):
+    #        xyz += "%s %10.10f %10.10f %10.10f\n" % (mol.atom_labels[j], cart_array[j][0], cart_array[j][1], cart_array[j][2])
+    #    xyz += template_obj.footer_xyz()
+
+    #    if not os.path.exists(str(i)):
+    #        os.mkdir(str(i))
+    #    os.chdir(str(i))
+    #    # keep internal coordinates handy
+    #    with open("geom", 'w') as f:
+    #        f.write(json.dumps(disp))
+    #    # write input file 
+    #    with open("input.dat", 'w') as f:
+    #        f.write(xyz)
+    #    os.chdir("../.")
 
     print("Your PES inputs are now generated. Run the jobs in the PES_data directory and then parse.")
 
