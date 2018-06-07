@@ -3,6 +3,7 @@ Various functions for molecular geometry transformations
 """
 import math
 import numpy as np
+from itertools import combinations
 
 def unit_vector(coords1, coords2):
     """
@@ -46,3 +47,11 @@ def get_bond_vector(r, a, d):
     z = r * math.cos(a)
     bond_vector = np.array([x, y, z])
     return bond_vector
+
+def get_interatom_distance(cart):
+    matrix = np.zeros_like(cart)
+    for i,j in combinations(range(len(cart)),2):
+        R = np.linalg.norm(cart[i]-cart[j])
+        #create lower triangle matrix
+        matrix[j,i] = R
+    return matrix
