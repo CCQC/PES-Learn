@@ -75,7 +75,8 @@ class Molecule(object):
         self.sorted_atom_counts - a list of tuples, ('atom_label', number of occurances) sorted by highest number of occurances 
         self.atom_count_vector  - a list of the number of each atom. Length is number of unique atoms, each value is the number of a particular atom,
                                     sorted in the same way as self.sorted_atom_counts
-        self.standard_order_atoms - a list of Atom objects in the order according to sorted_atom_counts
+        self.std_order_atoms - a list of Atom objects in the order according to sorted_atom_counts
+        self.std_order_atom_labels - a list of atom element labels in standard order
         """
         # grab array-like representation of zmatrix and count the number of atoms 
         zmat_array = [line.split() for line in zmat_string.splitlines() if line]
@@ -114,12 +115,14 @@ class Molecule(object):
         self.sorted_atom_counts = collections.Counter(self.atom_labels).most_common() 
         self.atom_count_vector = [val[1] for val in self.sorted_atom_counts] 
 
-        self.standard_order_atoms = []
+        self.std_order_atoms = []
         for tup in self.sorted_atom_counts:
             #for i in range(tup[1]):
             for atom in self.atoms:
                 if atom.label == tup[0]:
-                    self.standard_order_atoms.append(atom)
+                    self.std_order_atoms.append(atom)
+
+        self.std_order_atom_labels = [atom.label for atom in self.std_order_atoms]
         
     
     def update_intcoords(self, disp):
@@ -166,11 +169,8 @@ class Molecule(object):
 
         # get cartesians in "standard order", i.e. give coordinates of most common occuring atom first (e.g. H H H C C O )
         # omit dummy atoms in cartesians
-        cartesian_coordinates = [atom.coords for atom in self.standard_order_atoms if atom.label != 'X']
+        cartesian_coordinates = [atom.coords for atom in self.std_order_atoms if atom.label != 'X']
         print(cartesian_coordinates)
-        #for atom in self.standard_order_atoms:
-        #    if atom.label != 'X':
-        #    cartesian_coordinates.append(atom.coords)
         return np.array(cartesian_coordinates)
 
  

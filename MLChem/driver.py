@@ -60,8 +60,8 @@ if text == 'generate':
         # build xyz input file
         xyz = ''
         xyz += template_obj.header_xyz()
-        for j in range(len(mol.atom_labels)):
-            xyz += "%s %10.10f %10.10f %10.10f\n" % (mol.atom_labels[j], cart_array[j][0], cart_array[j][1], cart_array[j][2])
+        for j in range(len(mol.std_order_atoms)):
+            xyz += "%s %10.10f %10.10f %10.10f\n" % (mol.std_order_atom_labels[j], cart_array[j][0], cart_array[j][1], cart_array[j][2])
         xyz += template_obj.footer_xyz()
 
         if not os.path.exists(str(i)):
