@@ -29,6 +29,8 @@ class Atom(object):
             The dihedral connectivity index, as represented in a Z-matrix
         intcoords  : dict
             A dictionary of geometry parameter labels (e.g. "R1") and the value for this atom
+        coords : array
+            An array of cartesian coordinates for this atom
     """
     def __init__(self, label, r_idx=None, a_idx=None, d_idx=None, intcoords=collections.OrderedDict()):
         self.label = label
@@ -65,12 +67,17 @@ class Molecule(object):
         This should maybe just be in the init method.
         Take the string which contains an isolated Z matrix definition block,
         and extract information and save the following attributes:
-        self.n_atoms         - the number of atoms in the molecule
-        self.atom_labels     - a list of element labels 'H', 'O', etc.
-        self.geom_parameters - a list of geometry labels 'R3', 'A2', etc.
-        self.atoms           - a list of Atom objects containing complete Z matrix information for each Atom
+        self.n_atoms            - the number of atoms in the molecule
+        self.atom_labels        - a list of element labels 'H', 'O', etc.
+        self.geom_parameters    - a list of geometry labels 'R3', 'A2', etc.
+        self.atoms              - a list of Atom objects containing complete Z matrix information for each Atom
+        self.atomtype_dict      - a dictionary of atom labels and the number of that atom, sorted by number of occurances  
+        self.sorted_atom_counts - a list of tuples, ('atom_label', number of occurances) sorted by highest number of occurances 
+        self.atom_count_vector  - a list of the number of each atom. Length is number of unique atoms, each value is the number of a particular atom,
+                                    sorted in the same way as self.sorted_atom_counts
+        self.standard_order_atoms - a list of Atom objects in the order according to sorted_atom_counts
         """
-        # grab array like representation of zmatrix and count the number of atoms 
+        # grab array-like representation of zmatrix and count the number of atoms 
         zmat_array = [line.split() for line in zmat_string.splitlines() if line]
         self.n_atoms = len(zmat_array)
 
@@ -84,8 +91,9 @@ class Molecule(object):
                     self.atom_labels.append(tmp[i])
                 if ((i >= 6) and ((i-6) % 4 == 0)):
                     self.atom_labels.append(tmp[i])
+
         self.geom_parameters = [x for x in tmp if x not in self.atom_labels]
-        
+
         self.atoms = []
         for i in range(self.n_atoms):
             label = zmat_array[i][0]
@@ -101,6 +109,18 @@ class Molecule(object):
                 d_idx = int(zmat_array[i][5]) - 1
                 intcoords[zmat_array[i][6]] = None
             self.atoms.append(Atom(label, r_idx, a_idx, d_idx, intcoords))
+
+        # get standard order atomtypes and atomtype_vector        
+        self.sorted_atom_counts = collections.Counter(self.atom_labels).most_common() 
+        self.atom_count_vector = [val[1] for val in self.sorted_atom_counts] 
+
+        self.standard_order_atoms = []
+        for tup in self.sorted_atom_counts:
+            #for i in range(tup[1]):
+            for atom in self.atoms:
+                if atom.label == tup[0]:
+                    self.standard_order_atoms.append(atom)
+        
     
     def update_intcoords(self, disp):
         """
@@ -118,7 +138,7 @@ class Molecule(object):
     def zmat2xyz(self):
         """
         Converts Z-matrix representation to cartesian coordinates
-        Perserves the element ordering of the Z-matrix
+        Changes element ordering to be the most common atom to least common atom
         Assumes Z-matrix is using degrees
         """
         if (self.n_atoms >= 1):
@@ -144,9 +164,13 @@ class Molecule(object):
             for p in range(3):
                 atom.coords[p] = self.atoms[atom.r_idx].coords[p] + disp_vector[p]
 
-        cartesian_coordinates = []
-        for atom in self.atoms:
-            cartesian_coordinates.append(atom.coords)
+        # get cartesians in "standard order", i.e. give coordinates of most common occuring atom first (e.g. H H H C C O )
+        # omit dummy atoms in cartesians
+        cartesian_coordinates = [atom.coords for atom in self.standard_order_atoms if atom.label != 'X']
+        print(cartesian_coordinates)
+        #for atom in self.standard_order_atoms:
+        #    if atom.label != 'X':
+        #    cartesian_coordinates.append(atom.coords)
         return np.array(cartesian_coordinates)
 
  
