@@ -8,6 +8,7 @@ import json
 # python 2 and 3 command line input compatibility
 from six.moves import input
 from geometry_transform_helper import get_interatom_distances 
+from permutation_helper import permute_bond_indices, induced_permutations
 # find MLChem module
 sys.path.insert(0, "../../")
 import MLChem
@@ -33,11 +34,11 @@ if text == 'generate':
 
     # Automated Redundant Geometry Removal
     n_interatomics =  int(0.5 * (mol.n_atoms * mol.n_atoms - mol.n_atoms))
-    data_columns = []
+    bond_columns = []
     for i in range(n_interatomics):
-        data_columns.append("r%d" % (i))
+        bond_columns.append("r%d" % (i))
     # preallocate df space, much faster
-    df = pd.DataFrame(index=np.arange(0, len(disps)), columns=data_columns)
+    df = pd.DataFrame(index=np.arange(0, len(disps)), columns=bond_columns)
     # grab cartesians for input file construction later
     cartesians = []
     for i, disp in enumerate(disps):
@@ -46,17 +47,41 @@ if text == 'generate':
         cartesians.append(cart)
         idm = get_interatom_distances(cart)
         idm = idm[np.tril_indices(len(idm),-1)]
+        #idm = np.around(np.asarray(idm), decimals=8)
         # remove float noise for duplicate detection
-        df.iloc[i] = np.round(idm,10) 
+        df.iloc[i] = np.round(idm.astype(np.double),10) 
+        #df.iloc[i] = idm
+    nrows_before = len(df.index)
+    # we add cartesians here, so that when we drop duplicates we also delete the corresponding cartesian geometries.
     df['cartesians'] = cartesians
-    df.drop_duplicates(subset=data_columns, inplace=True)
-    
+    # remove standard duplicates 
+    df.drop_duplicates(subset=bond_columns, inplace=True)
+    # remove like-atom permutation duplicates
+    bond_indice_permutations = permute_bond_indices(mol.atom_count_vector)
+    bond_permutation_vectors = induced_permutations(mol.atom_count_vector, bond_indice_permutations) 
+    # for each permutation, and each geometry, apply the permutation and check if it already exists in the dataframe
+    new_df = [] 
+    permuted_rows = []
+    for perm in bond_permutation_vectors:
+        for row in df.itertuples():
+            new = [row[1:-1][i] for i in perm]                  # apply induced bond permutation derived from like-atom permutations
+            permuted_rows.append(new)
+            # if its unaffected by the permutation, we want to keep one copy
+            if new == list(row[1:-1]):
+                new_df.append(row)
+            # uniqueness check
+            if list(row[1:-1]) not in permuted_rows:
+                new_df.append(row)
+
+    new_df = pd.DataFrame(new_df)
+    nrows_after = len(new_df.index)
+    print("Removed {} redundant geometries".format(nrows_before-nrows_after))
     # create a "PES_data" directory and move into it
     if not os.path.exists("./PES_data"):
         os.mkdir("./PES_data")
     os.chdir("./PES_data")
 
-    for i, cart_array in enumerate(df['cartesians'], start=1):
+    for i, cart_array in enumerate(new_df['cartesians'], start=1):
         # build xyz input file
         xyz = ''
         xyz += template_obj.header_xyz()

@@ -170,7 +170,6 @@ class Molecule(object):
         # get cartesians in "standard order", i.e. give coordinates of most common occuring atom first (e.g. H H H C C O )
         # omit dummy atoms in cartesians
         cartesian_coordinates = [atom.coords for atom in self.std_order_atoms if atom.label != 'X']
-        print(cartesian_coordinates)
         return np.array(cartesian_coordinates)
 
  
