@@ -1,7 +1,6 @@
 """
 Data Generation Driver
 """
-
 import sys
 import os
 import json
