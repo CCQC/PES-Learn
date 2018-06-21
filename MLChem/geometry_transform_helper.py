@@ -49,7 +49,8 @@ def get_bond_vector(r, a, d):
     return bond_vector
 
 def get_interatom_distances(cart):
-    matrix = np.zeros_like(cart)
+    n = len(cart)
+    matrix = np.zeros((n,n))
     for i,j in combinations(range(len(cart)),2):
         R = np.linalg.norm(cart[i]-cart[j])
         #create lower triangle matrix
