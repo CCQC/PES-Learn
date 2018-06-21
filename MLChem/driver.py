@@ -17,6 +17,7 @@ import pandas as pd
 
 
 def generate_geometry_dataframe(mol, disps):
+    print("Number of displacements without redundancy removal: {}".format(len(disps)))
     n_interatomics =  int(0.5 * (mol.n_atoms * mol.n_atoms - mol.n_atoms))
     print("Number of interatomic distances: {}".format(n_interatomics))
     bond_columns = []
@@ -50,9 +51,13 @@ def redundancy_removal(mol, df):
     bond_permutation_vectors = induced_permutations(mol.atom_count_vector, bond_indice_permutations) 
     print("Interatomic distance equivalent permutations: ", bond_permutation_vectors)
     # for each permutation, and each geometry, apply the permutation and check if it already exists in the dataframe
-    new_df = [] 
-    permuted_rows = []
+    #new_df = [] 
+    #permuted_rows = []
+    #for perm in bond_permutation_vectors:
+    #    for row in df.itertuples():
     for perm in bond_permutation_vectors:
+        new_df = [] 
+        permuted_rows = []
         for row in df.itertuples():
             # apply induced bond permutation derived from like-atom permutations
             new = [row[1:-1][i] for i in perm]  
@@ -63,12 +68,17 @@ def redundancy_removal(mol, df):
             # uniqueness check
             if list(row[1:-1]) not in permuted_rows:
                 new_df.append(row)
-    new_df = pd.DataFrame(new_df)
-    nrows_after = len(new_df.index)
+        # update dataframe with removed rows for this particular permutation vector
+        df = pd.DataFrame(new_df)
+    nrows_after = len(df.index)
     print("Removed {} redundant geometries from a set of {} geometries".format(nrows_before-nrows_after, nrows_before))
-    return new_df
+    return df
+    #new_df = pd.DataFrame(new_df)
+    #nrows_after = len(new_df.index)
+    #print("Removed {} redundant geometries from a set of {} geometries".format(nrows_before-nrows_after, nrows_before))
+    #return new_df
 
-def generate_PES(mol, template_obj, df):
+def generate_PES(mol, template_obj, df, input_obj):
     if not os.path.exists("./PES_data"):
         os.mkdir("./PES_data")
     os.chdir("./PES_data")
@@ -89,7 +99,7 @@ def generate_PES(mol, template_obj, df):
         # only take interatomic distances from dataframe, leave cartesians
         df.iloc[i-1,0:-1].to_json("{}/interatomics".format(str(i)))
         # write input file 
-        with open("{}/input.dat".format(str(i)), 'w') as f:
+        with open("{}/{}".format(str(i), input_obj.keywords['input_name']), 'w') as f:
             f.write(xyz)
     print("Your PES inputs are now generated. Run the jobs in the PES_data directory and then parse.")
 
@@ -110,7 +120,7 @@ if text == 'generate':
     elif input_obj.keywords['remove_redundancy'].lower() == 'false':
         df = generate_geometry_dataframe(mol, disps)
     # generate PES input files from template input file
-    generate_PES(mol, template_obj, df)
+    generate_PES(mol, template_obj, df, input_obj)
 
 #TODO convert parsing routines to functions
 if text == 'parse':
