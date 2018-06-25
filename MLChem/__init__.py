@@ -5,3 +5,4 @@ from . import constants
 from . import geometry_transform_helper
 from . import molecule
 from . import input_processor
+from . import configuration_space
