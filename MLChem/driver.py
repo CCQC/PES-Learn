@@ -15,117 +15,16 @@ import MLChem
 import numpy as np
 import pandas as pd
 
-
-def generate_geometry_dataframe(mol, disps):
-    print("Number of displacements without redundancy removal: {}".format(len(disps)))
-    n_interatomics =  int(0.5 * (mol.n_atoms * mol.n_atoms - mol.n_atoms))
-    print("Number of interatomic distances: {}".format(n_interatomics))
-    bond_columns = []
-    for i in range(n_interatomics):
-        bond_columns.append("r%d" % (i))
-    # preallocate df space, much faster
-    df = pd.DataFrame(index=np.arange(0, len(disps)), columns=bond_columns)
-    # grab cartesians for input file construction later
-    cartesians = []
-    for i, disp in enumerate(disps):
-        mol.update_intcoords(disp)
-        cart = mol.zmat2xyz()
-        cartesians.append(cart)
-        idm = get_interatom_distances(cart)
-        idm = idm[np.tril_indices(len(idm),-1)]
-        # remove float noise for duplicate detection
-        df.iloc[i] = np.round(idm.astype(np.double),10) 
-    df['cartesians'] = cartesians
-    # remove straightforward duplicates (e.g., angular, dihedral equivalencies)
-    df.drop_duplicates(subset=bond_columns, inplace=True)
-    return df
-
-def redundancy_removal(mol, df):
-    """
-    Automated Redundant Geometry Removal
-    Handles the removal of redundant geometries arising from like-atom position permutations
-    """
-    nrows_before = len(df.index)
-    # remove like-atom permutation duplicates
-    bond_indice_permutations = permute_bond_indices(mol.atom_count_vector)
-    bond_permutation_vectors = induced_permutations(mol.atom_count_vector, bond_indice_permutations) 
-    print("Interatomic distance equivalent permutations: ", bond_permutation_vectors)
-    # for each permutation, and each geometry, apply the permutation and check if it already exists in the dataframe
-    #new_df = [] 
-    #permuted_rows = []
-    #for perm in bond_permutation_vectors:
-    #    for row in df.itertuples():
-    for perm in bond_permutation_vectors:
-        new_df = [] 
-        permuted_rows = []
-        for row in df.itertuples():
-            # apply induced bond permutation derived from like-atom permutations
-            new = [row[1:-1][i] for i in perm]  
-            permuted_rows.append(new)
-            # if its unaffected by the permutation, we want to keep one copy
-            if new == list(row[1:-1]):
-                new_df.append(row)
-            # uniqueness check
-            if list(row[1:-1]) not in permuted_rows:
-                new_df.append(row)
-        # update dataframe with removed rows for this particular permutation vector
-        df = pd.DataFrame(new_df)
-    nrows_after = len(df.index)
-    print("Removed {} redundant geometries from a set of {} geometries".format(nrows_before-nrows_after, nrows_before))
-    return df
-    #new_df = pd.DataFrame(new_df)
-    #nrows_after = len(new_df.index)
-    #print("Removed {} redundant geometries from a set of {} geometries".format(nrows_before-nrows_after, nrows_before))
-    #return new_df
-
-def generate_PES(mol, template_obj, df, input_obj):
-    if not os.path.exists("./PES_data"):
-        os.mkdir("./PES_data")
-    os.chdir("./PES_data")
-
-    for i, cart_array in enumerate(df['cartesians'], start=1):
-        # build xyz input file
-        xyz = ''
-        xyz += template_obj.header_xyz()
-        for j in range(len(mol.std_order_atoms)):
-            xyz += "%s %10.10f %10.10f %10.10f\n" % (mol.std_order_atom_labels[j], cart_array[j][0], cart_array[j][1], cart_array[j][2])
-        xyz += template_obj.footer_xyz()
-
-        if not os.path.exists(str(i)):
-            os.mkdir(str(i))
-        # this is now broken, cannot keep internal coordinates easily, interatomic distances more convenient
-        #with open("geom", 'w') as f:
-        #    f.write(json.dumps(df.loc[1:-1]))
-        # only take interatomic distances from dataframe, leave cartesians
-        df.iloc[i-1,0:-1].to_json("{}/interatomics".format(str(i)))
-        # write input file 
-        with open("{}/{}".format(str(i), input_obj.keywords['input_name']), 'w') as f:
-            f.write(xyz)
-    print("Your PES inputs are now generated. Run the jobs in the PES_data directory and then parse.")
-
-
 input_obj = MLChem.input_processor.InputProcessor("./input.dat")
 template_obj = MLChem.template_processor.TemplateProcessor("./template.dat")
 mol = MLChem.molecule.Molecule(input_obj.zmat_string)
 text = input("Do you want to 'generate' or 'parse' your data? Type one option and hit enter: ")
 
 if text == 'generate':
-    # take internal coordinate ranges, expand them, generate displacement dictionaries
-    disps = input_obj.generate_displacements()
-    if input_obj.keywords['remove_redundancy'].lower() == 'true':
-        tmp = generate_geometry_dataframe(mol, disps)
-        df = redundancy_removal(mol, tmp)
-        # get rid of extra index column used for redundancy removal bookeeping
-        df = df.drop('Index', axis=1) 
-    elif input_obj.keywords['remove_redundancy'].lower() == 'false':
-        df = generate_geometry_dataframe(mol, disps)
-    # generate PES input files from template input file
-    generate_PES(mol, template_obj, df, input_obj)
+    config = MLChem.configuration_space.ConfigurationSpace(mol, input_obj)
+    config.generate_PES(template_obj)
 
-#TODO convert parsing routines to functions
 if text == 'parse':
-    import pandas as pd
-    import numpy as np
     # get geom labels, intialize data frame
     # this is repeated code, change to function
     n_interatomics =  int(0.5 * (mol.n_atoms * mol.n_atoms - mol.n_atoms))
