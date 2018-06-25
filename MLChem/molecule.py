@@ -67,7 +67,8 @@ class Molecule(object):
         This should maybe just be in the init method.
         Take the string which contains an isolated Z matrix definition block,
         and extract information and save the following attributes:
-        self.n_atoms            - the number of atoms in the molecule
+        self.n_atoms            - the number of atoms in the molecule (including dummy)
+        self.n_dummy            - the number of dummy atoms
         self.atom_labels        - a list of element labels 'H', 'O', etc.
         self.geom_parameters    - a list of geometry labels 'R3', 'A2', etc.
         self.atoms              - a list of Atom objects containing complete Z matrix information for each Atom
@@ -92,6 +93,8 @@ class Molecule(object):
                     self.atom_labels.append(tmp[i])
                 if ((i >= 6) and ((i-6) % 4 == 0)):
                     self.atom_labels.append(tmp[i])
+
+        self.n_dummy = len([x for x in self.atom_labels if x.lower() == 'x'])
 
         self.geom_parameters = [x for x in tmp if x not in self.atom_labels]
 
