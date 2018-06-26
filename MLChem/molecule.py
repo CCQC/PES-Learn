@@ -67,17 +67,20 @@ class Molecule(object):
         This should maybe just be in the init method.
         Take the string which contains an isolated Z matrix definition block,
         and extract information and save the following attributes:
-        self.n_atoms            - the number of atoms in the molecule (including dummy)
-        self.n_dummy            - the number of dummy atoms
-        self.atom_labels        - a list of element labels 'H', 'O', etc.
-        self.geom_parameters    - a list of geometry labels 'R3', 'A2', etc.
-        self.atoms              - a list of Atom objects containing complete Z matrix information for each Atom
-        self.atomtype_dict      - a dictionary of atom labels and the number of that atom, sorted by number of occurances  
-        self.sorted_atom_counts - a list of tuples, ('atom_label', number of occurances) sorted by highest number of occurances 
-        self.atom_count_vector  - a list of the number of each atom. Length is number of unique atoms, each value is the number of a particular atom,
-                                    sorted in the same way as self.sorted_atom_counts
-        self.std_order_atoms - a list of Atom objects in the order according to sorted_atom_counts
-        self.std_order_atom_labels - a list of atom element labels in standard order
+        self.n_atoms                - the number of atoms in the molecule (including dummy)
+        self.n_dummy                - the number of dummy atoms
+        self.atom_labels            - a list of element labels 'H', 'O', etc.
+        self.geom_parameters        - a list of geometry labels in the order they appear 
+                                      in the supplied Z matrix 'R3', 'A2', etc.
+        self.unique_geom_parameters - a list of unique geometry labels in the order they appear
+                                      in the supplied Z matrix
+        self.atoms                  - a list of Atom objects containing complete Z matrix information for each Atom
+        self.atomtype_dict          - a dictionary of atom labels and the number of that atom, sorted by number of occurances  
+        self.sorted_atom_counts     - a list of tuples, ('atom_label', number of occurances) sorted by highest number of occurances 
+        self.atom_count_vector      - a list of the number of each atom. Length is number of unique atoms, each value is the number of a particular atom,
+                                      sorted in the same way as self.sorted_atom_counts
+        self.std_order_atoms        - a list of Atom objects in the order according to sorted_atom_counts
+        self.std_order_atom_labels  - a list of atom element labels in standard order
         """
         # grab array-like representation of zmatrix and count the number of atoms 
         zmat_array = [line.split() for line in zmat_string.splitlines() if line]
@@ -95,8 +98,10 @@ class Molecule(object):
                     self.atom_labels.append(tmp[i])
 
         self.n_dummy = len([x for x in self.atom_labels if x.lower() == 'x'])
+        self.real_atom_labels = [x for x in self.atom_labels if x.lower() != 'x']
 
         self.geom_parameters = [x for x in tmp if x not in self.atom_labels]
+        self.unique_geom_parameters = list(collections.OrderedDict.fromkeys(self.geom_parameters))
 
         self.atoms = []
         for i in range(self.n_atoms):
@@ -115,7 +120,7 @@ class Molecule(object):
             self.atoms.append(Atom(label, r_idx, a_idx, d_idx, intcoords))
 
         # get standard order atomtypes and atomtype_vector        
-        self.sorted_atom_counts = collections.Counter(self.atom_labels).most_common() 
+        self.sorted_atom_counts = collections.Counter(self.real_atom_labels).most_common()
         self.atom_count_vector = [val[1] for val in self.sorted_atom_counts] 
 
         self.std_order_atoms = []
