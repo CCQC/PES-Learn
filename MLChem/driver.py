@@ -78,11 +78,9 @@ if text == 'parse':
         # get geometry data
         with open(str(i) + "/geom") as f:
             tmp = json.loads(f.read(), object_pairs_hook=OrderedDict)
-            print(tmp)
         #with open(str(i) + "/interatomics") as f:
         #    tmp = json.loads(f.read(), object_pairs_hook=OrderedDict)
-        #df = pd.DataFrame.from_dict([tmp])
-        df = pd.DataFrame.from_dict(tmp)
+        df = pd.DataFrame(tmp, columns=tmp[0].keys())
         # get output data (energies and/or gradients)
         path = str(i) + "/output.dat"
         output_obj = MLChem.outputfile.OutputFile(path)
