@@ -1,9 +1,8 @@
 """
 A class for building PES geometries 
 """
-
-from geometry_transform_helper import get_interatom_distances
-from permutation_helper import permute_bond_indices, induced_permutations
+from . import geometry_transform_helper as gth
+from . import permutation_helper as ph
 import os
 import json
 import pandas as pd
@@ -41,7 +40,7 @@ class ConfigurationSpace(object):
             cart = self.mol.zmat2xyz()
             cartesians.append(cart)
             internals.append(disp)
-            idm = get_interatom_distances(cart)
+            idm = gth.get_interatom_distances(cart)
             idm = idm[np.tril_indices(len(idm),-1)]
             # remove float noise for duplicate detection
             df.iloc[i] = np.round(idm.astype(np.double),10) 
@@ -60,8 +59,8 @@ class ConfigurationSpace(object):
         # (e.g., angular, dihedral equivalencies)
         self.unique_geometries = self.all_geometries.drop_duplicates(subset=self.bond_columns)
         # remove like-atom permutation duplicates
-        bond_indice_permutations = permute_bond_indices(self.mol.atom_count_vector)
-        bond_permutation_vectors = induced_permutations(self.mol.atom_count_vector, bond_indice_permutations) 
+        bond_indice_permutations = ph.permute_bond_indices(self.mol.atom_count_vector)
+        bond_permutation_vectors = ph.induced_permutations(self.mol.atom_count_vector, bond_indice_permutations) 
         print("Interatomic distances equivalent permutations: ", bond_permutation_vectors)
         for perm in bond_permutation_vectors:
             new_df = []
