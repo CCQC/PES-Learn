@@ -72,21 +72,27 @@ class OutputFile(object):
         """
         cclib_outputobj = ccio.ccread(self.output_path) 
         e = None 
-        # for whatever reason, each energy is a single element list, and we only want the last one
+        # for whatever reason, sometimes each energy is a single element list, so we have to code around that 
         # also, cclib does not handle things well if something fails to parse, needtry/except pairs 
         if cclib_attribute == "scfenergies":
             try:
-                e = cclib_outputobj.scfenergies[-1][0] 
+                e = cclib_outputobj.scfenergies[-1] 
+                if isinstance(e, list):
+                    e = e[0]
             except:
                 e = None 
         if cclib_attribute == "mpenergies":
             try:
-                e = cclib_outputobj.mpenergies[-1][0] 
+                e = cclib_outputobj.mpenergies[-1] 
+                if isinstance(e, list):
+                    e = e[0]
             except:
                 e = None 
         if cclib_attribute == "ccenergies":
             try:
-                e = cclib_outputobj.ccenergies[-1][0] 
+                e = cclib_outputobj.ccenergies[-1] 
+                if isinstance(e, list):
+                    e = e[0]
             except:
                 e = None 
         # cclib puts energies into eV... ugh 
