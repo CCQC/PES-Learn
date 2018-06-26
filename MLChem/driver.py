@@ -25,18 +25,13 @@ if text == 'generate':
     config.generate_PES(template_obj)
 
 if text == 'parse':
-    # get geom labels, intialize data frame
-    # this is repeated code, change to function
-    n_interatomics =  int(0.5 * (mol.n_atoms * mol.n_atoms - mol.n_atoms))
-    print("Number of interatomic distances: {}".format(n_interatomics))
-    bond_columns = []
-    for i in range(n_interatomics):
-        bond_columns.append("r%d" % (i))
-    DATA = pd.DataFrame(columns = bond_columns)
-
+    # TODO check if user wants PES output as interatomic distances or original internal coordinates
+    # currently defaulting to original internal coordinates
+    DATA = pd.DataFrame(columns = mol.unique_geom_parameters)
     os.chdir("./PES_data")
     ndirs = sum(os.path.isdir(d) for d in os.listdir("."))
-
+        
+    # separate this from driver later
     # define energy extraction routine based on user keywords
     if input_obj.keywords['energy'] == 'cclib':
         if input_obj.keywords['energy_cclib']: 
@@ -81,9 +76,13 @@ if text == 'parse':
     # parse output files 
     for i in range(1, ndirs+1):
         # get geometry data
-        with open(str(i) + "/interatomics") as f:
+        with open(str(i) + "/geom") as f:
             tmp = json.loads(f.read(), object_pairs_hook=OrderedDict)
-        df = pd.DataFrame.from_dict([tmp])
+            print(tmp)
+        #with open(str(i) + "/interatomics") as f:
+        #    tmp = json.loads(f.read(), object_pairs_hook=OrderedDict)
+        #df = pd.DataFrame.from_dict([tmp])
+        df = pd.DataFrame.from_dict(tmp)
         # get output data (energies and/or gradients)
         path = str(i) + "/output.dat"
         output_obj = MLChem.outputfile.OutputFile(path)
