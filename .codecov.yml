@@ -2,6 +2,8 @@ comment:
   layout: header, changes, diff
 coverage:
   ignore:
+  - lib/.*
+  - Examples/.*
   - test/.*
   - setup.py
   status:
