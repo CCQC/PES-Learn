@@ -25,6 +25,7 @@ before_install:
   - pip install pytest pytest-cov
   - pip install codecov
   - pip install numpy
+  - pip install pandas
   - pip install cclib 
   - pip install keras
   - pip install tensorflow
