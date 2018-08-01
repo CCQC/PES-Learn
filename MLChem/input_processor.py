@@ -22,6 +22,7 @@ class InputProcessor(object):
         self.intcos_ranges = None 
         self.extract_intcos_ranges()
         self.keywords = self.get_keywords()
+        self.ndisps = None
         
     def get_keywords(self):
         """
@@ -78,6 +79,7 @@ class InputProcessor(object):
         self.intcos_ranges = ranges
     
     def generate_displacements(self):
+        # much faster ways to do this than itertools
         d = self.intcos_ranges
         for key, value in d.items():
             if len(value) == 3:
@@ -89,8 +91,9 @@ class InputProcessor(object):
         for geom in geom_values:
             disp = collections.OrderedDict()
             for i, key in enumerate(d):
-                disp[key] = geom[i]
+                disp[key] = round(geom[i], 10) # floating point noise issues
             disps.append(disp)
+        self.ndisps = len(disps)
         return disps
 
         
