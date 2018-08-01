@@ -31,7 +31,7 @@ class InputProcessor(object):
         # keywords which have values that are strings, not other datatypes
         string_keywords = {'energy': None, 'energy_regex': None, 'energy_cclib': None,
         'gradient': None, 'gradient_header': None, 'gradient_footer': None, 'gradient_line': None,
-        'remove_redundancy': 'true', 'input_name': 'input.dat'}
+        'remove_redundancy': 'true', 'input_name': 'input.dat', 'pes_print' : 'all'}
         for k in string_keywords:
             match = re.search(k+"\s*=\s*(.+)", self.full_string)
             # if the keyword is mentioned
