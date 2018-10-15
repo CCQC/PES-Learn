@@ -1,28 +1,47 @@
 import numpy as np
 import itertools as it
-import math
 import copy
 
 
 def generate_permutations(k):
     """
     Generates a list of lists of all possible orderings of k indices
+
+    Parameters
+    ----------
+    k : int
+        The number of elements in a permutation group. 
+
+    Returns
+    ---------
+    permutations : list
+        A list of all possible permutations of the set {1, 2, ..., k}
     """
-    f_k = math.factorial(k)
-    A = []
+    permutations = []
     for perm in (it.permutations(range(k))):
-        A.append(list(perm))
-    return A
+        permutations.append(list(perm))
+    return permutations
 
 
 def find_cycles(perm):
     """
-    Finds the cycle(s) required to get the permutation. For example,
+    Finds every possible cycle which results in the given permutation
+
+    Parameters
+    ----------
+    perm : list
+        Some permutation vector
+
+    Returns
+    ----------
+    cycles : list
+        A list of cycles (permutation operations)
+
+    Example
+    -------
     the permutation [3,1,2] is obtained by permuting [1,2,3] with the cycle [1,2,3]
     read as "1 goes to 2, 2 goes to 3, 3 goes to 1".
     Sometimes cycles are products of more than one subcycle, e.g. (12)(34)(5678)
-    This function is to find them all. Ripped bits and pieces of this off from SE, 
-    don't completely understand it but it works :)
     """
     pi = {i: perm[i] for i in range(len(perm))}
     cycles = []
@@ -50,10 +69,20 @@ def find_cycles(perm):
 
 def generate_bond_indices(natoms):
     """
+    Finds the array of bond indices of an interatomic distance matrix, in row wise order:
+    [[0,1], [0,2], [1,2], [0,3], [1,3], [2,3], ..., [0, natoms], [1, natoms], ...,[natoms-1, natoms]]
+    
+    Parameters
+    ----------
     natoms: int
         The number of atoms
-    Finds the array of bond indices of an interatomic distance matrix, in row wise order:
-    [[0,1], [0,2], [1,2], [0,3], [1,3], [2,3], ...,[0, natom], ...,[natom-1, natom]]
+
+    Returns
+    ----------
+    bond_indices : list
+        A list of lists, where each sublist is the subscripts of an interatomic distance
+        from an interatomic distance matrix representation of a molecular system.
+        e.g. r_12, r_01, r_05 
     """
     # initialize j as the number of atoms
     j = natoms - 1
@@ -77,6 +106,17 @@ def molecular_cycles(atomtype_vector):
          3.  adjust the indices to be nonoverlapping, so that each atom has a unique set of indices.
     For example, For an A2BC system, the indices may be assigned as follows: A 0,1; B 2; C 3; 
     while the methods generate_permutations and find_cycles index from 0 for every atom, so we adjust the indices of every atom appropriately
+    
+    Parameters  
+    ---------
+    atomtype_vector : list
+        A list of the number of each atom in a molecular system, e.g., for an A2BC system, 
+        atomtype_vector would be [2,1,1].
+    
+    Returns
+    --------
+    cycles_by_atom : list
+        The cycle permutation operators which act on each atom. (?)
     """
     permutations_by_atom = []
     for atom in atomtype_vector:
@@ -108,7 +148,17 @@ def molecular_cycles(atomtype_vector):
 def permute_bond(bond, cycle):
     """
     Permutes a bond indice if the bond indice is affected by the permutation cycle.
-    There is certainly a better way to code this. Yikes.
+
+    Parameters
+    ----------
+    bond : list
+        A list of length 2, a subscript of an interatom distance
+    cycle : list
+        A cycle-notation permutation operation.
+
+    Returns
+    -------
+    bond : the permuted bond
     """
     count0 = 0
     count1 = 0
@@ -137,11 +187,20 @@ def permute_bond(bond, cycle):
 
 def permute_bond_indices(atomtype_vector):
     """
-    Permutes the set of bond indices of a molecule according to the complete set of valid molecular permutation cycles
-    atomtype_vector: array-like
-        A vector of the number of each atoms, the length is the total number of atoms.
-        An A3B8C system would be [3, 8, 1]
-    Returns many sets permuted bond indices, the number of which equal to the number of cycles
+    Permutes the set of bond indices of a molecule according to the complete set of 
+    valid molecular permutation cycles.
+
+    Parameters
+    ----------
+    atomtype_vector : list
+        A list of the number of each atom in a molecular system, e.g., for an A3B8C system, 
+        atomtype_vector would be [3,8,1].
+
+    Returns
+    --------
+    bond_indice_permutations: list
+        A list of all possible bond indice permutations of the interatomic distances 
+        The length is equal to the number of atomic permutations
     """
     natoms = sum(atomtype_vector)
     bond_indices = generate_bond_indices(natoms)
@@ -159,10 +218,26 @@ def permute_bond_indices(atomtype_vector):
 
 def induced_permutations(atomtype_vector, bond_indice_permutations):
     """
-    Given the original bond indices list [[0,1],[0,2],[1,2]...] and a permutation of this bond indices list,
-    find the permutation vector that maps the original to the permuted list. 
-    Do this for all permutations of the bond indices list. 
-    Result: The complete set induced interatomic distance matrix permutatations caused by the molecular permutation cycles 
+    Given the original bond indices list [[0,1],[0,2],[1,2]...] and a permutation of this bond indices 
+    list (which is found by permute_bond_indices), find the permutation vector that maps the original 
+    to the permuted list. Do this for all permutations of the bond indices list. 
+    The result is complete set induced interatomic distance matrix permutatations caused 
+    by the molecular permutation cycles.
+
+    Parameters
+    ---------
+    atomtype_vector : list
+        A list of the number of each atom in a molecular system, e.g., for an A3B8C system, 
+        atomtype_vector would be [3,8,1].
+    bond_indice_permutations: list
+        A list of all possible bond indice permutations of the interatomic distances 
+        The length is equal to the number of atomic permutations. (?)
+
+    Returns
+    ---------
+    induced_perms : list
+        The induced interatom distance permutations caused by the atomic permutation operations. 
+        In row-wise order of the interatomic distance matrix: [r01, r02, r12, r03, r13, r12...]
     """
     natoms = sum(atomtype_vector)
     bond_indices = generate_bond_indices(natoms)
