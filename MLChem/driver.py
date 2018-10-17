@@ -1,6 +1,7 @@
 """
 Data Generation Driver
 """
+import timeit
 import sys
 import os
 import json
@@ -15,14 +16,19 @@ import MLChem
 import numpy as np
 import pandas as pd
 
+
 input_obj = MLChem.input_processor.InputProcessor("./input.dat")
 template_obj = MLChem.template_processor.TemplateProcessor("./template.dat")
 mol = MLChem.molecule.Molecule(input_obj.zmat_string)
 text = input("Do you want to 'generate' or 'parse' your data? Type one option and hit enter: ")
+start = timeit.default_timer()
 
 if text == 'generate':
     config = MLChem.configuration_space.ConfigurationSpace(mol, input_obj)
     config.generate_PES(template_obj)
+
+
+print("Data generation finished in {} seconds".format(round((timeit.default_timer() - start),2)))
 
 if text == 'parse':
     os.chdir("./PES_data")
