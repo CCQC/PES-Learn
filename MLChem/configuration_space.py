@@ -82,7 +82,6 @@ class ConfigurationSpace(object):
                     new_df.append(row)
             # update dataframe with removed rows for this particular permutation vector
             self.unique_geometries = pd.DataFrame(new_df)
-            #print(len(self.unique_geometries.index))
         nrows_after = len(self.unique_geometries.index)
         print("Removed {} redundant geometries from a set of {} geometries".format(nrows_before-nrows_after, nrows_before))
 
@@ -130,13 +129,13 @@ class ConfigurationSpace(object):
     def generate_PES(self, template_obj):
         # generate the full geometry set or the removed redundancy geometry set?
         self.generate_geometries()
-        if self.input_obj.keywords['remove_redundancy'].lower() == 'true':
+        if self.input_obj.keywords['remove_redundancy'].lower().strip() == 'true':
             self.remove_redundancies()
             # keep track of redundant geometries for later?
-            if self.input_obj.keywords['remember_redundancy'].lower() == 'true':
+            if self.input_obj.keywords['remember_redundancy'].lower().strip() == 'true':
                 self.add_redundancies_back()
                 df = self.unique_geometries 
-        elif self.input_obj.keywords['remove_redundancy'].lower() == 'false':
+        elif self.input_obj.keywords['remove_redundancy'].lower().strip() == 'false':
             df = self.all_geometries
           
         if not os.path.exists("./PES_data"):
