@@ -29,14 +29,21 @@ class InputProcessor(object):
         Find keyword definitions within the input file
         """
         # keywords which have values that are strings, not other datatypes
+        regex_keywords = {'energy_regex': None, 'gradient_header': None, 'gradient_footer': None, 
+                          'gradient_line': None}
         string_keywords = {'energy': None, 'energy_regex': None, 'energy_cclib': None,
         'gradient': None, 'gradient_header': None, 'gradient_footer': None, 'gradient_line': None,
-        'remove_redundancy': 'true', 'input_name': 'input.dat', 'remember_redundancy' : 'true'}
+        'remove_redundancy': 'true', 'input_name': 'input.dat', 'remember_redundancy' : 'true', 
+        'pes_redundancy': 'false', 'pes_format': 'interatomics'}
         for k in string_keywords:
             match = re.search(k+"\s*=\s*(.+)", self.full_string)
             # if the keyword is mentioned
             if match:
                 value = str(match.group(1))
+                # if not a regex, remove spaces and make lower case 
+                # for later boolean checks on keywords
+                if k not in regex_keywords:
+                    value = value.lower().strip()
                 # if keyword is raw text, add quotes so it is a string
                 if (r"'" or r'"') not in value:
                     value = ''.join((r"'",value,r"'",))

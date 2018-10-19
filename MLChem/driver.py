@@ -12,6 +12,7 @@ from geometry_transform_helper import get_interatom_distances
 from permutation_helper import permute_bond_indices, induced_permutations
 # find MLChem module
 sys.path.insert(0, "../../")
+sys.path.insert(0, "../../../")
 import MLChem
 import numpy as np
 import pandas as pd
@@ -26,9 +27,7 @@ start = timeit.default_timer()
 if text == 'generate':
     config = MLChem.configuration_space.ConfigurationSpace(mol, input_obj)
     config.generate_PES(template_obj)
-
-
-print("Data generation finished in {} seconds".format(round((timeit.default_timer() - start),2)))
+    print("Data generation finished in {} seconds".format(round((timeit.default_timer() - start),2)))
 
 if text == 'parse':
     os.chdir("./PES_data")
@@ -52,7 +51,6 @@ if text == 'parse':
                 return energy
         else:
             raise Exception("\n energy_regex value not assigned in input. Please add a regular expression which captures the energy value, e.g. energy_regex = 'RHF Final Energy: \s+(-\d+\.\d+)'")
-    # TODO add JSON schema support  
     
     # define gradient extraction routine based on user keywords
     if input_obj.keywords['gradient'] == 'cclib':
@@ -74,34 +72,46 @@ if text == 'parse':
         else:
             raise Exception("For regular expression gradient extraction, gradient_header, gradient_footer, and gradient_line string identifiers are required to isolate the cartesian gradient block. See documentation for details")   
     # Currently outputs internal coordinates with redundancies added back in if they were removed.
-    # TODO make adding redundancies back in optional with a keyword
-    # May in the future want an interatomic distances PES output, with redundancies included or not.
-    # TODO add interatomic distance output support 
-    DATA = pd.DataFrame(index=np.arange(0,input_obj.ndisps), columns = mol.unique_geom_parameters)
-    # add columns for parsed data
+
+    # parse redundant geometries?
+    if input_obj.keywords['pes_redundancy'].lower().strip() == 'true':
+        n_geoms = input_obj.ndisps
+    else: 
+        n_geoms = ndirs
+
+    # parse in internals or interatomics
+    if input_obj.keywords['pes_format'] == 'internals':
+        data = pd.DataFrame(index=None, columns = mol.unique_geom_parameters)
+        geom_path = "/geom"
+    else: 
+        data = pd.DataFrame(index=None, columns = mol.interatomic_labels)
+        geom_path = "/interatomics"
+
     if input_obj.keywords['energy']: 
-        DATA['E'] = ''
+        data['E'] = ''
     if input_obj.keywords['gradient']: 
-        DATA['G'] = ''
+        data['G'] = ''
+
     # parse output files 
     for i in range(1, ndirs+1):
         path = str(i) + "/output.dat"
         output_obj = MLChem.outputfile.OutputFile(path)
-        if input_obj.keywords['energy']: 
+        if input_obj.keywords['energy']:
             E = extract_energy(input_obj, output_obj)
-        if input_obj.keywords['gradient']: 
+        if input_obj.keywords['gradient']:
             G = extract_gradient(output_obj)
-        # get geometry data
-        with open(str(i) + "/geom") as f:
+        with open(str(i) + geom_path) as f:
             for line in f:
                 tmp = json.loads(line, object_pairs_hook=OrderedDict)
-        #with open(str(i) + "/interatomics") as f:
-        #    tmp = json.loads(f.read(), object_pairs_hook=OrderedDict)
-                df = pd.DataFrame(tmp, columns=tmp[0].keys())
+                df = pd.DataFrame(data=tmp, index=None, columns=tmp[0].keys())
                 df['E'] = E
-                DATA = DATA.append(df)
+                data = data.append(df)
+                if input_obj.keywords['pes_redundancy'] == 'true':
+                    continue
+                else:
+                    break
     os.chdir('../')
-    DATA.to_csv("PES.dat", sep=',', index=False, float_format='%12.12f')
+    data.to_csv("PES.dat", sep=',', index=False, float_format='%12.12f')
     print("Parsed data has been written to PES.dat")
 
     # new parser that reports redundant geometry data
