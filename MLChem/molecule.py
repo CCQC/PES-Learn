@@ -81,6 +81,7 @@ class Molecule(object):
                                       sorted in the same way as self.sorted_atom_counts
         self.std_order_atoms        - a list of Atom objects in the order according to sorted_atom_counts
         self.std_order_atom_labels  - a list of atom element labels in standard order
+        self.interatomic_labels     - a list of interatomic distance labels
         """
         # grab array-like representation of zmatrix and count the number of atoms 
         zmat_array = [line.split() for line in zmat_string.splitlines() if line]
@@ -122,6 +123,7 @@ class Molecule(object):
         # get standard order atomtypes and atomtype_vector        
         self.sorted_atom_counts = collections.Counter(self.real_atom_labels).most_common()
         self.atom_count_vector = [val[1] for val in self.sorted_atom_counts] 
+        # TODO add secondary sorting to alphabetical within each number of atoms
 
         self.std_order_atoms = []
         for tup in self.sorted_atom_counts:
@@ -131,6 +133,12 @@ class Molecule(object):
                     self.std_order_atoms.append(atom)
 
         self.std_order_atom_labels = [atom.label for atom in self.std_order_atoms]
+
+        n_interatomics =  int(0.5 * (self.n_atoms * self.n_atoms - self.n_atoms))
+        self.interatomic_labels = []
+        #for i in range(n_interatomics):
+        for i in range(n_interatomics):
+            self.interatomic_labels.append("r%d" % (i))
         
     
     def update_intcoords(self, disp):
