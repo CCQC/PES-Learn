@@ -57,10 +57,12 @@ class ConfigurationSpace(object):
         Handles the removal of redundant geometries arising from 
         angular scans and like-atom position permutations
         """
+        print("Removing symmetry-redundant geometries... this may take a while")
         nrows_before = len(self.all_geometries.index)
         # first remove straightforward duplicates using interatomic distances
         # (e.g., angular, dihedral equivalencies)
         self.unique_geometries = self.all_geometries.drop_duplicates(subset=self.bond_columns)
+        print("Removed {} angular=redundant geometries. Now removing permutation-redundant geometries.".format(len(self.unique_geometries)))
         # remove like-atom permutation duplicates
         bond_indice_permutations = ph.permute_bond_indices(self.mol.atom_count_vector)
         bond_permutation_vectors = ph.induced_permutations(self.mol.atom_count_vector, bond_indice_permutations) 
