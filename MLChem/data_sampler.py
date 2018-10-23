@@ -22,6 +22,7 @@ class DataSampler(object):
         """
         docstring
         """
+        data = self.full_dataset.values
         X = data[:, :-1]
         y = data[:,-1].reshape(-1,1)
         X_train, X_test, y_train, y_test  = train_test_split(X,y,train_size=self.ntrain, random_state=self.rseed)
@@ -29,11 +30,27 @@ class DataSampler(object):
 
     def energy_ordered(self):
         """
-        A naive sampling algorithm, where we just order PES dataset
+        A naive sampling algorithm, where we order the PES dataset
         in terms of increasing energy, and take every nth datapoint such that we 
         get approximately the right amount of training points.
         """
+        # TODO
+        # Problem: Does not return desired number of training points. Is there a general way to do this in a reproducible manner?
         ordered_dataset = self.full_dataset.sort_values("E")
+        s = round(self.dataset_size / self.ntrain)
+        train = ordered_dataset[0::s]
+        # to create test set, set training set elements equal to None and remove
+        ordered_dataset[0::s] = None
+        test = ordered_dataset.dropna()
+
+        train_data = train.values
+        X_train = train_data[:, :-1]
+        y_train = train_data[:,-1].reshape(-1,1)
+        test_data = test.values
+        X_test = test_data[:, :-1]
+        y_test = test_data[:,-1].reshape(-1,1)
+        return X_train, X_test, y_train, y_test
+        
 
 
     def sobol(self, delta=0.002278):
@@ -53,9 +70,11 @@ class DataSampler(object):
 
         The Sobol expression is as implemented in Manzhos, Carrington J Chem Phys 145, 2016, and papers they cite.
         """
-        # TODO Problems:
+        # TODO 
+        # Problems:
         # 1. causes one datapoint to be E = 0.00
         # 2. not reproducible with a random seed.
+        # 3. could in principle improve scaling by doing minibatches in while loop... e.g. test.sample(n=minibatch)
         data = self.full_dataset.sort_values("E")
         data['E'] = data['E'] - data['E'].min()
 
@@ -76,7 +95,7 @@ class DataSampler(object):
             #    continue
             # add to training set if sobol condition is satisfied. Remove it from the test dataset as well.
             if condition > rand:
-                tmp.append(rand_point.values)
+                train.append(rand_point.values)
                 test = test.drop(rand_point.index[0])
 
         # convert back to pandas dataframe
