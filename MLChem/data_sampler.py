@@ -14,6 +14,7 @@ class DataSampler(object):
     def __init__(self, dataset, ntrain, rseed=42):
         # needs to be pandas dataframe 
         self.full_dataset = dataset
+        self.dataset_size = dataset.shape[0]
         self.ntrain = ntrain
         self.rseed = rseed
     
@@ -46,8 +47,10 @@ class DataSampler(object):
         where V is the energy of the random datapoint, V_max is the maximum energy of the dataset, 
         and delta is a shift factor  (default is 0.002278 Hartrees, 500 cm-1).
         We accept the random datapoint to be a training point if the above condition is satisfied.
-        The result is a quasi random series of training points whose distribution roughly matches
-        the overall energy distribution of the full dataset.
+        The result is a quasi random series of training points whose distribution DOES NOT follow
+        the distribution of the full dataset. Instead, it is biased towards low to mid range energies. 
+        This is appropriate for accurately modeling a minimum for vibrational applications, for example.
+
         The Sobol expression is as implemented in Manzhos, Carrington J Chem Phys 145, 2016, and papers they cite.
         """
         # TODO Problems:
@@ -63,16 +66,18 @@ class DataSampler(object):
         
         while len(train) < self.ntrain:
             # randomly draw a PES datapoint 
-            rand_point = data.sample(n=1)
+            rand_point = test.sample(n=1)
             rand_E = rand_point['E'].values
             condition = (max_e - rand_E + delta) * denom
             rand = np.random.uniform(0.0,1.0)
             # if this datapoint is already accepted into training set, skip it
-            if any((rand_point.values == x).all() for x in train):
-                continue
+            # (Not needed, as long as there are not equivalent geometries)
+            #if any((rand_point.values == x).all() for x in train):
+            #    continue
             # add to training set if sobol condition is satisfied. Remove it from the test dataset as well.
             if condition > rand:
                 tmp.append(rand_point.values)
+                test = test.drop(rand_point.index[0])
 
         # convert back to pandas dataframe
         train = np.asarray(train).reshape(self.ntrain,len(self.full_dataset.columns))
