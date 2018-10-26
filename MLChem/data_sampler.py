@@ -74,7 +74,7 @@ class DataSampler(object):
         # Problems:
         # 1. causes one datapoint to be E = 0.00
         # 2. not reproducible with a random seed.
-        # 3. could in principle improve scaling by doing minibatches in while loop... e.g. test.sample(n=minibatch)
+        # 3. Scaling. could in principle improve scaling by doing minibatches in while loop... e.g. test.sample(n=minibatch)
         data = self.full_dataset.sort_values("E")
         data['E'] = data['E'] - data['E'].min()
 
