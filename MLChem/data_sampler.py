@@ -101,6 +101,7 @@ class DataSampler(object):
         # 1. causes one datapoint to be E = 0.00
         # 2. not reproducible with a random seed.
         # 3. Scaling. could in principle improve scaling by doing minibatches in while loop... e.g. test.sample(n=minibatch)
+        # 4. return X,y train,test
         data = self.full_dataset.sort_values("E")
         data['E'] = data['E'] - data['E'].min()
 
@@ -131,7 +132,54 @@ class DataSampler(object):
 
 
     def structure_based(self):
-        pass
+        data = self.full_dataset.sort_values("E") # if no energies present, need to know eq geom
+        train = []
+        train.append(data.values[0])
+
+        def norm(train_point, data=data):
+            """ Computes norm between training point geometry and every point in dataset"""
+            tmp1 = np.tile(train_point[:-1], (data.shape[0],1))
+            diff = tmp1 - data.values[:,:-1]
+            norm_vector = np.sqrt(np.einsum('ij,ij->i', diff, diff))
+            return norm_vector
+
+        # accept farthest point from 1st training point as the 2nd training point
+        norm_vector_1 = norm(train[0])
+        idx = np.argmax(norm_vector_1)
+        newtrain = data.values[idx]
+        train.append(newtrain)
+
+        # create norm matrix, whose rows are all the norms to 1st and 2nd training points 
+        norm_vector_2 = norm(train[1])
+        norm_matrix = np.vstack((norm_vector_1, norm_vector_2))
+
+        # find the minimum value along the columns of this 2xN array of norms
+        min_array = np.amin(norm_matrix, axis=0)
+        #indices = []
+        #indices.append(0)
+        #indices.append(idx)
+
+        while len(train) < ntrain:
+            # min_array contains the smallest norms into the training set, by datapoint.
+            # We take the largest one.
+            idx = np.argmax(min_array)
+            #indices.append(idx)
+            new_geom = data.values[idx]
+            train.append(new_geom)
+            # update norm matrix with the norms of newly added training point
+            norm_vec = norm(train[-1])
+            stack = np.vstack((min_array, norm_vec))
+            min_array = np.amin(stack, axis=0)
+        train = np.asarray(train).reshape(ntrain,len(data.columns))
+        train = pd.DataFrame(train, columns=data.columns).sort_values("E")
+        # TODO split X,y as well as train,test
+        # Xtr = X[indices]
+        # ytr = y[indices]
+        return train
+        #return indices
+
+
+    
 
     def energy_gaussian(self):
         pass
