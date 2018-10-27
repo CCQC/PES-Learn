@@ -4,6 +4,7 @@ A class for sampling training and testing sets from datasets
 
 import numpy as np
 import pandas as pd
+from scipy import stats
 from sklearn.model_selection import train_test_split
 
 
@@ -27,6 +28,31 @@ class DataSampler(object):
         y = data[:,-1].reshape(-1,1)
         X_train, X_test, y_train, y_test  = train_test_split(X,y,train_size=self.ntrain, random_state=self.rseed)
         return X_train, X_test, y_train, y_test
+
+    def smart_random(self):
+        """
+        Picks a good random seed for sampling the training set based on the 
+        similarity of the energy distribution of the training set compared to the energy distribution
+        of the full dataset. That is, we pick a random training set that has an energy distribution most resembling 
+        the full dataset's energy distribution.
+        """
+        #TODO function not tested yet...
+        data = self.full_dataset.values
+        X = data[:, :-1]
+        y = data[:,-1].reshape(-1,1)
+        full_dataset_dist, binedges = np.histogram(y, bins='auto', density=True)
+        pvalues = []
+        for seed in range(100):
+            X_train, X_test, y_train, y_test  = train_test_split(X,y,train_size=self.ntrain, random_state=seed)
+            train_dist, tmpbin = np.histogram(y_train, bins=binedges, density=True)
+            chisq, p = stats.chisquare(train_dist, f_exp=full_dataset_dist)
+            pvalues.append(p)
+
+        pvalues = np.asarray(pvalues)
+        best_seed = np.argmin(pvalues)
+        X_train, X_test, y_train, y_test  = train_test_split(X,y,train_size=self.ntrain, random_state=seed)
+        return X_train, X_test, y_train, y_test
+
 
     def energy_ordered(self):
         """
