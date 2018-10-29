@@ -1,7 +1,9 @@
 import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 
-def super_scaler(scale_type, data):
+def general_scaler(scale_type, data):
     """
     Scales each column of an array according to scale_type
     """
