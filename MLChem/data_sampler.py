@@ -1,5 +1,5 @@
 """
-A class for sampling training and testing sets from datasets 
+A class for sampling train and test sets from PES datasets 
 """
 
 import numpy as np
@@ -21,22 +21,21 @@ class DataSampler(object):
     
     def random(self):
         """
-        docstring
+        Randomly sample the dataset to obtain a training set of proper size.
         """
         data = self.full_dataset.values
         X = data[:, :-1]
         y = data[:,-1].reshape(-1,1)
-        X_train, X_test, y_train, y_test  = train_test_split(X,y,train_size=self.ntrain, random_state=self.rseed)
-        return X_train, X_test, y_train, y_test
+        indices = np.arange(self.dataset_size)
+        #X_train, X_test, y_train, y_test, train_indices, test_indices  = train_test_split(X, y, indices, train_size=self.ntrain, random_state=self.rseed)
+        train_indices, test_indices  = train_test_split(indices, train_size=self.ntrain, random_state=self.rseed)
+        return train_indices, test_indices #X_train, X_test, y_train, y_test
 
     def smart_random(self):
         """
-        Picks a good random seed for sampling the training set based on the 
-        similarity of the energy distribution of the training set compared to the energy distribution
-        of the full dataset. That is, we pick a random training set that has an energy distribution most resembling 
-        the full dataset's energy distribution.
+        Choose a random training set that has an energy distribution most resembling that of the full dataset.
+        Uses the Chi-Squared method to estimate the similarity of the energy distrubtions.
         """
-        #TODO function not tested yet...
         data = self.full_dataset.values
         X = data[:, :-1]
         y = data[:,-1].reshape(-1,1)
@@ -47,11 +46,11 @@ class DataSampler(object):
             train_dist, tmpbin = np.histogram(y_train, bins=binedges, density=True)
             chisq, p = stats.chisquare(train_dist, f_exp=full_dataset_dist)
             pvalues.append(p)
-
-        pvalues = np.asarray(pvalues)
-        best_seed = np.argmin(pvalues)
-        X_train, X_test, y_train, y_test  = train_test_split(X,y,train_size=self.ntrain, random_state=seed)
-        return X_train, X_test, y_train, y_test
+        best_seed = np.argmax(pvalues)
+        #X_train, X_test, y_train, y_test  = train_test_split(X,y,train_size=self.ntrain, random_state=best_seed)
+        indices = np.arange(self.dataset_size)
+        train_indices, test_indices  = train_test_split(indices, train_size=self.ntrain, random_state=best_seed)
+        return train_indices, test_indices
 
 
     def energy_ordered(self):
@@ -59,23 +58,33 @@ class DataSampler(object):
         A naive sampling algorithm, where we order the PES dataset
         in terms of increasing energy, and take every nth datapoint such that we 
         get approximately the right amount of training points.
-        """
-        # TODO
-        # Problem: Does not return desired number of training points. Is there a general way to do this in a reproducible manner?
-        ordered_dataset = self.full_dataset.sort_values("E")
-        s = round(self.dataset_size / self.ntrain)
-        train = ordered_dataset[0::s]
-        # to create test set, set training set elements equal to None and remove
-        ordered_dataset[0::s] = None
-        test = ordered_dataset.dropna()
 
-        train_data = train.values
-        X_train = train_data[:, :-1]
-        y_train = train_data[:,-1].reshape(-1,1)
-        test_data = test.values
-        X_test = test_data[:, :-1]
-        y_test = test_data[:,-1].reshape(-1,1)
-        return X_train, X_test, y_train, y_test
+        A dataset first needs to be sorted by energy before calling.
+        Warning: Does not return exact number of desired training points. 
+        """
+        # check if dataset is already sorted in increasing energy:
+        if (np.diff(self.full_dataset['E']) > 0).all() == False:
+            raise Exception("Dataset must be sorted by energy for energy ordered training set selection.")
+          
+        interval = round(self.dataset_size / self.ntrain)
+        indices = np.arange(self.dataset_size)
+        train_indices = indices[0::interval]
+        indices[0::interval] = None
+        test_indices = indices.dropna()
+        return train_indices, test_indices
+
+        #train = ordered_dataset[0::s]
+        ## to create test set, set training set elements equal to None and remove
+        #ordered_dataset[0::s] = None
+        #test = ordered_dataset.dropna()
+
+        #train_data = train.values
+        #X_train = train_data[:, :-1]
+        #y_train = train_data[:,-1].reshape(-1,1)
+        #test_data = test.values
+        #X_test = test_data[:, :-1]
+        #y_test = test_data[:,-1].reshape(-1,1)
+        #return X_train, X_test, y_train, y_test
         
 
 
@@ -99,7 +108,7 @@ class DataSampler(object):
         # TODO 
         # Problems:
         # 1. causes one datapoint to be E = 0.00
-        # 2. not reproducible with a random seed.
+        # 2. not easily reproducible with a random seed.
         # 3. Scaling. could in principle improve scaling by doing minibatches in while loop... e.g. test.sample(n=minibatch)
         # 4. return X,y train,test
         data = self.full_dataset.sort_values("E")
@@ -155,31 +164,38 @@ class DataSampler(object):
 
         # find the minimum value along the columns of this 2xN array of norms
         min_array = np.amin(norm_matrix, axis=0)
-        #indices = []
-        #indices.append(0)
-        #indices.append(idx)
+        train_indices = []
+        train_indices.append(0)
+        train_indices.append(idx)
 
         while len(train) < ntrain:
             # min_array contains the smallest norms into the training set, by datapoint.
             # We take the largest one.
             idx = np.argmax(min_array)
-            #indices.append(idx)
+            train_indices.append(idx)
             new_geom = data.values[idx]
             train.append(new_geom)
             # update norm matrix with the norms of newly added training point
             norm_vec = norm(train[-1])
             stack = np.vstack((min_array, norm_vec))
             min_array = np.amin(stack, axis=0)
-        train = np.asarray(train).reshape(ntrain,len(data.columns))
-        train = pd.DataFrame(train, columns=data.columns).sort_values("E")
-        # TODO split X,y as well as train,test
+
+        indices = np.arange(self.dataset_size)
+        indices[train_indices] = None
+        test_indices = indices.dropna()
+
+        return train_indices, test_indices
+        #train = np.asarray(train).reshape(ntrain,len(data.columns))
+        #train = pd.DataFrame(train, columns=data.columns).sort_values("E")
+        #return train
         # Xtr = X[indices]
         # ytr = y[indices]
-        return train
-        #return indices
 
 
     
 
     def energy_gaussian(self):
+        """
+        Heavily biases towards low energy region
+        """
         pass
