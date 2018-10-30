@@ -1,20 +1,22 @@
 import numpy as np
 import sklearn.metrics
-from model import Model
+from .model import Model
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
-from data_sampler import DataSampler
-import constants
-from preprocessing_helper import general_scaler, morse, interatomics_to_fundinvar, degree_reduce 
+import GPy
+from .data_sampler import DataSampler 
+from .constants import hartree2cm
+from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
 
 class GaussianProcess(Model):
     """
     Constructs a Gaussian Process Model using GPy
     """
-    def __init__(self):
+    def __init__(self, dataset_path, ntrain, input_obj):
         self.hyperopt_trials = Trials()
+        super().__init__(dataset_path, ntrain, input_obj)
 
 
-     def build_model(self, params):
+    def build_model(self, params):
         # skip building this model if already attempted
         is_repeat = None
         for i in self.hyperopt_trials.results:
@@ -23,7 +25,6 @@ class GaussianProcess(Model):
                     is_repeat = True
         if is_repeat:
             return {'loss': 0.0, 'status': STATUS_FAIL, 'memo': 'repeat'}
-
         else:
             raw_X = self.dataset.values[:, :-1]
             raw_y = self.dataset.values[:,-1].reshape(-1,1)
@@ -50,17 +51,17 @@ class GaussianProcess(Model):
             pred_test = self.predict(Xtest)
             pred_full = self.predict(X)
             error_test = self.compute_error(Xtest, ytest, pred_test, yscaler)
-            error_full = self.compute_error(Xtest, ytest, pred_full, yscaler)
+            error_full = self.compute_error(X, y, pred_full, yscaler)
 
             # print results of this run
             print("{:<5d} Training Points Avg RMSE (cm-1):".format(self.ntrain))
-            print("Test Dataset {}".format(round(constants.hartree2cm * error_test,2)), end='  ')
-            print("Full Dataset {}".format(round(constants.hartree2cm * error_full,2)))
+            print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='  ')
+            print("Full Dataset {}".format(round(hartree2cm * error_full,2)))
             result = {'loss': error_test, 'status': STATUS_OK, 'memo': params}
             return result
 
     def predict(self, X):
-            prediction, v1 = self.model.predict(X, full_cov=False)
+        prediction, v1 = self.model.predict(X, full_cov=False)
         return prediction 
      
     def compute_error(self, X, y, prediction, yscaler):
@@ -69,7 +70,7 @@ class GaussianProcess(Model):
         known X,y, a prediction, and a y scaling object, if it exists.
         """
         if yscaler:
-            raw_ytest = yscaler.inverse_transform(ytest)
+            raw_y = yscaler.inverse_transform(y)
             unscaled_prediction = yscaler.inverse_transform(prediction)
             error = np.sqrt(sklearn.metrics.mean_squared_error(raw_y,  unscaled_prediction))
         else:
@@ -96,7 +97,7 @@ class GaussianProcess(Model):
          #TODO add optional space inclusions 
          # something like: if option: self.hyperparameter_space['newoption'] = hp.choice(..)
 
-     def preprocess(self, params, raw_X, raw_y):
+    def preprocess(self, params, raw_X, raw_y):
         """
         Preprocess data according to hyperparameters
         """

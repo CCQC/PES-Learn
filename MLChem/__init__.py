@@ -7,3 +7,6 @@ from . import molecule
 from . import input_processor
 from . import configuration_space
 from . import data_sampler
+from . import preprocessing_helper
+from . import model
+from . import gaussian_process

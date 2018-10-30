@@ -31,10 +31,20 @@ class InputProcessor(object):
         # keywords which have values that are strings, not other datatypes
         regex_keywords = {'energy_regex': None, 'gradient_header': None, 'gradient_footer': None, 
                           'gradient_line': None}
-        string_keywords = {'energy': None, 'energy_regex': None, 'energy_cclib': None,
-        'gradient': None, 'gradient_header': None, 'gradient_footer': None, 'gradient_line': None,
-        'remove_redundancy': 'true', 'input_name': 'input.dat', 'remember_redundancy' : 'true', 
-        'pes_redundancy': 'false', 'pes_format': 'interatomics'}
+        string_keywords = {'energy': None, 
+                           'energy_regex': None, 
+                           'energy_cclib': None,
+                           'gradient': None, 
+                           'gradient_header': None, 
+                           'gradient_footer': None, 
+                           'gradient_line': None,
+                           'remove_redundancy': 'true', 
+                           'input_name': 'input.dat', 
+                           'remember_redundancy' : 'true',
+                           'pes_redundancy': 'false', 
+                           'pes_format': 'interatomics',
+                           'hp_max_evals': 100,
+                           'hp_opt': True}
         for k in string_keywords:
             match = re.search(k+"\s*=\s*(.+)", self.full_string)
             # if the keyword is mentioned
