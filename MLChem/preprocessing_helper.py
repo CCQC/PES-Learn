@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
+import re
 
 
 def general_scaler(scale_type, data):
@@ -26,6 +27,7 @@ def morse(raw_X, alpha=1.00):
     """
     return np.exp(-raw_X / alpha)
 
+
 def interatomics_to_fundinvar(raw_X, fi_path):
     """
     Transfrom interatom distances to fundamental invariants 
@@ -42,8 +44,34 @@ def interatomics_to_fundinvar(raw_X, fi_path):
     fi_path : str
         Path to Singular outputfile containing Fundamental Invariants
     """
-    #TODO
-    pass
+    nbonds = raw_X.shape[1]
+    with open(fi_path, 'r') as f:
+        data = f.read()
+        data = re.sub('\^', '**', data)
+        #  convert subscripts of bonds to 0 indexing
+        for i in range(1, nbonds+1):
+            data = re.sub('x{}(\D)'.format(str(i)), 'x{}\\1'.format(i-1), data)
+
+        polys = re.findall("\]=(.+)",data)
+
+    # create a new_X matrix that is the shape of number geoms, number of Fundamental Invariants
+    new_X = np.zeros((raw_X.shape[0],len(polys)))
+    for i, p in enumerate(polys):    # evaluate each FI 
+        # convert the FI to a python expression of raw_X, e.g. x1 + x2 becomes raw_X[:,1] + raw_X[:,2]
+        eval_string = re.sub(r"(x)(\d+)", r"raw_X[:,\2]", p)
+        # evaluate that column's FI from columns of raw_X
+        new_X[:,i] = eval(eval_string)
+
+    # find degree of each FI
+    degrees = []
+    for p in polys:
+        # just checking first, assumes every term in each FI polynomial has the same degree (seems to always be true)
+        tmp = p.split('+')[0]
+        # count number of exponents and number of occurances of character 'x'
+        exps = [int(i) - 1 for i in re.findall("\*\*(\d+)", tmp)]
+        ndegrees = len(re.findall("x", tmp)) + sum(exps)
+        degrees.append(ndegrees)
+    return new_X, degrees
 
 def degree_reduce(raw_X, degrees):
     """
