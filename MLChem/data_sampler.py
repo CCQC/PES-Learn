@@ -191,8 +191,6 @@ class DataSampler(object):
         indices = np.arange(self.dataset_size)
         test_indices = np.delete(indices, indices[train_indices])
         train_indices = np.sort(train_indices)
-        print(train_indices)
-        print(test_indices)
         #print(indices[0::interval])
 
         return train_indices, test_indices
