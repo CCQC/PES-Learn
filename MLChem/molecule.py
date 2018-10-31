@@ -82,6 +82,7 @@ class Molecule(object):
         self.std_order_atoms        - a list of Atom objects in the order according to sorted_atom_counts
         self.std_order_atom_labels  - a list of atom element labels in standard order
         self.interatomic_labels     - a list of interatomic distance labels
+        self.molecule_type          - a string with a generic molecule type label, A2BC, A2B6, etc.
         """
         # grab array-like representation of zmatrix and count the number of atoms 
         zmat_array = [line.split() for line in zmat_string.splitlines() if line]
@@ -136,9 +137,18 @@ class Molecule(object):
 
         n_interatomics =  int(0.5 * (self.n_atoms * self.n_atoms - self.n_atoms))
         self.interatomic_labels = []
-        #for i in range(n_interatomics):
         for i in range(n_interatomics):
             self.interatomic_labels.append("r%d" % (i))
+        
+        # define molecule type, A2BC, A2B3C2... etc
+        letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+        self.molecule_type = ''
+        for i, a in enumerate(self.atom_count_vector):
+            self.molecule_type += letters[i]
+            if a > 1:
+                self.molecule_type += str(a)
+
+
         
     
     def update_intcoords(self, disp):
