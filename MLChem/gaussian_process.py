@@ -1,44 +1,70 @@
 import numpy as np
 import sklearn.metrics
+import os
 from .model import Model
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
 import GPy
 from .data_sampler import DataSampler 
-from .constants import hartree2cm
+from .constants import hartree2cm, package_directory 
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
 
 class GaussianProcess(Model):
     """
     Constructs a Gaussian Process Model using GPy
     """
-    def __init__(self, dataset_path, ntrain, input_obj):
-        self.hyperopt_trials = Trials()
-        super().__init__(dataset_path, ntrain, input_obj)
+    def __init__(self, dataset_path, ntrain, input_obj, mol_obj):
+        super().__init__(dataset_path, ntrain, input_obj, mol_obj)
+        self.raw_X = self.dataset.values[:, :-1]
+        self.raw_y = self.dataset.values[:,-1].reshape(-1,1)
+        self.mol = mol_obj
 
     def optimize_model(self):
+        self.hyperopt_trials = Trials()
         self.set_hyperparameter_space()
-        print("{:<5d} Training Points Avg RMSE (cm-1):".format(self.ntrain))
-        best = fmin(self.build_model,space=self.hyperparameter_space,algo=tpe.suggest,max_evals=self.hp_max_evals,trials=self.hyperopt_trials)
+        best = fmin(self.hyperopt_model,
+                    space=self.hyperparameter_space,
+                    algo=tpe.suggest,
+                    max_evals=self.hp_max_evals,
+                    trials=self.hyperopt_trials)
         print("\n###################################################")
-        print("##                                               ##")
-        print("##    Hyperparameter Optimization Complete!!!    ##")
-        print("##                                               ##")
+        print("#                                                 #")
+        print("#     Hyperparameter Optimization Complete!!!     #")
+        print("#                                                 #")
         print("###################################################\n")
         print("Best performing hyperparameters are:")
         final = space_eval(self.hyperparameter_space, best)
         print(str(sorted(final.items())))
         print("Best model performance (cm-1):")
-        # temporary:
-        # clear trials so that the run isnt rejected as a duplicate:
-        self.hyperopt_trials = Trials()
-        result = self.build_model(dict(final))
-        #print("Test Dataset {}".format(round(hartree2cm * result['loss'],2)))
-        #print("Full Dataset {}".format(round(hartree2cm * result['full_error'],2)))
+        params = dict(final)
+        model, X, y, Xtr, ytr, Xtest, ytest, Xscaler, yscaler = self.build_model(params, nrestarts=20)
+        pred_test = self.predict(model, Xtest)
+        pred_full = self.predict(model, X)
+        error_test = self.compute_error(Xtest, ytest, pred_test, yscaler)
+        error_full = self.compute_error(X, y, pred_full, yscaler)
+        print("Test Dataset {}".format(round(hartree2cm * error_test,2)))
+        print("Full Dataset {}".format(round(hartree2cm * error_full,2)))
 
-    def build_model(self, params):
-        # skip building this model if already attempted
-        # (this messes with calling just one run more than once, how to fix elegantly?)
-        # split into two functions? check_hyperparameters vs build model?
+    def build_model(self, params, nrestarts=5):
+        X, y, Xscaler, yscaler = self.preprocess(params, self.raw_X, self.raw_y)
+        sample = DataSampler(self.dataset, self.ntrain)
+        # TODO if keyword, do sample procedure A,B,C...
+        train, test = sample.smart_random()
+        Xtr = X[train]
+        ytr = y[train]
+        Xtest = X[test]
+        ytest = y[test]
+        
+        # make GPy deterministic
+        # np.random.seed(11)
+        dim = X.shape[1]
+        kernel = GPy.kern.RBF(dim, ARD=True) #TODO add more kernels to hyperopt space
+        model = GPy.models.GPRegression(Xtr, ytr, kernel=kernel, normalizer=False)
+        model.optimize(max_iters=600)
+        model.optimize_restarts(nrestarts, optimizer="bfgs", verbose=False, max_iters=1000)
+        return (model, X, y, Xtr, ytr, Xtest, ytest, Xscaler, yscaler)
+
+    def hyperopt_model(self, params):
+        # skip building this model if hyperparameter combination already attempted
         is_repeat = None
         for i in self.hyperopt_trials.results:
             if 'memo' in i:
@@ -47,64 +73,58 @@ class GaussianProcess(Model):
         if is_repeat:
             return {'loss': 0.0, 'status': STATUS_FAIL, 'memo': 'repeat'}
         else:
-            raw_X = self.dataset.values[:, :-1]
-            raw_y = self.dataset.values[:,-1].reshape(-1,1)
-            X, y, Xscaler, yscaler = self.preprocess(params, raw_X, raw_y)
-            sample = DataSampler(self.dataset, self.ntrain)
-            # TODO if keyword, do sample procedure A,B,C...
-            #train, test = sample.random()
-            train, test = sample.smart_random()
-            #train, test = sample.energy_ordered()
-            #train, test = sample.structure_based()
-            Xtr = X[train]
-            ytr = y[train]
-            Xtest = X[test]
-            ytest = y[test]
-            
-            # build the model
-            # make GPy deterministic
-            #np.random.seed(11)
-            dim = X.shape[1]
-            kernel = GPy.kern.RBF(dim, ARD=True) #TODO add kernels to HPOpt
-            self.model = GPy.models.GPRegression(Xtr, ytr, kernel=kernel, normalizer=False)
-            self.model.optimize(max_iters=600)
-            # TODO handle optimizer restarts
-            #self.model.optimize_restarts(5, optimizer="bfgs", verbose=True, max_iters=1000)
-            self.model.optimize_restarts(5, optimizer="bfgs", verbose=False, max_iters=1000)
-
-            # Full Dataset Prediction and Unseen Test Data Prediction
-            pred_test = self.predict(Xtest)
-            pred_full = self.predict(X)
+            model, X, y, Xtr, ytr, Xtest, ytest, Xscaler, yscaler = self.build_model(params)
+            pred_test = self.predict(model, Xtest)
+            pred_full = self.predict(model, X)
             error_test = self.compute_error(Xtest, ytest, pred_test, yscaler)
             error_full = self.compute_error(X, y, pred_full, yscaler)
+            print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='   ')
+            print("Full Dataset {}".format(round(hartree2cm * error_full,2)))
+            return {'loss': error_test, 'status': STATUS_OK, 'memo': params}
 
-            # print results of this run
-            #print("{:<5d} Training Points Avg RMSE (cm-1):".format(self.ntrain))
-            #print("Test Dataset {:<4.2f}".format(round(hartree2cm * error_test,2)), end='  ')
-            #print("Full Dataset {:<4.2f}".format(round(hartree2cm * error_full,2)))
-            #print("Test Dataset {:<4.2f}".format(hartree2cm * error_test), end='  ')
-            #print("Full Dataset {:<4.2f}".format(hartree2cm * error_full))
-            print("Test Dataset {:<10}".format(round(hartree2cm * error_test,2)), end='  ')
-            print("Full Dataset {:<10}".format(round(hartree2cm * error_full,2)))
-            result = {'loss': error_test, 'status': STATUS_OK, 'memo': params}
-            return result
 
-    def predict(self, X):
-        prediction, v1 = self.model.predict(X, full_cov=False)
+
+    def predict(self, model, X):
+        prediction, v1 = model.predict(X, full_cov=False)
         return prediction 
      
-    def compute_error(self, X, y, prediction, yscaler):
+    def compute_error(self, X, y, prediction, yscaler, max_errors=None):
         """
         Predict the root-mean-square error of model given 
         known X,y, a prediction, and a y scaling object, if it exists.
+        
+        Parameters
+        ----------
+        X : array
+            Array of model inputs (geometries)
+        y : array
+            Array of expected model outputs (energies)
+        prediction: array
+            Array of actual model outputs (energies)
+        yscaler: object
+            Sci-kit learn scaler object
+        max_errors: int
+            Returns largest (int) absolute maximum errors 
+
+        Returns
+        -------
         """
         if yscaler:
             raw_y = yscaler.inverse_transform(y)
             unscaled_prediction = yscaler.inverse_transform(prediction)
             error = np.sqrt(sklearn.metrics.mean_squared_error(raw_y,  unscaled_prediction))
+            if max_errors:
+                e = np.abs(raw_y - unscaled_prediction) * hartree2cm
+                largest_errors = np.partition(e, -max_errors, axis=0)[-max_errors:]
         else:
             error = np.sqrt(sklearn.metrics.mean_squared_error(y, prediction))
-        return error
+            if max_errors:
+                e = np.abs(y, prediction) * hartree2cm
+                largest_errors = np.partition(e, -max_errors, axis=0)[-max_errors:]
+        if max_errors:
+            return error, largest_errors
+        else:
+            return error
 
     def set_hyperparameter_space(self):
         self.hyperparameter_space = {
@@ -135,9 +155,9 @@ class GaussianProcess(Model):
             raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])
         # Transform to FIs, degree reduce if called
         if params['fi_transform']['fi']:
-            #raw_X, degrees = interatomics_to_fundinvar(raw_X,fi_path)
-            #TODO generalize
-            raw_X, degrees = interatomics_to_fundinvar(raw_X,"/home/adabbott/Git/molssi/MLChem/lib/3_atom_system/A2B/output")
+            # find path to fundamental invariants for an N atom system with molecule type AxByCz...
+            path = os.path.join(package_directory, "lib", str(sum(self.mol.atom_count_vector))+"_atom_system", self.mol.molecule_type, "output")
+            raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
             if params['fi_transform']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
         
