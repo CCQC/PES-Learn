@@ -14,10 +14,11 @@ class InputProcessor(object):
     """
     A Class which handles information contained within an input file
     """
-    def __init__(self, input_path):
-        self.input_path = input_path
-        with open(self.input_path, 'r') as f:
-            self.full_string = f.read() 
+    def __init__(self, input_string):
+        #self.input_path = input_path
+        #with open(self.input_path, 'r') as f:
+        #    self.full_string = f.read() 
+        self.full_string = input_string
         self.zmat_string = re.findall(regex.intcoords_regex, self.full_string)[0] 
         self.intcos_ranges = None 
         #self.extract_intcos_ranges()
