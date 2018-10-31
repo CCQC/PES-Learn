@@ -20,7 +20,7 @@ class Model(ABC):
     input_obj : object 
         InputProcessor object from MLChem. Used for keywords related to machine learning.
     """
-    def __init__(self, dataset_path, ntrain, input_obj):
+    def __init__(self, dataset_path, ntrain, input_obj, mol_obj):
         # get PES data. #TODO relax formatting requirements, make more general
         try:
             data = pd.read_csv(dataset_path)
