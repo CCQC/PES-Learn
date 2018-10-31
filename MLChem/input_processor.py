@@ -20,7 +20,7 @@ class InputProcessor(object):
             self.full_string = f.read() 
         self.zmat_string = re.findall(regex.intcoords_regex, self.full_string)[0] 
         self.intcos_ranges = None 
-        self.extract_intcos_ranges()
+        #self.extract_intcos_ranges()
         self.keywords = self.get_keywords()
         self.ndisps = None
         
@@ -43,7 +43,7 @@ class InputProcessor(object):
                            'remember_redundancy' : 'true',
                            'pes_redundancy': 'false', 
                            'pes_format': 'interatomics',
-                           'hp_max_evals': 20,
+                           'hp_max_evals': 50,
                            'hp_opt': True}
         for k in string_keywords:
             match = re.search(k+"\s*=\s*(.+)", self.full_string)
@@ -100,6 +100,8 @@ class InputProcessor(object):
     
     def generate_displacements(self):
         # much faster ways to do this than itertools
+        # define self.intcos_ranges()
+        self.extract_intcos_ranges()
         d = self.intcos_ranges
         for key, value in d.items():
             if len(value) == 3:
