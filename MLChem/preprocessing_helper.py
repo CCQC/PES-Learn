@@ -71,6 +71,7 @@ def interatomics_to_fundinvar(raw_X, fi_path):
         exps = [int(i) - 1 for i in re.findall("\*\*(\d+)", tmp)]
         ndegrees = len(re.findall("x", tmp)) + sum(exps)
         degrees.append(ndegrees)
+
     return new_X, degrees
 
 def degree_reduce(raw_X, degrees):

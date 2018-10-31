@@ -41,7 +41,7 @@ class DataSampler(object):
         y = data[:,-1].reshape(-1,1)
         full_dataset_dist, binedges = np.histogram(y, bins='auto', density=True)
         pvalues = []
-        for seed in range(100):
+        for seed in range(500):
             X_train, X_test, y_train, y_test  = train_test_split(X,y,train_size=self.ntrain, random_state=seed)
             train_dist, tmpbin = np.histogram(y_train, bins=binedges, density=True)
             chisq, p = stats.chisquare(train_dist, f_exp=full_dataset_dist)
@@ -69,8 +69,13 @@ class DataSampler(object):
         interval = round(self.dataset_size / self.ntrain)
         indices = np.arange(self.dataset_size)
         train_indices = indices[0::interval]
-        indices[0::interval] = None
-        test_indices = indices.dropna()
+        #indices[0::interval] = None 
+        #test_indices = indices[np.isfinite(indices)]
+        test_indices = np.delete(indices, indices[0::interval])
+        #print(indices[0::interval])
+        #train_indices = indices[0::interval]
+        #test_indices = indices[np.isfinite(indices)]    #indices.dropna()
+        #print(test_indices)
         return train_indices, test_indices
 
         #train = ordered_dataset[0::s]
@@ -168,7 +173,7 @@ class DataSampler(object):
         train_indices.append(0)
         train_indices.append(idx)
 
-        while len(train) < ntrain:
+        while len(train) < self.ntrain:
             # min_array contains the smallest norms into the training set, by datapoint.
             # We take the largest one.
             idx = np.argmax(min_array)
@@ -180,9 +185,15 @@ class DataSampler(object):
             stack = np.vstack((min_array, norm_vec))
             min_array = np.amin(stack, axis=0)
 
+        #indices = np.arange(self.dataset_size)
+        #indices[train_indices] = None
+        #test_indices = indices.dropna()
         indices = np.arange(self.dataset_size)
-        indices[train_indices] = None
-        test_indices = indices.dropna()
+        test_indices = np.delete(indices, indices[train_indices])
+        train_indices = np.sort(train_indices)
+        print(train_indices)
+        print(test_indices)
+        #print(indices[0::interval])
 
         return train_indices, test_indices
         #train = np.asarray(train).reshape(ntrain,len(data.columns))

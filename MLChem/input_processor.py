@@ -43,7 +43,7 @@ class InputProcessor(object):
                            'remember_redundancy' : 'true',
                            'pes_redundancy': 'false', 
                            'pes_format': 'interatomics',
-                           'hp_max_evals': 100,
+                           'hp_max_evals': 20,
                            'hp_opt': True}
         for k in string_keywords:
             match = re.search(k+"\s*=\s*(.+)", self.full_string)
