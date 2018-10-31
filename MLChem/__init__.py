@@ -10,3 +10,4 @@ from . import data_sampler
 from . import preprocessing_helper
 from . import model
 from . import gaussian_process
+from . import parsing_helper
