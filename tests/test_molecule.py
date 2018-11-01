@@ -7,9 +7,16 @@ import pytest
 
 
 path = 'tests/datafiles/input_zmat_1'
-input_obj = MLChem.input_processor.InputProcessor(path)
+with open(path, 'r') as f:
+    input_string = f.read()
+
+input_obj = MLChem.input_processor.InputProcessor(input_string)
 
 mol = MLChem.molecule.Molecule(input_obj.zmat_string)
+#print(mol.atoms)
+#print(mol.standard_order_atoms)
+#print(mol.sorted_atom_counts)
+
 
 
 def test_extract_zmat():
