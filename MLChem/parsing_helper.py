@@ -6,10 +6,6 @@ from .outputfile import OutputFile
 from collections import OrderedDict
 
 def parse(input_obj, mol): 
-    os.chdir("./PES_data")
-    ndirs = sum(os.path.isdir(d) for d in os.listdir("."))
-        
-    # separate this from driver later
     # define energy extraction routine based on user keywords
     if input_obj.keywords['energy'] == 'cclib':
         if input_obj.keywords['energy_cclib']: 
@@ -62,15 +58,17 @@ def parse(input_obj, mol):
         data['G'] = ''
 
     # parse output files 
-    for i in range(1, ndirs+1):
-        path = str(i) + "/output.dat"
+    os.chdir("./PES_data")
+    dirs = [i for i in os.listdir(".") if os.path.isdir(i) ]
+    for d in dirs: 
+        path = d + "/output.dat"
         #output_obj = MLChem.outputfile.OutputFile(path)
         output_obj = OutputFile(path)
         if input_obj.keywords['energy']:
             E = extract_energy(input_obj, output_obj)
         if input_obj.keywords['gradient']:
             G = extract_gradient(output_obj)
-        with open(str(i) + geom_path) as f:
+        with open(d + geom_path) as f:
             for line in f:
                 tmp = json.loads(line, object_pairs_hook=OrderedDict)
                 df = pd.DataFrame(data=tmp, index=None, columns=tmp[0].keys())
@@ -81,5 +79,6 @@ def parse(input_obj, mol):
                 else:
                     break
     os.chdir('../')
+    data = data.sort_values("E")
     data.to_csv("PES.dat", sep=',', index=False, float_format='%12.12f')
     print("Parsed data has been written to PES.dat")
