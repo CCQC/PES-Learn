@@ -44,7 +44,10 @@ class InputProcessor(object):
                            'remember_redundancy' : 'true',
                            'pes_redundancy': 'false', 
                            'pes_format': 'interatomics',
-                           'hp_max_evals': 10,
+                           'sampling': 'smart_random',
+                           'n_low_energy_train': 0, 
+                           'training_points': 50,
+                           'hp_max_evals': 50,
                            'hp_opt': True}
         for k in string_keywords:
             match = re.search(k+"\s*=\s*(.+)", self.full_string)
@@ -59,13 +62,18 @@ class InputProcessor(object):
                 if (r"'" or r'"') not in value:
                     value = ''.join((r"'",value,r"'",))
                 try:
+                    # ast works for strings, lists, but not ints
                     value = ast.literal_eval(value)
+                    # check if keyword is integer
+                    if value.isdigit():
+                        value = int(value)
                     string_keywords[k] = value
                 except:
-                    raise Exception("\n'{}' is not a valid option for {}. Entry should be plain text or a string, surrounded by single or double quotes.".format(value,k))
-                # make sure it isn't some other datatype like a list  
+                    raise Exception("\n'{}' is not a valid option for {}. Entry should be plain text or a string, i.e., surrounded by single or double quotes.".format(value,k))
+                # all keywords should now either be strings or integers
                 if not isinstance(value, str):
-                    raise Exception("\n'{}' is not a valid option for {}. Entry should be plain text or a string, surrounded by single or double quotes.".format(value,k))
+                    if not isinstance(value, int):
+                        raise Exception("\n'{}' is not a valid option for {}. Entry should be plain text or a string, i.e., surrounded by single or double quotes.".format(value,k))
         return string_keywords
         
 
