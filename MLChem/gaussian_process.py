@@ -1,5 +1,6 @@
 import numpy as np
 import sklearn.metrics
+import json
 import os
 from .model import Model
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
@@ -36,26 +37,53 @@ class GaussianProcess(Model):
         print(str(sorted(final.items())))
         print("Best model performance (cm-1):")
         params = dict(final)
-        model, X, y, Xtr, ytr, Xtest, ytest, Xscaler, yscaler = self.build_model(params, nrestarts=20)
+        model, X, y, Xtr, ytr, Xtest, ytest, Xscaler, yscaler = self.build_model(params)
+        # Save best model
+        # Currently GPy requires saving data for some reason. Repeated calls can be costly if a lot of training points are used.
+        model_dict = model.to_dict(save_data=True)
+        with open('model.json', 'w') as f:
+            json.dump(model_dict, f)
+
         pred_test = self.predict(model, Xtest)
         pred_full = self.predict(model, X)
         error_test = self.compute_error(Xtest, ytest, pred_test, yscaler)
         error_full = self.compute_error(X, y, pred_full, yscaler)
         print("Test Dataset {}".format(round(hartree2cm * error_test,2)))
         print("Full Dataset {}".format(round(hartree2cm * error_full,2)))
+        self.optimal_hyperparameters = params
 
     def build_model(self, params, nrestarts=5):
         X, y, Xscaler, yscaler = self.preprocess(params, self.raw_X, self.raw_y)
-        sample = DataSampler(self.dataset, self.ntrain)
-        # TODO if keyword, do sample procedure A,B,C...
-        train, test = sample.smart_random()
+        # for debugging 
+        #if Xscaler:
+        #    print("X Means ",Xscaler.mean_)
+        #    print("X Scales ", Xscaler.scale_)
+        #if yscaler:
+        #    print("y Means ",yscaler.mean_)
+        #    print("y Scales ", yscaler.scale_)
+    
+        if self.input_obj.keywords['n_low_energy_train']:
+            n =  self.input_obj.keywords['n_low_energy_train']
+            sample = DataSampler(self.dataset, self.ntrain, accept_first_n=n)
+        else:
+            sample = DataSampler(self.dataset, self.ntrain)
+
+        if self.sampler == 'random':
+            sample.smart_random()
+        elif self.sampler == 'smart_random':
+            sample.smart_random()
+        elif self.sampler == 'structure_based':
+            sample.structure_based()
+
+        train, test = sample.get_indices()
         Xtr = X[train]
+        print(len(train))
         ytr = y[train]
         Xtest = X[test]
         ytest = y[test]
         
         # make GPy deterministic
-        # np.random.seed(11)
+        np.random.seed(0)
         dim = X.shape[1]
         kernel = GPy.kern.RBF(dim, ARD=True) #TODO add more kernels to hyperopt space
         model = GPy.models.GPRegression(Xtr, ytr, kernel=kernel, normalizer=False)
@@ -74,6 +102,7 @@ class GaussianProcess(Model):
             return {'loss': 0.0, 'status': STATUS_FAIL, 'memo': 'repeat'}
         else:
             model, X, y, Xtr, ytr, Xtest, ytest, Xscaler, yscaler = self.build_model(params)
+            print(params)
             pred_test = self.predict(model, Xtest)
             pred_full = self.predict(model, X)
             error_test = self.compute_error(Xtest, ytest, pred_test, yscaler)
@@ -130,9 +159,11 @@ class GaussianProcess(Model):
         self.hyperparameter_space = {
                   'fi_transform': hp.choice('fi_transform',
                                 [
+                                #{'fi': True,
                                 {'fi': True,
-                                    'degree_reduction': hp.choice('degree_reduction', [True, False])},
-                                {'fi': False}
+                                    'degree_reduction': False},
+                                    #'degree_reduction': hp.choice('degree_reduction', [True,False])},
+                                #{'fi': False}
                                 ]),
                   'morse_transform': hp.choice('morse_transform',
                                 [
@@ -140,7 +171,7 @@ class GaussianProcess(Model):
                                     'morse_alpha': hp.uniform('morse_alpha', 1.0, 2.0)},
                                 {'morse': False}
                                 ]),
-                  'scale_X': hp.choice('scale_X', ['std', 'mm01', 'mm11', None]),
+                  'scale_X': hp.choice('scale_X', ['std']),#, 'mm01', 'mm11', None]),
                   'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11', None]),
                   }
          #TODO add optional space inclusions 
