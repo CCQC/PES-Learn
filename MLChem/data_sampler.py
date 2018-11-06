@@ -10,7 +10,7 @@ class DataSampler(object):
     """
     docstring
     """
-    def __init__(self, dataset, ntrain, rseed=42, accept_first_n=None):
+    def __init__(self, dataset, ntrain, accept_first_n=None, rseed=42):
         # needs to be pandas dataframe 
         self.full_dataset = dataset.sort_values("E")
         self.dataset_size = dataset.shape[0]
@@ -157,6 +157,19 @@ class DataSampler(object):
 
 
     def structure_based(self):
+        """
+        Sample the geometries according to their L2 norms from one another.
+        Based on the algorithm described in Dral et al, J Chem Phys, 146, 244108, 2017
+        and references therein. Please cite appropriately if used. 
+        First the point closest to the global minimum is taken as the first training point.
+        The second training point is that which is 'farthest' from the first.
+        Each additional training point is added by  
+        1. For each new training point candidate, compute shortest distance 
+                to every point in training set.
+        2. Find the training point candidate with the largest shortest distance to the training set
+        3. Add this candidate to the training set, remove from the test set.
+        4. Repeat 1-3 until desired number of points obtained.
+        """
         data = self.full_dataset.sort_values("E") # if no energies present, need to know eq geom
         train = []
         train.append(data.values[0])
@@ -196,21 +209,11 @@ class DataSampler(object):
             stack = np.vstack((min_array, norm_vec))
             min_array = np.amin(stack, axis=0)
 
-        #indices = np.arange(self.dataset_size)
-        #indices[train_indices] = None
-        #test_indices = indices.dropna()
         indices = np.arange(self.dataset_size)
         test_indices = np.delete(indices, indices[train_indices])
         train_indices = np.sort(train_indices)
-        #print(indices[0::interval])
 
         self.set_indices(train_indices, test_indices)
-        #return train_indices, test_indices
-        #train = np.asarray(train).reshape(ntrain,len(data.columns))
-        #train = pd.DataFrame(train, columns=data.columns).sort_values("E")
-        #return train
-        # Xtr = X[indices]
-        # ytr = y[indices]
 
     def energy_gaussian(self):
         """
