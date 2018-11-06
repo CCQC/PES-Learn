@@ -24,6 +24,10 @@ class InputProcessor(object):
         #self.extract_intcos_ranges()
         self.keywords = self.get_keywords()
         self.ndisps = None
+    
+    def set_keyword(self):
+        #TODO
+        pass
         
     def get_keywords(self):
         """
