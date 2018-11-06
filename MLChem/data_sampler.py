@@ -1,24 +1,49 @@
 """
 A class for sampling train and test sets from PES datasets 
 """
-
 import numpy as np
 import pandas as pd
 from scipy import stats
 from sklearn.model_selection import train_test_split
 
-
 class DataSampler(object):
     """
     docstring
     """
-    def __init__(self, dataset, ntrain, rseed=42):
+    def __init__(self, dataset, ntrain, rseed=42, accept_first_n=None):
         # needs to be pandas dataframe 
-        self.full_dataset = dataset
+        self.full_dataset = dataset.sort_values("E")
         self.dataset_size = dataset.shape[0]
         self.ntrain = ntrain
         self.rseed = rseed
+        self.first_n = accept_first_n
+        self.train_indices = None
+        self.test_indices = None
+
+    def set_indices(self, train_indices, test_indices):
+        if self.first_n:
+            self.train_indices, self.test_indices = self.include_first_n(train_indices, test_indices)
+        else:
+            self.train_indices = train_indices
+            self.test_indices = test_indices
+
+    def get_indices(self):
+        return self.train_indices, self.test_indices
     
+    def include_first_n(self, train_indices, test_indices):
+        """
+        Force first n lowest energy points to be in training set 
+        Useful for global-minimum-biased fits for applications such as vibrational computations.
+        """ 
+        # force first n indices to be in training set
+        a = np.arange(self.first_n) 
+        tmp =  np.concatenate((train_indices, a) ,axis=0)
+        train_indices = np.unique(tmp)  #  avoids double counting
+        # adjust test set accordingly
+        condition = test_indices > self.first_n
+        test_indices = np.extract(condition, test_indices)
+        return train_indices, test_indices
+                
     def random(self):
         """
         Randomly sample the dataset to obtain a training set of proper size.
@@ -27,9 +52,12 @@ class DataSampler(object):
         X = data[:, :-1]
         y = data[:,-1].reshape(-1,1)
         indices = np.arange(self.dataset_size)
-        #X_train, X_test, y_train, y_test, train_indices, test_indices  = train_test_split(X, y, indices, train_size=self.ntrain, random_state=self.rseed)
         train_indices, test_indices  = train_test_split(indices, train_size=self.ntrain, random_state=self.rseed)
-        return train_indices, test_indices #X_train, X_test, y_train, y_test
+        if self.first_n:
+            train_indices = self.include_first_n(train_indices)
+
+        self.set_indices(train_indices, test_indices)
+        #return train_indices, test_indices
 
     def smart_random(self):
         """
@@ -50,7 +78,9 @@ class DataSampler(object):
         #X_train, X_test, y_train, y_test  = train_test_split(X,y,train_size=self.ntrain, random_state=best_seed)
         indices = np.arange(self.dataset_size)
         train_indices, test_indices  = train_test_split(indices, train_size=self.ntrain, random_state=best_seed)
-        return train_indices, test_indices
+
+        self.set_indices(train_indices, test_indices)
+        #return train_indices, test_indices
 
 
     def energy_ordered(self):
@@ -69,29 +99,10 @@ class DataSampler(object):
         interval = round(self.dataset_size / self.ntrain)
         indices = np.arange(self.dataset_size)
         train_indices = indices[0::interval]
-        #indices[0::interval] = None 
-        #test_indices = indices[np.isfinite(indices)]
         test_indices = np.delete(indices, indices[0::interval])
-        #print(indices[0::interval])
-        #train_indices = indices[0::interval]
-        #test_indices = indices[np.isfinite(indices)]    #indices.dropna()
-        #print(test_indices)
-        return train_indices, test_indices
 
-        #train = ordered_dataset[0::s]
-        ## to create test set, set training set elements equal to None and remove
-        #ordered_dataset[0::s] = None
-        #test = ordered_dataset.dropna()
-
-        #train_data = train.values
-        #X_train = train_data[:, :-1]
-        #y_train = train_data[:,-1].reshape(-1,1)
-        #test_data = test.values
-        #X_test = test_data[:, :-1]
-        #y_test = test_data[:,-1].reshape(-1,1)
-        #return X_train, X_test, y_train, y_test
-        
-
+        self.set_indices(train_indices, test_indices)
+        #return train_indices, test_indices
 
     def sobol(self, delta=0.002278):
         """
@@ -193,15 +204,13 @@ class DataSampler(object):
         train_indices = np.sort(train_indices)
         #print(indices[0::interval])
 
-        return train_indices, test_indices
+        self.set_indices(train_indices, test_indices)
+        #return train_indices, test_indices
         #train = np.asarray(train).reshape(ntrain,len(data.columns))
         #train = pd.DataFrame(train, columns=data.columns).sort_values("E")
         #return train
         # Xtr = X[indices]
         # ytr = y[indices]
-
-
-    
 
     def energy_gaussian(self):
         """
