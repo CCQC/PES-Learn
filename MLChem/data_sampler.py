@@ -121,7 +121,7 @@ class DataSampler(object):
 
         The Sobol expression is as implemented in Manzhos, Carrington J Chem Phys 145, 2016, and papers they cite.
         """
-        # TODO 
+        # TODO  NOT TESTED
         # Problems:
         # 1. causes one datapoint to be E = 0.00
         # 2. not easily reproducible with a random seed.
@@ -129,31 +129,27 @@ class DataSampler(object):
         # 4. return X,y train,test
         data = self.full_dataset.sort_values("E")
         data['E'] = data['E'] - data['E'].min()
-
+        
         max_e = data['E'].max()
         denom = (1 / (max_e + delta))
-        train = []
-        test = self.full_dataset.copy()
-        
-        while len(train) < self.ntrain:
+        train_indices = []
+        indices = np.arange(data.shape[0])
+        while len(train_indices) < self.ntrain:
             # randomly draw a PES datapoint 
-            rand_point = test.sample(n=1)
+            rand_point = data.sample(n=1)
             rand_E = rand_point['E'].values
             condition = (max_e - rand_E + delta) * denom
             rand = np.random.uniform(0.0,1.0)
             # if this datapoint is already accepted into training set, skip it
-            # (Not needed, as long as there are not equivalent geometries)
-            #if any((rand_point.values == x).all() for x in train):
-            #    continue
-            # add to training set if sobol condition is satisfied. Remove it from the test dataset as well.
+            # (Not needed, as long as there are not equivalent geometries)    
+            #if any((rand_point.values == x).all() for x in train):           
+            #    continue                                                     
             if condition > rand:
-                train.append(rand_point.values)
-                test = test.drop(rand_point.index[0])
+                train_indices.append(rand_point.index[0])
+                data = data.drop(rand_point.index[0])
+        test_indices = np.delete(indices, indices[train_indices])
 
-        # convert back to pandas dataframe
-        train = np.asarray(train).reshape(self.ntrain,len(self.full_dataset.columns))
-        train = pd.DataFrame(train, columns=self.full_dataset.columns)
-        train = train.sort_values("E")
+        self.set_indices(train_indices, test_indices)
 
 
     def structure_based(self):
