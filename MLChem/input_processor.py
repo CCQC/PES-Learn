@@ -43,9 +43,10 @@ class InputProcessor(object):
                            'gradient_header': None, 
                            'gradient_footer': None, 
                            'gradient_line': None,
-                           'remove_redundancy': 'true', 
                            'input_name': 'input.dat', 
-                           'remember_redundancy' : 'true',
+                           'remove_redundancy': 'true', 
+                           'remember_redundancy' : 'false',
+                           'filter_geoms' : None,
                            'pes_redundancy': 'false', 
                            'pes_format': 'interatomics',
                            'sampling': 'smart_random',
@@ -92,7 +93,7 @@ class InputProcessor(object):
         # for every geometry label look for its range identifer, e.g. R1 = [0.5, 1.2, 25]
         for label in geomlabels:
             # check to make sure parameter isn't defined more than once
-            if len(re.findall(label+"\s*=\s*", self.full_string)) > 1:
+            if len(re.findall("\W" + label+"\s*=\s*", self.full_string)) > 1:
                 raise Exception("Parameter {} defined more than once.".format(label))
 
             # if geom parameter has a geometry range, save it
