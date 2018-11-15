@@ -21,7 +21,7 @@ with open('input.dat', 'r') as f:
 input_obj = MLChem.input_processor.InputProcessor(input_string)
 template_obj = MLChem.template_processor.TemplateProcessor("./template.dat")
 mol = MLChem.molecule.Molecule(input_obj.zmat_string)
-text = input("Do you want to 'generate' or 'parse' your data? Type one option and hit enter: ")
+text = input("Do you want to 'generate' data, 'parse' data, or 'learn'?")
 start = timeit.default_timer()
 
 if text == 'generate':
@@ -32,3 +32,7 @@ if text == 'generate':
 if text == 'parse':
     MLChem.parsing_helper.parse(input_obj, mol)
 
+if text == 'learn':
+    gp = MLChem.gaussian_process.GaussianProcess("PES.dat", input_obj, mol)
+    gp.optimize_model()
+    
