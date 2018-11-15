@@ -174,8 +174,6 @@ class DataSampler(object):
             """ Computes norm between training point geometry and every point in dataset"""
             tmp1 = np.tile(train_point[:-1], (data.shape[0],1))
             diff = tmp1 - data.values[:,:-1]
-            # ensure correct datatype for einsum
-            diff = diff.astype(float)
             norm_vector = np.sqrt(np.einsum('ij,ij->i', diff, diff))
             return norm_vector
 

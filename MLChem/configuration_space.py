@@ -110,14 +110,13 @@ class ConfigurationSpace(object):
         npoints = self.input_obj.keywords['filter_geoms']
         print("Reducing size of configuration space from {} datapoints to {} datapoints".format(self.n_disps, npoints))
         df = self.unique_geometries.copy()
-        #cols = self.bond_columns.copy()
         df = df[self.bond_columns]
         df['E'] = "" 
-        #sampler = DataSampler(self.unique_geometries[cols], npoints, accept_first_n=None)
+        # pandas saved as objects, convert to floats so numpy doesnt reject it
+        df = df.apply(pd.to_numeric)
         sampler = DataSampler(df, npoints, accept_first_n=None)
         sampler.structure_based()
         accepted_indices, rejected_indices = sampler.get_indices()
-        #self.unique_geometries = self.unique_geometries[accepted_indices] 
         self.unique_geometries = self.unique_geometries.iloc[accepted_indices] 
         print("Configuration space reduction complete in {} seconds".format(round((timeit.default_timer() - start),2)))
 
