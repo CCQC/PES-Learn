@@ -50,7 +50,7 @@ class Model(ABC):
         else:
             sample = DataSampler(self.dataset, self.ntrain)
         if self.sampler == 'random':
-            sample.smart_random()
+            sample.random()
         elif self.sampler == 'smart_random':
             sample.smart_random()
         elif self.sampler == 'structure_based':
