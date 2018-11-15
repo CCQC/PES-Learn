@@ -13,6 +13,10 @@ class DataSampler(object):
     def __init__(self, dataset, ntrain, accept_first_n=None, rseed=42):
         # needs to be pandas dataframe 
         self.full_dataset = dataset.sort_values("E")
+        #if "E" in dataset.columns:
+        #    self.full_dataset = dataset.sort_values("E")
+        #else:
+        #    self.full_dataset = dataset
         self.dataset_size = dataset.shape[0]
         self.ntrain = ntrain
         self.rseed = rseed
@@ -57,7 +61,6 @@ class DataSampler(object):
             train_indices = self.include_first_n(train_indices)
 
         self.set_indices(train_indices, test_indices)
-        #return train_indices, test_indices
 
     def smart_random(self):
         """
@@ -75,12 +78,9 @@ class DataSampler(object):
             chisq, p = stats.chisquare(train_dist, f_exp=full_dataset_dist)
             pvalues.append(p)
         best_seed = np.argmax(pvalues)
-        #X_train, X_test, y_train, y_test  = train_test_split(X,y,train_size=self.ntrain, random_state=best_seed)
         indices = np.arange(self.dataset_size)
         train_indices, test_indices  = train_test_split(indices, train_size=self.ntrain, random_state=best_seed)
-
         self.set_indices(train_indices, test_indices)
-        #return train_indices, test_indices
 
 
     def energy_ordered(self):
@@ -166,7 +166,7 @@ class DataSampler(object):
         3. Add this candidate to the training set, remove from the test set.
         4. Repeat 1-3 until desired number of points obtained.
         """
-        data = self.full_dataset.sort_values("E") # if no energies present, need to know eq geom
+        data = self.full_dataset
         train = []
         train.append(data.values[0])
 
@@ -174,6 +174,8 @@ class DataSampler(object):
             """ Computes norm between training point geometry and every point in dataset"""
             tmp1 = np.tile(train_point[:-1], (data.shape[0],1))
             diff = tmp1 - data.values[:,:-1]
+            # ensure correct datatype for einsum
+            diff = diff.astype(float)
             norm_vector = np.sqrt(np.einsum('ij,ij->i', diff, diff))
             return norm_vector
 
