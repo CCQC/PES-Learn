@@ -81,6 +81,10 @@ class Molecule(object):
                                       sorted in the same way as self.sorted_atom_counts
         self.std_order_atoms        - a list of Atom objects in the order according to sorted_atom_counts
         self.std_order_atom_labels  - a list of atom element labels in standard order
+        self.std_order_bond_types   - a list of bond types (HC, OH, etc) in standard order of interatomic distances
+        self.alpha_bond_types       - a list of bond types in alphabetical order
+        self.alpha_bond_types_indices - a list of the indices that would make the std_order_bond_types alphabetical
+        self.alpha_bond_types_first_occur_indices - the index of the first occurance of each new bond type in the alphabetical bond types lists. Used for subset sorting within bond types.
         self.interatomic_labels     - a list of interatomic distance labels
         self.molecule_type          - a string with a generic molecule type label, A2BC, A2B6, etc.
         """
@@ -134,6 +138,28 @@ class Molecule(object):
                     self.std_order_atoms.append(atom)
 
         self.std_order_atom_labels = [atom.label for atom in self.std_order_atoms]
+
+        l = len(self.std_order_atom_labels)
+        tmp = np.empty((l,l),dtype=object)
+        for i in range(l):
+            for j in range(l):
+                tmp[i,j] = ''.join(sorted(self.std_order_atom_labels[i] + self.std_order_atom_labels[j]))
+        tmp2 =  tmp[np.tril_indices(len(tmp), -1)]
+        self.std_order_bond_types = list(tmp2)
+        self.alpha_bond_types = np.sort(tmp2)
+        # allows to resort bond distances in dataframe to bond type sorting w/fancy indexing
+        self.alpha_bond_types_indices = np.argsort(tmp2) 
+        
+    
+        self.alpha_bond_types_first_occur_indices = [0]
+        previous = None
+        for i,l in enumerate(self.alpha_bond_types):
+            if i>0:
+                if l != previous:
+                    self.alpha_bond_types_first_occur_indices.append(i) 
+            previous = l
+                
+                
 
         n_interatomics =  int(0.5 * (self.n_atoms * self.n_atoms - self.n_atoms))
         self.interatomic_labels = []
