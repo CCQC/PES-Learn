@@ -28,7 +28,6 @@ class GaussianProcess(Model):
                     algo=tpe.suggest,
                     max_evals=self.hp_max_evals,
                     trials=self.hyperopt_trials)
-        print("everythings fine")
         self.print_hp_banner()
         print("Best performing hyperparameters are:")
         final = space_eval(self.hyperparameter_space, best)
@@ -101,7 +100,7 @@ class GaussianProcess(Model):
             return {'loss': 0.0, 'status': STATUS_FAIL, 'memo': 'repeat'}
         else:
             model = self.build_model(params)
-            print(params) # debugging
+            #print(params) # debugging
             error_test = self.vet_model(model)
             return {'loss': error_test, 'status': STATUS_OK, 'memo': params}
 
