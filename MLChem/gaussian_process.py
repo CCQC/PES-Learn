@@ -8,6 +8,8 @@ import GPy
 from .data_sampler import DataSampler 
 from .constants import hartree2cm, package_directory 
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
+# DEBUG SEGFAULT
+import gc
 
 class GaussianProcess(Model):
     """
@@ -27,6 +29,8 @@ class GaussianProcess(Model):
                     space=self.hyperparameter_space,
                     algo=tpe.suggest,
                     max_evals=self.hp_max_evals,
+                    # set random seed for debugging
+                    rstate=np.random.RandomState(0),
                     trials=self.hyperopt_trials)
         self.print_hp_banner()
         print("Best performing hyperparameters are:")
@@ -76,8 +80,9 @@ class GaussianProcess(Model):
         self.Xtest = self.X[self.test_indices]
         self.ytest = self.y[self.test_indices]
 
-    def build_model(self, params, nrestarts=5):
+    def build_model(self, params, nrestarts=10):
         # build train test sets
+        print(params)
         self.split_train_test(params)
         # make GPy deterministic
         np.random.seed(0)
@@ -85,7 +90,7 @@ class GaussianProcess(Model):
         # TODO add HP control 
         kernel = GPy.kern.RBF(dim, ARD=True) #TODO add more kernels to hyperopt space
         model = GPy.models.GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
-        model.optimize(max_iters=600)
+        model.optimize(max_iters=600, messages=False)
         model.optimize_restarts(nrestarts, optimizer="bfgs", verbose=False, max_iters=1000)
         return model
 
@@ -100,7 +105,6 @@ class GaussianProcess(Model):
             return {'loss': 0.0, 'status': STATUS_FAIL, 'memo': 'repeat'}
         else:
             model = self.build_model(params)
-            #print(params) # debugging
             error_test = self.vet_model(model)
             return {'loss': error_test, 'status': STATUS_OK, 'memo': params}
 
@@ -158,10 +162,10 @@ class GaussianProcess(Model):
                                     [
                                     #{'fi': True,
                                     {'fi': True,
-                                        'degree_reduction': False},
-                                    #{'fi': False,
                                     #    'degree_reduction': False},
-                                        #'degree_reduction': hp.choice('degree_reduction', [True,False])},
+                                    #{'fi': False,
+                                         'degree_reduction': hp.choice('degree_reduction', [True,False])},
+                                    #    'degree_reduction': False},
                                     #{'fi': False}
                                     ]),
                       'morse_transform': hp.choice('morse_transform',
