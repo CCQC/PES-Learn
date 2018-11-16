@@ -94,7 +94,9 @@ class ConfigurationSpace(object):
                 df.loc[:,mask] = np.sort(df.loc[:,mask].values, axis=1)
 
         # Remove duplicates
-        self.unique_geometries = df.drop_duplicates(subset=self.bond_columns)
+        # take opposite of duplicate boolean Series (which marks dupes as True)
+        mask = -df.duplicated(subset=self.bond_columns)
+        self.unique_geometries = self.all_geometries.loc[mask] 
         self.n_disps = len(self.unique_geometries.index)
         print("Redundancy removal took {} seconds".format(round((timeit.default_timer() - start),2)))
         print("Removed {} redundant geometries from a set of {} geometries".format(nrows_before-self.n_disps, nrows_before))
