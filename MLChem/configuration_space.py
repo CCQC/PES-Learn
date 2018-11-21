@@ -26,6 +26,11 @@ class ConfigurationSpace(object):
         self.mol = molecule_obj
         self.input_obj = input_obj
         self.disps = self.input_obj.generate_displacements() 
+        # if equilbrium geom given, put it at beginning of self.disps
+        eq = self.input_obj.keywords['eq_geom']
+        if eq:
+            eq_geom = OrderedDict(zip(self.mol.geom_parameters, eq))
+            self.disps.insert(0, eq_geom)
         self.n_init_disps = len(self.disps)
         self.n_disps = len(self.disps)  # updated if redundancies are removed
         self.n_atoms = self.mol.n_atoms - self.mol.n_dummy

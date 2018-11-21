@@ -47,6 +47,7 @@ class InputProcessor(object):
                            'remove_redundancy': 'true', 
                            'remember_redundancy' : 'false',
                            'filter_geoms' : None,
+                           'eq_geom'      : None,
                            'pes_redundancy': 'false', 
                            'pes_format': 'interatomics',
                            'sampling': 'smart_random',
@@ -64,21 +65,15 @@ class InputProcessor(object):
                 if k not in regex_keywords:
                     value = value.lower().strip()
                 # if keyword is raw text, add quotes so it is a string
-                if (r"'" or r'"') not in value:
-                    value = ''.join((r"'",value,r"'",))
+                if re.match("[a-z\_]+", value):
+                    if (r"'" or r'"') not in value:
+                        value = "".join((r'"',value,r'"',))
                 try:
-                    # ast works for strings, lists, but not ints
                     value = ast.literal_eval(value)
                     # check if keyword is integer
-                    if value.isdigit():
-                        value = int(value)
                     string_keywords[k] = value
                 except:
                     raise Exception("\n'{}' is not a valid option for {}. Entry should be plain text or a string, i.e., surrounded by single or double quotes.".format(value,k))
-                # all keywords should now either be strings or integers
-                if not isinstance(value, str):
-                    if not isinstance(value, int):
-                        raise Exception("\n'{}' is not a valid option for {}. Entry should be plain text or a string, i.e., surrounded by single or double quotes.".format(value,k))
         return string_keywords
         
 
