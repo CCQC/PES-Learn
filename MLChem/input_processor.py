@@ -8,6 +8,7 @@ from . import molecule
 import collections
 import numpy as np
 import itertools as it
+import timeit
 import ast
 
 class InputProcessor(object):
@@ -54,7 +55,8 @@ class InputProcessor(object):
                            'n_low_energy_train': 0, 
                            'training_points': 50,
                            'hp_max_evals': 50,
-                           'hp_opt': True}
+                           'gp_ard': 'true',
+                           'hp_opt': 'true'}
         for k in string_keywords:
             match = re.search(k+"\s*=\s*(.+)", self.full_string)
             # if the keyword is mentioned
@@ -82,8 +84,8 @@ class InputProcessor(object):
         Find within the inputfile path internal coordinate range definitions
         """
         # create molecule object to obtain coordinate labels
-        mol = molecule.Molecule(self.zmat_string)
-        geomlabels = mol.geom_parameters 
+        self.mol = molecule.Molecule(self.zmat_string)
+        geomlabels = self.mol.geom_parameters 
         ranges = collections.OrderedDict()
         # for every geometry label look for its range identifer, e.g. R1 = [0.5, 1.2, 25]
         for label in geomlabels:
@@ -108,6 +110,7 @@ class InputProcessor(object):
         self.intcos_ranges = ranges
     
     def generate_displacements(self):
+        start = timeit.default_timer()
         # much faster ways to do this than itertools
         # define self.intcos_ranges()
         self.extract_intcos_ranges()
@@ -115,16 +118,16 @@ class InputProcessor(object):
         for key, value in d.items():
             if len(value) == 3:
                 d[key] = np.linspace(value[0], value[1], value[2])
-        #TODO fix cases when user inputs lists of length 2 or >3
-        geom_values = list(it.product(*d.values()))
-
+            else:
+                raise Exception("Range of parameter {} specified improperly.".format(key))
+        grid = np.meshgrid(*d.values())
+        # 2d array (ngridpoints x ndim) each row is one datapoint
+        grid = np.vstack(map(np.ravel, grid)).T
         disps = []
-        for geom in geom_values:
-            disp = collections.OrderedDict()
-            for i, key in enumerate(d):
-                disp[key] = round(geom[i], 10) # floating point noise issues
+        for gridpoint in grid:
+            disp = collections.OrderedDict([(self.mol.geom_parameters[i], gridpoint[i])  for i in range(grid.shape[1])])
             disps.append(disp)
-        self.ndisps = len(disps)
+        print("{} internal coordinate displacements generated in {} seconds".format(grid.shape[0], round((timeit.default_timer() - start),5)))
         return disps
 
         
