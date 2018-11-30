@@ -88,10 +88,13 @@ class GaussianProcess(Model):
         np.random.seed(0)
         dim = self.X.shape[1]
         # TODO add HP control 
-        kernel = GPy.kern.RBF(dim, ARD=True) #TODO add more kernels to hyperopt space
+        if self.input_obj.keywords['gp_ard'] == 'true':
+            kernel = GPy.kern.RBF(dim, ARD=True) #TODO add more kernels to hyperopt space
+        else:
+            kernel = GPy.kern.RBF(dim, ARD=False) #TODO add more kernels to hyperopt space
         model = GPy.models.GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
         model.optimize(max_iters=600, messages=False)
-        model.optimize_restarts(nrestarts, optimizer="bfgs", verbose=False, max_iters=1000)
+        model.optimize_restarts(nrestarts, optimizer="bfgs", verbose=False, max_iters=1000, messages=False)
         return model
 
     def hyperopt_model(self, params):
