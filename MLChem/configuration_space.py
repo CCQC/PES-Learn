@@ -41,7 +41,7 @@ class ConfigurationSpace(object):
 
     def generate_geometries(self):
         start = timeit.default_timer()
-        print("Number of displacements: {}".format(self.n_init_disps))
+        print("Total displacements: {}".format(self.n_init_disps))
         print("Number of interatomic distances: {}".format(self.n_interatomics))
         # grab cartesians, internals, interatomics representations of geometry
         cartesians = []
