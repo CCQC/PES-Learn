@@ -20,12 +20,12 @@ class ConfigurationSpace(object):
     Parameters
     ----------
     molecule_obj : Instance of Molecule class. Required for basic information about the molecule; internal coordinates, xyz coordinates, number of atoms
-    input_obj    : Instance of InputProcessor class. Required for user keyword considerations, and the generation of displacements.
+    input_obj    : Instance of InputProcessor class. Required for user keyword considerations.
     """
     def __init__(self, molecule_obj, input_obj):
         self.mol = molecule_obj
         self.input_obj = input_obj
-        self.disps = self.input_obj.generate_displacements() 
+        self.disps = self.generate_displacements() 
         # if equilbrium geom given, put it at beginning of self.disps
         eq = self.input_obj.keywords['eq_geom']
         if eq:
@@ -38,6 +38,25 @@ class ConfigurationSpace(object):
         self.bond_columns = []
         for i in range(self.n_interatomics):
             self.bond_columns.append("r%d" % (i))
+
+    def generate_displacements(self):
+        start = timeit.default_timer()
+        self.input_obj.extract_intcos_ranges()
+        d = self.input_obj.intcos_ranges
+        for key, value in d.items():
+            if len(value) == 3:
+                d[key] = np.linspace(value[0], value[1], value[2])
+            else:
+                raise Exception("Range of parameter {} specified improperly.".format(key))
+        grid = np.meshgrid(*d.values())
+        # 2d array (ngridpoints x ndim) each row is one datapoint
+        grid = np.vstack(map(np.ravel, grid)).T
+        disps = []
+        for gridpoint in grid:
+            disp = collections.OrderedDict([(self.mol.geom_parameters[i], gridpoint[i])  for i in range(grid.shape[1])])
+            disps.append(disp)
+        print("{} internal coordinate displacements generated in {} seconds".format(grid.shape[0], round((timeit.default_timer() - start),5)))
+        return disps
 
     def generate_geometries(self):
         start = timeit.default_timer()
@@ -173,13 +192,10 @@ class ConfigurationSpace(object):
         if self.input_obj.keywords['remove_redundancy'].lower().strip() == 'true':
             print("Removing symmetry-redundant geometries...", end='  ')
             self.remove_redundancies()
-            # keep track of redundant geometries for later?
-            if self.input_obj.keywords['remember_redundancy'].lower().strip() == 'true':
-                self.add_redundancies_back()
-            #else:
-            #    df = self.unique_geometries 
             if self.input_obj.keywords['filter_geoms']:
                 self.filter_configurations()
+            if self.input_obj.keywords['remember_redundancy'].lower().strip() == 'true':
+                self.add_redundancies_back()
             df = self.unique_geometries 
         elif self.input_obj.keywords['remove_redundancy'].lower().strip() == 'false':
             df = self.all_geometries

@@ -11,7 +11,7 @@ class DataSampler(object):
     docstring
     """
     def __init__(self, dataset, ntrain, accept_first_n=None, rseed=42):
-        # needs to be pandas dataframe 
+        # currently needs to be pandas dataframe 
         self.full_dataset = dataset.sort_values("E")
         #if "E" in dataset.columns:
         #    self.full_dataset = dataset.sort_values("E")
@@ -121,12 +121,9 @@ class DataSampler(object):
 
         The Sobol expression is as implemented in Manzhos, Carrington J Chem Phys 145, 2016, and papers they cite.
         """
-        # TODO  NOT TESTED
         # Problems:
-        # 1. causes one datapoint to be E = 0.00
-        # 2. not easily reproducible with a random seed.
-        # 3. Scaling. could in principle improve scaling by doing minibatches in while loop... e.g. test.sample(n=minibatch)
-        # 4. return X,y train,test
+        # 1. not easily reproducible with a random seed.
+        # 2. Scaling. could in principle improve scaling by doing minibatches in while loop... e.g. test.sample(n=minibatch)
         data = self.full_dataset.sort_values("E")
         data['E'] = data['E'] - data['E'].min()
         

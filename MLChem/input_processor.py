@@ -26,9 +26,9 @@ class InputProcessor(object):
         self.keywords = self.get_keywords()
         self.ndisps = None
     
-    def set_keyword(self):
-        #TODO
-        pass
+    def set_keyword(self, **kwargs):
+        for key, val in kwargs:
+            self.keywords[key] = val
         
     def get_keywords(self):
         """
@@ -50,7 +50,8 @@ class InputProcessor(object):
                            'eq_geom'      : None,
                            'pes_redundancy': 'false', 
                            'pes_format': 'interatomics',
-                           'sampling': 'smart_random',
+                           'use_pips': 'true',
+                           'sampling': 'structure_based',
                            'n_low_energy_train': 0, 
                            'training_points': 50,
                            'hp_max_evals': 50,
@@ -107,29 +108,4 @@ class InputProcessor(object):
                                    \nThe definition is either missing or improperly formatted".format(label))
                 ranges[label] = [float(match.group(1))]
         self.intcos_ranges = ranges
-    
-    def generate_displacements(self):
-        start = timeit.default_timer()
-        # much faster ways to do this than itertools
-        # define self.intcos_ranges()
-        self.extract_intcos_ranges()
-        d = self.intcos_ranges
-        for key, value in d.items():
-            if len(value) == 3:
-                d[key] = np.linspace(value[0], value[1], value[2])
-            else:
-                raise Exception("Range of parameter {} specified improperly.".format(key))
-        grid = np.meshgrid(*d.values())
-        # 2d array (ngridpoints x ndim) each row is one datapoint
-        grid = np.vstack(map(np.ravel, grid)).T
-        disps = []
-        for gridpoint in grid:
-            disp = collections.OrderedDict([(self.mol.geom_parameters[i], gridpoint[i])  for i in range(grid.shape[1])])
-            disps.append(disp)
-        print("{} internal coordinate displacements generated in {} seconds".format(grid.shape[0], round((timeit.default_timer() - start),5)))
-        return disps
-
-        
-         
-        
 
