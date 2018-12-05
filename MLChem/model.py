@@ -19,9 +19,9 @@ class Model(ABC):
         InputProcessor object from MLChem. Used for keywords related to machine learning.
 
     mol_obj : MLChem object 
-        Molecule object from MLChem. Used for molecule information.
+        Molecule object from MLChem. Used for molecule information if permutation invariant geometry basis is used.
     """
-    def __init__(self, dataset_path, input_obj, mol_obj):
+    def __init__(self, dataset_path, input_obj, mol_obj=None):
         # get PES data. #TODO relax formatting requirements, make more general
         try:
             data = pd.read_csv(dataset_path)
@@ -30,17 +30,29 @@ class Model(ABC):
 
         # data
         self.dataset = data.sort_values("E")
+        self.n_datapoints = self.dataset.shape[0]
         self.raw_X = self.dataset.values[:, :-1]
         self.raw_y = self.dataset.values[:,-1].reshape(-1,1)
         # settings, molecule information
         self.input_obj = input_obj
         self.mol = mol_obj
+        self.pip = False
+        if self.input_obj.keywords['use_pips'] == 'true':
+            if self.mol:
+                self.pip = True
+            else:
+                raise Exception("The use of permutation invariant polynomials ('use_pips' = true) requires Model objects are instantiated with a Molecule object: model = Model(dataset_path, input_obj, mol_obj)")
+        else:
+            print("Warning: Molecular geometry will not be transformed to permutation-invariant representation ('use_pips' = false). The model will therefore not generalize to symmetry-equivalent points. Ensure that the dataset is properly built to compensate for this.")
+
         # keyword control
         self.ntrain = self.input_obj.keywords['training_points']
+        if self.ntrain >= self.dataset.shape[0]:
+            raise Exception("Requested number of training points is greater than size of the dataset.")
         self.hp_max_evals = self.input_obj.keywords['hp_max_evals']
         self.sampler = self.input_obj.keywords['sampling']
         # for input, output style
-        self.do_hp_opt = self.input_obj.keywords['hp_opt']  #(bool)
+        self.do_hp_opt = self.input_obj.keywords['hp_opt']
         # more keywords...
 
         # train test split
