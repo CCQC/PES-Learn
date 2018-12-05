@@ -36,7 +36,7 @@ class InputProcessor(object):
         """
         # keywords which have values that are strings, not other datatypes
         regex_keywords = {'energy_regex': None, 'gradient_header': None, 'gradient_footer': None, 
-                          'gradient_line': None}
+                          'gradient_line': None, 'input_name': 'input.dat'}
         string_keywords = {'energy': None, 
                            'energy_regex': None, 
                            'energy_cclib': None,
@@ -44,7 +44,6 @@ class InputProcessor(object):
                            'gradient_header': None, 
                            'gradient_footer': None, 
                            'gradient_line': None,
-                           'input_name': 'input.dat', 
                            'remove_redundancy': 'true', 
                            'remember_redundancy' : 'false',
                            'filter_geoms' : None,
