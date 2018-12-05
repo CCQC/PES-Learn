@@ -36,3 +36,5 @@ if text == 'learn':
     gp = MLChem.gaussian_process.GaussianProcess("PES.dat", input_obj, mol)
     gp.optimize_model()
     
+stop = time.default_timer()
+print("Total run time: {} seconds".format(stop - start))
