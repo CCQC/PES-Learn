@@ -51,7 +51,7 @@ class GaussianProcess(Model):
         with open('model.json', 'w') as f:
             json.dump(model_dict, f)
         with open('modeldata', 'w') as f:
-            json.dump(self.optimal_hyperparameters, f)
+            f.write(json.dumps(self.optimal_hyperparameters))
     
     def vet_model(self, model):
         """Convenience method for getting model errors of test and full datasets"""
