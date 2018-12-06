@@ -53,7 +53,7 @@ class ConfigurationSpace(object):
         grid = np.vstack(map(np.ravel, grid)).T
         disps = []
         for gridpoint in grid:
-            disp = collections.OrderedDict([(self.mol.geom_parameters[i], gridpoint[i])  for i in range(grid.shape[1])])
+            disp = OrderedDict([(self.mol.geom_parameters[i], gridpoint[i])  for i in range(grid.shape[1])])
             disps.append(disp)
         print("{} internal coordinate displacements generated in {} seconds".format(grid.shape[0], round((timeit.default_timer() - start),5)))
         return disps
