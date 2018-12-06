@@ -44,6 +44,7 @@ class InputProcessor(object):
                            'gradient_header': None, 
                            'gradient_footer': None, 
                            'gradient_line': None,
+                           'input_name': 'input.dat',
                            'remove_redundancy': 'true', 
                            'remember_redundancy' : 'false',
                            'filter_geoms' : None,
