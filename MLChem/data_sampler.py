@@ -155,7 +155,7 @@ class DataSampler(object):
         Based on the algorithm described in Dral et al, J Chem Phys, 146, 244108, 2017
         and references therein. Please cite appropriately if used. 
         First the point closest to the global minimum is taken as the first training point.
-        The second training point is that which is 'farthest' from the first.
+        The second training point is that which is 'furthest' from the first.
         Each additional training point is added by  
         1. For each new training point candidate, compute shortest distance 
                 to every point in training set.
@@ -204,7 +204,8 @@ class DataSampler(object):
 
         indices = np.arange(self.dataset_size)
         test_indices = np.delete(indices, indices[train_indices])
-        train_indices = np.sort(train_indices)
+        # do not sort. This ruins the building-up method of the PES
+        #train_indices = np.sort(train_indices)
 
         self.set_indices(train_indices, test_indices)
 
