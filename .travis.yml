@@ -31,6 +31,7 @@ before_install:
   - pip install tensorflow
   - pip install -U scikit-learn
   - pip install hyperopt
+  - pip install GPy
 
 # Install the plugin locally
   - pip install -e .
