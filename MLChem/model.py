@@ -1,6 +1,11 @@
 from abc import ABC, abstractmethod
 from .data_sampler import DataSampler 
 import pandas as pd
+import warnings
+# GPy and sklearn output a bunch of annoying warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=RuntimeWarning)
+
 
 class Model(ABC):
     """
@@ -8,6 +13,7 @@ class Model(ABC):
 
     Subclasses which inherit from Model: 
     - GaussianProcess
+    - NeuralNetwork
 
     Parameters
     ----------
@@ -19,7 +25,7 @@ class Model(ABC):
         InputProcessor object from MLChem. Used for keywords related to machine learning.
 
     mol_obj : MLChem object 
-        Molecule object from MLChem. Used for molecule information if permutation invariant geometry basis is used.
+        Molecule object from MLChem. Used for molecule information if permutation-invariant geometry  representation is used.
     """
     def __init__(self, dataset_path, input_obj, mol_obj=None):
         # get PES data. #TODO relax formatting requirements, make more general
