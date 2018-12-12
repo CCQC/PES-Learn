@@ -29,6 +29,8 @@ before_install:
   - pip install cclib 
   - pip install keras
   - pip install tensorflow
+  - pip install -U scikit-learn
+  - pip install hyperopt
 
 # Install the plugin locally
   - pip install -e .
