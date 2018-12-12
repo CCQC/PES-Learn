@@ -12,6 +12,8 @@ import pandas as pd
 import numpy as np
 pd.set_option('display.width',200)
 pd.set_option('display.max_colwidth',200)
+pd.set_option('display.max_columns',200)
+pd.set_option('display.max_rows',1000)
 
 class ConfigurationSpace(object):
     """
@@ -113,8 +115,10 @@ class ConfigurationSpace(object):
                 mask = df_cols[cut]
                 df.loc[:,mask] = np.sort(df.loc[:,mask].values, axis=1)
             else:
-                mask = df_cols[i+1:self.n_interatomics]
-                #mask = df_cols[i+1:]
+                # THIS WORKED FOR H2CO but not H2O:
+                #mask = df_cols[i+1:self.n_interatomics]
+                # This works for H2O and H2CO
+                mask = df_cols[i:self.n_interatomics]
                 df.loc[:,mask] = np.sort(df.loc[:,mask].values, axis=1)
 
         # Remove duplicates
@@ -192,6 +196,9 @@ class ConfigurationSpace(object):
         if self.input_obj.keywords['remove_redundancy'].lower().strip() == 'true':
             print("Removing symmetry-redundant geometries...", end='  ')
             self.remove_redundancies()
+            # for debugging suspicious redundancy removal:
+            #self.old_remove_redundancies()
+
             if self.input_obj.keywords['filter_geoms']:
                 self.filter_configurations()
             if self.input_obj.keywords['remember_redundancy'].lower().strip() == 'true':
