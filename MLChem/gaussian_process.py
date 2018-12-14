@@ -61,7 +61,7 @@ class GaussianProcess(Model):
         error_full, max_errors = self.compute_error(self.X, self.y, pred_full, self.yscaler, 10)
         print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='    ')
         print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='    ')
-        print("Max 10 errors: {}".format(np.round(max_errors.flatten(),1)), end='    ')
+        print("Max 10 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))), end='    ')
         return error_test
 
     def split_train_test(self, params):
