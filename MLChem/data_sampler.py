@@ -57,8 +57,8 @@ class DataSampler(object):
         y = data[:,-1].reshape(-1,1)
         indices = np.arange(self.dataset_size)
         train_indices, test_indices  = train_test_split(indices, train_size=self.ntrain, random_state=self.rseed)
-        if self.first_n:
-            train_indices = self.include_first_n(train_indices)
+        #if self.first_n:
+        #    train_indices = self.include_first_n(train_indices)
 
         self.set_indices(train_indices, test_indices)
 
