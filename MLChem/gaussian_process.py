@@ -16,6 +16,12 @@ class GaussianProcess(Model):
     """
     def __init__(self, dataset_path, input_obj, mol_obj=None):
         super().__init__(dataset_path, input_obj, mol_obj)
+        self.set_default_hyperparameters()
+        if self.pip:
+            val =  hp.choice('pip',[{'pip': True,'degree_reduction': hp.choice('degree_reduction', [True,False])}])
+            self.set_hyperparameter('pip', val)
+        else:
+            self.set_hyperparameter('pip', hp.choice('pip', [False]))
 
     def optimize_model(self):
         print("Beginning hyperparameter optimization...")
@@ -23,7 +29,6 @@ class GaussianProcess(Model):
         print("Training with {} points (Full dataset contains {} points).".format(self.ntrain, self.n_datapoints))
         print("Using {} training set point sampling.".format(self.sampler))
         self.hyperopt_trials = Trials()
-        self.set_hyperparameter_space()
         best = fmin(self.hyperopt_model,
                     space=self.hyperparameter_space,
                     algo=tpe.suggest,
@@ -32,7 +37,6 @@ class GaussianProcess(Model):
                     #rstate=np.random.RandomState(0),
                     rstate=None, 
                     trials=self.hyperopt_trials)
-        #self.print_hp_banner()
         hyperopt_complete()
         print("Best performing hyperparameters are:")
         final = space_eval(self.hyperparameter_space, best)
@@ -47,11 +51,15 @@ class GaussianProcess(Model):
         # Currently GPy requires saving training data in model for some reason. 
         # Repeated calls can be costly if a lot of training points are used.
         model_dict = best_model.to_dict(save_data=True)
-        print("Saving ML model to file 'model.json'...")
+        print("Saving ML model data...") 
+        os.mkdir("model_data")
+        os.chdir("model_data")
         with open('model.json', 'w') as f:
             json.dump(model_dict, f)
-        with open('modeldata', 'w') as f:
-            f.write(json.dumps(self.optimal_hyperparameters))
+        with open('hyperparameters', 'w') as f:
+            print(self.optimal_hyperparameters, file=f)
+            #f.write(json.dumps(self.optimal_hyperparameters))
+        os.chdir("../")
     
     def vet_model(self, model):
         """Convenience method for getting model errors of test and full datasets"""
@@ -61,7 +69,7 @@ class GaussianProcess(Model):
         error_full, max_errors = self.compute_error(self.X, self.y, pred_full, self.yscaler, 10)
         print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='    ')
         print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='    ')
-        print("Max 10 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))), end='    ')
+        print("Max 10 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))))
         return error_test
 
     def split_train_test(self, params):
@@ -86,7 +94,7 @@ class GaussianProcess(Model):
 
     def build_model(self, params, nrestarts=10):
         # build train test sets
-        print(params)
+        print("Hyperparameters: ", params)
         self.split_train_test(params)
         # make GPy deterministic
         np.random.seed(0)
@@ -121,7 +129,7 @@ class GaussianProcess(Model):
      
     def compute_error(self, X, y, prediction, yscaler, max_errors=None):
         """
-        Predict the root-mean-square error of model given 
+        Predict the root-mean-square error (in wavenumbers) of model given 
         known X,y, a prediction, and a y scaling object, if it exists.
         
         Parameters
@@ -139,6 +147,7 @@ class GaussianProcess(Model):
 
         Returns
         -------
+        
         """
         if yscaler:
             raw_y = yscaler.inverse_transform(y)
@@ -156,31 +165,42 @@ class GaussianProcess(Model):
             return error, largest_errors
         else:
             return error
+        
+    def set_hyperparameter(self, key, val):
+        """
+        Set hyperparameter 'key' to value 'val'.
+        Parameters
+        ---------
+        key : str
+            A hyperparameter name
+        val : obj
+            A HyperOpt object such as hp.choice, hp.uniform, etc.
+        """
+        self.hyperparameter_space[key] = val
 
-    def set_hyperparameter_space(self, manual_hp_space=None):
+    def get_hyperparameters(self):
+        """
+        Returns hyperparameters of this model
+        """
+        return self.hyperparameter_space
+    
+
+    def set_default_hyperparameters(self):
         """
         Setter for hyperparameter space. If none is provided, default is used.
         """
-        if manual_hp_space:
-            self.hyperparameter_space = manual_hp_space
-        else:
-            self.hyperparameter_space = {
-                      'fi_transform': hp.choice('fi_transform',
-                                    [
-                                    {'fi': True,
-                                         'degree_reduction': hp.choice('degree_reduction', [True,False])},
-                                    ]),
-                      'morse_transform': hp.choice('morse_transform',
-                                    [
-                                    {'morse': True,
-                                        'morse_alpha': hp.uniform('morse_alpha', 1.0, 2.0)},
-                                    {'morse': False}
-                                    ]),
-                      'scale_X': hp.choice('scale_X', ['std', 'mm01', 'mm11', None]),
-                      'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11', None]),
-                      }
-             #TODO add optional space inclusions 
-             # something like: if option: self.hyperparameter_space['newoption'] = hp.choice(..)
+        self.hyperparameter_space = {
+                                    'morse_transform': hp.choice('morse_transform',
+                                        [
+                                        {'morse': True,
+                                            'morse_alpha': hp.uniform('morse_alpha', 1.0, 2.0)},
+                                        {'morse': False}
+                                        ]),
+                                    'scale_X': hp.choice('scale_X', ['std', 'mm01', 'mm11', None]),
+                                    'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11', None]),
+                                    }
+         #TODO add optional space inclusions 
+         # something like: if option: self.hyperparameter_space['newoption'] = hp.choice(..)
 
     def preprocess(self, params, raw_X, raw_y):
         """
@@ -191,19 +211,12 @@ class GaussianProcess(Model):
         if params['morse_transform']['morse']:
             raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])
         # Transform to FIs, degree reduce if called
-        if self.pip:
+        if params['pip']:
             # find path to fundamental invariants for an N atom system with molecule type AxByCz...
             path = os.path.join(package_directory, "lib", str(sum(self.mol.atom_count_vector))+"_atom_system", self.mol.molecule_type, "output")
             raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
-            if params['fi_transform']['degree_reduction']:
+            if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
-
-        #if params['fi_transform']['fi']:
-        #    # find path to fundamental invariants for an N atom system with molecule type AxByCz...
-        #    path = os.path.join(package_directory, "lib", str(sum(self.mol.atom_count_vector))+"_atom_system", self.mol.molecule_type, "output")
-        #    raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
-        #    if params['fi_transform']['degree_reduction']:
-        #        raw_X = degree_reduce(raw_X, degrees)
         
         # Scaling
         if params['scale_X']:
@@ -231,19 +244,12 @@ class GaussianProcess(Model):
             
         if params['morse_transform']['morse']:
             newX = morse(newX, params['morse_transform']['morse_alpha'])
-        # Transform to FIs, degree reduce if called
-        if self.pip:
+        if params['pip']:
             # find path to fundamental invariants for an N atom system with molecule type AxByCz...
             path = os.path.join(package_directory, "lib", str(sum(self.mol.atom_count_vector))+"_atom_system", self.mol.molecule_type, "output")
             newX, degrees = interatomics_to_fundinvar(newX,path)
-            if params['fi_transform']['degree_reduction']:
-                raw_X = degree_reduce(newX, degrees)
-        #if params['fi_transform']['fi']:
-        #    # find path to fundamental invariants for an N atom system with molecule type AxByCz...
-        #    path = os.path.join(package_directory, "lib", str(sum(self.mol.atom_count_vector))+"_atom_system", self.mol.molecule_type, "output")
-        #    newX, degrees = interatomics_to_fundinvar(newX,path)
-        #    if params['fi_transform']['degree_reduction']:
-        #        newX = degree_reduce(newX, degrees)
+            if params['pip']['degree_reduction']:
+                newX = degree_reduce(newX, degrees)
 
         if Xscaler:
             newX = Xscaler.transform(newX)
