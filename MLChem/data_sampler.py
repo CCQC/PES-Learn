@@ -6,19 +6,31 @@ import pandas as pd
 from scipy import stats
 from sklearn.model_selection import train_test_split
 
+
+# TODO: currently, n_low_energy_train interferes with number of training points
+# 
 class DataSampler(object):
     """
     docstring
     """
     def __init__(self, dataset, ntrain, accept_first_n=None, rseed=42):
-        # currently needs to be pandas dataframe 
         self.full_dataset = dataset.sort_values("E")
+        if accept_first_n:
+            if accept_first_n > ntrain:
+                raise Exception("Number of forced low-energy training points exceeds the indicated total training set size")
+            # remove first n points 
+            self.dataset = self.full_dataset[accept_first_n:]
+            self.ntrain = ntrain - accept_first_n
+        else:
+            self.ntrain = ntrain
+            self.dataset = self.full_dataset
+            
+        self.dataset_size = self.dataset.shape[0]
+        # currently needs to be pandas dataframe 
         #if "E" in dataset.columns:
         #    self.full_dataset = dataset.sort_values("E")
         #else:
         #    self.full_dataset = dataset
-        self.dataset_size = dataset.shape[0]
-        self.ntrain = ntrain
         self.rseed = rseed
         self.first_n = accept_first_n
         self.train_indices = None
@@ -26,6 +38,9 @@ class DataSampler(object):
 
     def set_indices(self, train_indices, test_indices):
         if self.first_n:
+            # train/test indices were obtained relative to the dataset that had removed first n datapoints, adjust accordingly 
+            train_indices += self.first_n 
+            test_indices += self.first_n 
             self.train_indices, self.test_indices = self.include_first_n(train_indices, test_indices)
         else:
             self.train_indices = train_indices
@@ -52,7 +67,7 @@ class DataSampler(object):
         """
         Randomly sample the dataset to obtain a training set of proper size.
         """
-        data = self.full_dataset.values
+        data = self.dataset.values
         X = data[:, :-1]
         y = data[:,-1].reshape(-1,1)
         indices = np.arange(self.dataset_size)
@@ -67,7 +82,7 @@ class DataSampler(object):
         Choose a random training set that has an energy distribution most resembling that of the full dataset.
         Uses the Chi-Squared method to estimate the similarity of the energy distrubtions.
         """
-        data = self.full_dataset.values
+        data = self.dataset.values
         X = data[:, :-1]
         y = data[:,-1].reshape(-1,1)
         full_dataset_dist, binedges = np.histogram(y, bins='auto', density=True)
@@ -93,7 +108,7 @@ class DataSampler(object):
         Warning: Does not return exact number of desired training points. 
         """
         # check if dataset is already sorted in increasing energy:
-        if (np.diff(self.full_dataset['E']) > 0).all() == False:
+        if (np.diff(self.dataset['E']) > 0).all() == False:
             raise Exception("Dataset must be sorted by energy for energy ordered training set selection.")
           
         interval = round(self.dataset_size / self.ntrain)
@@ -124,7 +139,7 @@ class DataSampler(object):
         # Problems:
         # 1. not easily reproducible with a random seed.
         # 2. Scaling. could in principle improve scaling by doing minibatches in while loop... e.g. test.sample(n=minibatch)
-        data = self.full_dataset.sort_values("E")
+        data = self.dataset.sort_values("E")
         data['E'] = data['E'] - data['E'].min()
         
         max_e = data['E'].max()
@@ -163,7 +178,7 @@ class DataSampler(object):
         3. Add this candidate to the training set, remove from the test set.
         4. Repeat 1-3 until desired number of points obtained.
         """
-        data = self.full_dataset
+        data = self.dataset
         train = []
         train.append(data.values[0])
 
@@ -204,6 +219,7 @@ class DataSampler(object):
 
         indices = np.arange(self.dataset_size)
         test_indices = np.delete(indices, indices[train_indices])
+        train_indices = np.asarray(train_indices)
         # do not sort. This ruins the building-up method of the PES
         #train_indices = np.sort(train_indices)
 
