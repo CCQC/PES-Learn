@@ -6,7 +6,6 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
 
-
 class Model(ABC):
     """
     Abstract class for Machine Learning Models
@@ -76,7 +75,6 @@ class Model(ABC):
         elif self.sampler == 'sobol':
             sample.sobol()
         self.train_indices, self.test_indices = sample.get_indices()
-
         super().__init__()
 
     @abstractmethod
