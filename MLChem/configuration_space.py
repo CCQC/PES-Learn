@@ -45,17 +45,25 @@ class ConfigurationSpace(object):
         start = timeit.default_timer()
         self.input_obj.extract_intcos_ranges()
         d = self.input_obj.intcos_ranges
+        #print(d.items())
         for key, value in d.items():
             if len(value) == 3:
+                print('yes!')
                 d[key] = np.linspace(value[0], value[1], value[2])
-            else:
-                raise Exception("Range of parameter {} specified improperly.".format(key))
+            if len(value) == 1:
+                print('yes!')
+                d[key] = np.asarray(value[0])    
+            # somehow this was breaking for dummy atom ch3 test?
+            #else:
+            #    print('no!')
+            #    print(key,value,len(value))
+            #    raise Exception("Range of parameter {} specified improperly.".format(key))
         grid = np.meshgrid(*d.values())
         # 2d array (ngridpoints x ndim) each row is one datapoint
         grid = np.vstack(map(np.ravel, grid)).T
         disps = []
         for gridpoint in grid:
-            disp = OrderedDict([(self.mol.geom_parameters[i], gridpoint[i])  for i in range(grid.shape[1])])
+            disp = OrderedDict([(self.mol.unique_geom_parameters[i], gridpoint[i])  for i in range(grid.shape[1])])
             disps.append(disp)
         print("{} internal coordinate displacements generated in {} seconds".format(grid.shape[0], round((timeit.default_timer() - start),5)))
         return disps

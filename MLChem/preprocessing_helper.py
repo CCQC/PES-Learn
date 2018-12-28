@@ -27,7 +27,6 @@ def morse(raw_X, alpha=1.00):
     """
     return np.exp(-raw_X / alpha)
 
-
 def interatomics_to_fundinvar(raw_X, fi_path):
     """
     Transfrom interatom distances to fundamental invariants 
@@ -40,7 +39,7 @@ def interatomics_to_fundinvar(raw_X, fi_path):
         r4 r5 r6...
         where the order of atoms along columns/rows of interatomic distance matrix  
         is determined by highest frequency atoms first, alphabetical tiebreaker) 
-        e.g. HCOOH --> HHOOC
+        e.g. HCOOH would be ordered as HHOOC
     fi_path : str
         Path to Singular outputfile containing Fundamental Invariants
     """
