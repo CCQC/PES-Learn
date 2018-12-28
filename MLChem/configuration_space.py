@@ -48,10 +48,8 @@ class ConfigurationSpace(object):
         #print(d.items())
         for key, value in d.items():
             if len(value) == 3:
-                print('yes!')
                 d[key] = np.linspace(value[0], value[1], value[2])
             if len(value) == 1:
-                print('yes!')
                 d[key] = np.asarray(value[0])    
             # somehow this was breaking for dummy atom ch3 test?
             #else:

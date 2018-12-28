@@ -110,6 +110,5 @@ class InputProcessor(object):
                     raise Exception("\nDefinition of parameter {} not found in geometry input.      \
                                    \nThe definition is either missing or improperly formatted".format(label))
                 ranges[label] = [float(match.group(1))]
-        print(ranges)
         self.intcos_ranges = ranges
 
