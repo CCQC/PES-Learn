@@ -2,6 +2,8 @@ import numpy as np
 import sklearn.metrics
 import json
 import os
+import re
+import sys
 from .model import Model
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
 import GPy
@@ -52,14 +54,25 @@ class GaussianProcess(Model):
         # Repeated calls can be costly if a lot of training points are used.
         model_dict = best_model.to_dict(save_data=True)
         print("Saving ML model data...") 
-        os.mkdir("model_data")
-        os.chdir("model_data")
+
+        model_path = "model1_data"
+        while os.path.isdir(model_path):
+            new = int(re.findall("\d+", model_path)[0]) + 1
+            model_path = re.sub("\d+",str(new), model_path)
+        os.mkdir(model_path)
+        os.chdir(model_path)
         with open('model.json', 'w') as f:
             json.dump(model_dict, f)
         with open('hyperparameters', 'w') as f:
             print(self.optimal_hyperparameters, file=f)
-            #f.write(json.dumps(self.optimal_hyperparameters))
+        self.dataset.iloc[self.train_indices].to_csv('train_set',sep=',',index=False,float_format='%12.12f')
+        self.dataset.iloc[self.test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
+        # print model performance
+        sys.stdout = open('performance', 'w')  
+        self.vet_model(best_model)
+        sys.stdout = sys.__stdout__
         os.chdir("../")
+            
     
     def vet_model(self, model):
         """Convenience method for getting model errors of test and full datasets"""
