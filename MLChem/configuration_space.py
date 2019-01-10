@@ -95,7 +95,7 @@ class ConfigurationSpace(object):
     def remove_redundancies(self):
         """
         Very fast algorithm for removing redundant geometries from a configuration space
-        Has been confirmed to work for C3H2, H2CO, H2O. 
+        Has been confirmed to work for C3H2, H2CO, H2O, CH4
         Not proven.
         """
         start = timeit.default_timer()

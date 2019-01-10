@@ -74,6 +74,8 @@ class Model(ABC):
             sample.structure_based()
         elif self.sampler == 'sobol':
             sample.sobol()
+        elif self.sampler == 'energy_ordered':
+            sample.energy_ordered()
         self.train_indices, self.test_indices = sample.get_indices()
         super().__init__()
 

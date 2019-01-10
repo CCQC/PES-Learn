@@ -107,17 +107,11 @@ class DataSampler(object):
         A dataset first needs to be sorted by energy before calling.
         Warning: Does not return exact number of desired training points. 
         """
-        # check if dataset is already sorted in increasing energy:
-        if (np.diff(self.dataset['E']) > 0).all() == False:
-            raise Exception("Dataset must be sorted by energy for energy ordered training set selection.")
-          
         interval = round(self.dataset_size / self.ntrain)
         indices = np.arange(self.dataset_size)
         train_indices = indices[0::interval]
         test_indices = np.delete(indices, indices[0::interval])
-
         self.set_indices(train_indices, test_indices)
-        #return train_indices, test_indices
 
     def sobol(self, delta=0.002278):
         """

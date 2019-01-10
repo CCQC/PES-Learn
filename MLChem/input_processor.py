@@ -20,7 +20,8 @@ class InputProcessor(object):
         #with open(self.input_path, 'r') as f:
         #    self.full_string = f.read() 
         self.full_string = input_string
-        self.zmat_string = re.findall(regex.intcoords_regex, self.full_string)[0] 
+        if re.search(regex.intcoords_regex, self.full_string):
+            self.zmat_string = re.findall(regex.intcoords_regex, self.full_string)[0] 
         self.intcos_ranges = None 
         #self.extract_intcos_ranges()
         self.keywords = self.get_keywords()
@@ -87,6 +88,7 @@ class InputProcessor(object):
         Find within the inputfile path internal coordinate range definitions
         """
         # create molecule object to obtain coordinate labels
+        self.zmat_string = re.findall(regex.intcoords_regex, self.full_string)[0] 
         self.mol = molecule.Molecule(self.zmat_string)
         geomlabels = self.mol.geom_parameters 
         ranges = collections.OrderedDict()
