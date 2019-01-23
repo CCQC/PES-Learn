@@ -37,7 +37,7 @@ before_install:
   - pip install -e .
 
 script:
-  - py.test -v --cov=./
+  - pytest -v --cov=./
 
 # after_success:
 #   - ./tools/travis-upload-wheel.sh
