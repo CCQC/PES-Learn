@@ -2,16 +2,16 @@
 Test the TemplateProcessor class methods
 """
 
-import MLChem
+import peslearn
 import pytest
 import re
 
 path = 'tests/datafiles/xyz_template'
-template_object = MLChem.template_processor.TemplateProcessor(path)
+template_object = peslearn.template.Template(path)
 
 def test_extract_xyz():
     x = template_object.extract_xyz()
-    assert re.match(MLChem.regex.xyz_block_regex, x)
+    assert re.match(peslearn.regex.xyz_block_regex, x)
    
 def test_header_xyz():
     x = template_object.header_xyz()

@@ -2,12 +2,12 @@ import setuptools
 
 if __name__ == "__main__":
     setuptools.setup(
-        name='MLChem',
+        name='PES-Learn',
         version="0.0.1",
-        description='A project in collaboration with the Molecular Sciences Software Institute',
+        description='Automated Construction of Machine Learning Models of Molecular Potential Energy Surfaces.',
         author='Adam Abbott',
         author_email='adabbott@uga.edu',
-        url="https://github.com/adabbott/MLChem",
+        url="https://github.com/adabbott/PES-Learn",
         license='BSD-3C',
         packages=setuptools.find_packages(),
         install_requires=[
@@ -38,7 +38,6 @@ if __name__ == "__main__":
         classifiers=[
             'Development Status :: 1 - Planning',
             'Intended Audience :: Science/Research',
-            'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
         ],
         zip_safe=True,

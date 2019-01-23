@@ -3,8 +3,8 @@ A class for extracting information from the main input of the user
 """
 
 from . import regex 
-import re
 from . import molecule
+import re
 import collections
 import numpy as np
 import itertools as it
@@ -27,8 +27,8 @@ class InputProcessor(object):
         self.keywords = self.get_keywords()
         self.ndisps = None
     
-    def set_keyword(self, **kwargs):
-        for key, val in kwargs:
+    def set_keyword(self, d):
+        for key, val in d.items():
             self.keywords[key] = val
         
     def get_keywords(self):
@@ -44,24 +44,25 @@ class InputProcessor(object):
                            'gradient': None, 
                            'gradient_header': None, 
                            'gradient_footer': None, 
-                           'gradient_line': None,
-                           'input_name': 'input.dat',
-                           'ml_model': 'gp',
-                           'pes_name': 'PES.dat',
-                           'pes_redundancy': 'false', 
-                           'pes_format': 'interatomics',
-                           'remove_redundancy': 'true', 
-                           'remember_redundancy' : 'false',
-                           'filter_geoms' : None,
-                           'eq_geom'      : None,
-                           'use_pips': 'true',
-                           'sort_pes': 'true',
-                           'sampling': 'structure_based',
-                           'n_low_energy_train': 0, 
-                           'training_points': 50,
-                           'hp_max_evals': 50,
-                           'gp_ard': 'true',
-                           'hp_opt': 'true'}
+                           'gradient_line': None,            
+                           'input_name': 'input.dat',        # any input file name
+                           'ml_model': 'gp',                 # 'nn'
+                           'pes_name': 'PES.dat',            # any name
+                           'pes_redundancy': 'false',        # 'true'
+                           'pes_format': 'interatomics',     # 'zmat'
+                           'remove_redundancy': 'true',      # 'false'
+                           'remember_redundancy' : 'false',  # 'true'
+                           'filter_geoms' : None,            # any int
+                           'eq_geom'      : None,            #[1.05, 1.15, 104.5] etc
+                           'use_pips': 'true',               #'false'
+                           'sort_pes': 'true',               #'false'
+                           'sampling': 'structure_based',    #'sobol', 'smart_random', 'random', 'energy_ordered'
+                           'n_low_energy_train': 0,          # any int
+                           'training_points': 50,            # any int
+                           'hp_max_evals': 50,               # any int
+                           'gp_ard': 'true',                 # 'false'
+                           'hp_opt': 'true'}                 # 'false'
+
         for k in string_keywords:
             match = re.search(k+"\s*=\s*(.+)", self.full_string)
             # if the keyword is mentioned

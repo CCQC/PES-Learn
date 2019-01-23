@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import os
 import json
-from .outputfile import OutputFile
 from collections import OrderedDict
+from .outputfile import OutputFile
 
 def parse(input_obj, mol): 
     # define energy extraction routine based on user keywords
