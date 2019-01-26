@@ -20,73 +20,45 @@ class GaussianProcess(Model):
     def __init__(self, dataset_path, input_obj, mol_obj=None):
         super().__init__(dataset_path, input_obj, mol_obj)
         self.set_default_hyperparameters()
+    
+    def get_hyperparameters(self):
+        """
+        Returns hyperparameters of this model
+        """
+        return self.hyperparameter_space
+
+    def set_hyperparameter(self, key, val):
+        """
+        Set hyperparameter 'key' to value 'val'.
+        Parameters
+        ---------
+        key : str
+            A hyperparameter name
+        val : obj
+            A HyperOpt object such as hp.choice, hp.uniform, etc.
+        """
+        self.hyperparameter_space[key] = val
+
+    def set_default_hyperparameters(self):
+        """
+        Set default hyperparameter space. If none is provided, default is used.
+        """
+        self.hyperparameter_space = {
+                                    'scale_X': hp.choice('scale_X', ['std', 'mm01', 'mm11', None]),
+                                    'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11', None]),
+                                    }
+
+        if self.input_obj.keywords['pes_format'] == 'interatomics':
+            self.hyperparameter_space['morse_transform'] = hp.choice('morse_transform',[{'morse': True,'morse_alpha': hp.uniform('morse_alpha', 1.0, 2.0)},{'morse': False}])
+        else:
+            self.hyperparameter_space['morse_transform'] = hp.choice('morse_transform',[{'morse': False}])
         if self.pip:
             val =  hp.choice('pip',[{'pip': True,'degree_reduction': hp.choice('degree_reduction', [True,False])}])
             self.set_hyperparameter('pip', val)
         else:
             self.set_hyperparameter('pip', hp.choice('pip', [False]))
-
-    def optimize_model(self):
-        print("Beginning hyperparameter optimization...")
-        print("Trying {} combinations of hyperparameters".format(self.hp_max_evals))
-        print("Training with {} points (Full dataset contains {} points).".format(self.ntrain, self.n_datapoints))
-        print("Using {} training set point sampling.".format(self.sampler))
-        self.hyperopt_trials = Trials()
-        best = fmin(self.hyperopt_model,
-                    space=self.hyperparameter_space,
-                    algo=tpe.suggest,
-                    max_evals=self.hp_max_evals,
-                    # set random seed for debugging
-                    #rstate=np.random.RandomState(0),
-                    rstate=None, 
-                    trials=self.hyperopt_trials)
-        hyperopt_complete()
-        print("Best performing hyperparameters are:")
-        final = space_eval(self.hyperparameter_space, best)
-        print(str(sorted(final.items())))
-        self.optimal_hyperparameters  = dict(final)
-        # obtain final model from best hyperparameters
-        print("Fine-tuning final model architecture...")
-        #best_model = self.build_model(self.optimal_hyperparameters, nrestarts=10)
-        #self.vet_model(best_model)
-        self.build_model(self.optimal_hyperparameters, nrestarts=10)
-        self.vet_model(self.model)
-        print("Final model performance (cm-1):")
-        # Save model
-        # Currently GPy requires saving training data in model for some reason. 
-        # Repeated calls can be costly if a lot of training points are used.
-        model_dict = self.model.to_dict(save_data=True)
-        print("Saving ML model data...") 
-
-        model_path = "model1_data"
-        while os.path.isdir(model_path):
-            new = int(re.findall("\d+", model_path)[0]) + 1
-            model_path = re.sub("\d+",str(new), model_path)
-        os.mkdir(model_path)
-        os.chdir(model_path)
-        with open('model.json', 'w') as f:
-            json.dump(model_dict, f)
-        with open('hyperparameters', 'w') as f:
-            print(self.optimal_hyperparameters, file=f)
-        self.dataset.iloc[self.train_indices].to_csv('train_set',sep=',',index=False,float_format='%12.12f')
-        self.dataset.iloc[self.test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
-        # print model performance
-        sys.stdout = open('performance', 'w')  
-        self.vet_model(self.model)
-        sys.stdout = sys.__stdout__
-        os.chdir("../")
-            
-    
-    def vet_model(self, model):
-        """Convenience method for getting model errors of test and full datasets"""
-        pred_test = self.predict(model, self.Xtest)
-        pred_full = self.predict(model, self.X)
-        error_test = self.compute_error(self.Xtest, self.ytest, pred_test, self.yscaler)
-        error_full, max_errors = self.compute_error(self.X, self.y, pred_full, self.yscaler, 10)
-        print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='    ')
-        print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='    ')
-        print("Max 10 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))))
-        return error_test
+         #TODO add optional space inclusions 
+         # something like: if option: self.hyperparameter_space['newoption'] = hp.choice(..)
 
     def split_train_test(self, params):
         """
@@ -123,10 +95,6 @@ class GaussianProcess(Model):
         self.model = GPy.models.GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
         self.model.optimize(max_iters=500, messages=False)
         self.model.optimize_restarts(nrestarts, optimizer="bfgs", verbose=False, max_iters=500, messages=False)
-        #model = GPy.models.GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
-        #model.optimize(max_iters=600, messages=False)
-        #model.optimize_restarts(nrestarts, optimizer="bfgs", verbose=False, max_iters=1000, messages=False)
-        #return model
 
     def hyperopt_model(self, params):
         # skip building this model if hyperparameter combination already attempted
@@ -138,90 +106,23 @@ class GaussianProcess(Model):
         if is_repeat:
             return {'loss': 0.0, 'status': STATUS_FAIL, 'memo': 'repeat'}
         else:
-            #model = self.build_model(params)
             self.build_model(params)
             error_test = self.vet_model(self.model)
             return {'loss': error_test, 'status': STATUS_OK, 'memo': params}
 
-    def predict(self, model, data_in):
-        prediction, v1 = model.predict(data_in, full_cov=False)
-        return prediction 
+
+    def vet_model(self, model):
+        """Convenience method for getting model errors of test and full datasets"""
+        pred_test = self.predict(model, self.Xtest)
+        pred_full = self.predict(model, self.X)
+        error_test = self.compute_error(self.Xtest, self.ytest, pred_test, self.yscaler)
+        error_full, max_errors = self.compute_error(self.X, self.y, pred_full, self.yscaler, 10)
+        print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='    ')
+        print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='    ')
+        print("Max 10 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))))
+        return error_test
      
-    def compute_error(self, X, y, prediction, yscaler, max_errors=None):
-        """
-        Predict the root-mean-square error (in wavenumbers) of model given 
-        known X,y, a prediction, and a y scaling object, if it exists.
         
-        Parameters
-        ----------
-        X : array
-            Array of model inputs (geometries)
-        y : array
-            Array of expected model outputs (energies)
-        prediction: array
-            Array of actual model outputs (energies)
-        yscaler: object
-            Sci-kit learn scaler object
-        max_errors: int
-            Returns largest (int) absolute maximum errors 
-
-        Returns
-        -------
-        error : float
-            Root mean square error in wavenumbers (cm-1)
-        """
-        if yscaler:
-            raw_y = yscaler.inverse_transform(y)
-            unscaled_prediction = yscaler.inverse_transform(prediction)
-            error = np.sqrt(sklearn.metrics.mean_squared_error(raw_y,  unscaled_prediction))
-            if max_errors:
-                e = np.abs(raw_y - unscaled_prediction) * hartree2cm
-                largest_errors = np.partition(e, -max_errors, axis=0)[-max_errors:]
-        else:
-            error = np.sqrt(sklearn.metrics.mean_squared_error(y, prediction))
-            if max_errors:
-                e = np.abs(y - prediction) * hartree2cm
-                largest_errors = np.partition(e, -max_errors, axis=0)[-max_errors:]
-        if max_errors:
-            return error, largest_errors
-        else:
-            return error
-        
-    def get_hyperparameters(self):
-        """
-        Returns hyperparameters of this model
-        """
-        return self.hyperparameter_space
-
-    def set_hyperparameter(self, key, val):
-        """
-        Set hyperparameter 'key' to value 'val'.
-        Parameters
-        ---------
-        key : str
-            A hyperparameter name
-        val : obj
-            A HyperOpt object such as hp.choice, hp.uniform, etc.
-        """
-        self.hyperparameter_space[key] = val
-
-    def set_default_hyperparameters(self):
-        """
-        Setter for hyperparameter space. If none is provided, default is used.
-        """
-        self.hyperparameter_space = {
-                                    'morse_transform': hp.choice('morse_transform',
-                                        [
-                                        {'morse': True,
-                                            'morse_alpha': hp.uniform('morse_alpha', 1.0, 2.0)},
-                                        {'morse': False}
-                                        ]),
-                                    'scale_X': hp.choice('scale_X', ['std', 'mm01', 'mm11', None]),
-                                    'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11', None]),
-                                    }
-         #TODO add optional space inclusions 
-         # something like: if option: self.hyperparameter_space['newoption'] = hp.choice(..)
-
     def preprocess(self, params, raw_X, raw_y):
         """
         Preprocess raw data according to hyperparameters
@@ -251,6 +152,51 @@ class GaussianProcess(Model):
             yscaler = None
         return X, y, Xscaler, yscaler
     
+    def optimize_model(self):
+        print("Beginning hyperparameter optimization...")
+        print("Trying {} combinations of hyperparameters".format(self.hp_max_evals))
+        print("Training with {} points (Full dataset contains {} points).".format(self.ntrain, self.n_datapoints))
+        print("Using {} training set point sampling.".format(self.sampler))
+        self.hyperopt_trials = Trials()
+        best = fmin(self.hyperopt_model,
+                    space=self.hyperparameter_space,
+                    algo=tpe.suggest,
+                    max_evals=self.hp_max_evals,
+                    # set random seed for debugging
+                    #rstate=np.random.RandomState(0),
+                    rstate=None, 
+                    trials=self.hyperopt_trials)
+        hyperopt_complete()
+        print("Best performing hyperparameters are:")
+        final = space_eval(self.hyperparameter_space, best)
+        print(str(sorted(final.items())))
+        self.optimal_hyperparameters  = dict(final)
+        # obtain final model from best hyperparameters
+        print("Fine-tuning final model architecture...")
+        self.build_model(self.optimal_hyperparameters, nrestarts=10)
+        self.vet_model(self.model)
+        print("Final model performance (cm-1):")
+        # Save model. Currently GPy requires saving training data in model for some reason. 
+        model_dict = self.model.to_dict(save_data=True)
+        print("Saving ML model data...") 
+        model_path = "model1_data"
+        while os.path.isdir(model_path):
+            new = int(re.findall("\d+", model_path)[0]) + 1
+            model_path = re.sub("\d+",str(new), model_path)
+        os.mkdir(model_path)
+        os.chdir(model_path)
+        with open('model.json', 'w') as f:
+            json.dump(model_dict, f)
+        with open('hyperparameters', 'w') as f:
+            print(self.optimal_hyperparameters, file=f)
+        self.dataset.iloc[self.train_indices].to_csv('train_set',sep=',',index=False,float_format='%12.12f')
+        self.dataset.iloc[self.test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
+        # print model performance
+        sys.stdout = open('performance', 'w')  
+        self.vet_model(self.model)
+        sys.stdout = sys.__stdout__
+        os.chdir("../")
+
     def transform_new_X(self, newX, params, Xscaler=None):
         """
         Transform a new, raw input according to the model's transformation procedure 
@@ -279,4 +225,3 @@ class GaussianProcess(Model):
         if yscaler:
             newy = yscaler.inverse_transform(newy)
         return newy
-
