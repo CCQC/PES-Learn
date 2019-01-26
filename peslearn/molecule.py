@@ -124,8 +124,9 @@ class Molecule(object):
 
         # get standard order atomtypes and atomtype_vector        
         self.sorted_atom_counts = collections.Counter(self.real_atom_labels).most_common()
+        # sort first by occurances in decreasing order, then alphabetically
+        self.sorted_atom_counts = sorted(self.sorted_atom_counts, key = lambda x: (-x[1], x[0]))
         self.atom_count_vector = [val[1] for val in self.sorted_atom_counts] 
-        # TODO add secondary sorting to alphabetical within each number of atoms
 
         self.std_order_atoms = []
         for tup in self.sorted_atom_counts:
