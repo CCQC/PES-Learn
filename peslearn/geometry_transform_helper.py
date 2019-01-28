@@ -72,6 +72,7 @@ def load_cartesian_dataset(xyz_path):
         data = f.read()
     # extract energies
     energies = re.findall("\n\s*(-?\d+\.\d+)\s*\n", data)
+
     # extract geometries and clean up format
     geoms = re.findall(xyz_re, data)
     for i in range(len(geoms)):
@@ -111,7 +112,7 @@ def load_cartesian_dataset(xyz_path):
         for j,string in enumerate(geom):
             string = string.split()
             del string[0] # remove atom label
-            geom[j] = np.asarray(string, dtype=np.float32)
+            geom[j] = np.asarray(string, dtype=np.float64)
     
     # convert to interatomic distances
     final_geoms = []
@@ -121,8 +122,7 @@ def load_cartesian_dataset(xyz_path):
         final_geoms.append(idm)
     
     final_geoms = np.asarray(final_geoms)
-    energies = np.asarray(energies, dtype=np.float32)
-    
+    energies = np.asarray(energies, dtype=np.float64)
     n_interatomics =  int(0.5 * (natoms * natoms - natoms))
     bond_columns = []
     for i in range(n_interatomics):
