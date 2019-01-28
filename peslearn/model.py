@@ -108,10 +108,6 @@ class Model(ABC):
     def build_model(self):
         pass
 
-    def predict(self, model, data_in):
-        prediction, v1 = model.predict(data_in, full_cov=False)
-        return prediction 
-
     def compute_error(self, X, y, prediction, yscaler, max_errors=None):
         """
         Predict the root-mean-square error (in wavenumbers) of model given 

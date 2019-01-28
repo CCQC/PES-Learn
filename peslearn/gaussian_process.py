@@ -110,6 +110,9 @@ class GaussianProcess(Model):
             error_test = self.vet_model(self.model)
             return {'loss': error_test, 'status': STATUS_OK, 'memo': params}
 
+    def predict(self, model, data_in):
+        prediction, v1 = model.predict(data_in, full_cov=False)
+        return prediction 
 
     def vet_model(self, model):
         """Convenience method for getting model errors of test and full datasets"""
