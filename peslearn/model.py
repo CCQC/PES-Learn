@@ -104,8 +104,10 @@ class Model(ABC):
         super().__init__()
 
     @abstractmethod
-    # all subclasses must have a build_model method.
     def build_model(self):
+        pass
+    @abstractmethod
+    def save_model(self):
         pass
 
     def compute_error(self, X, y, prediction, yscaler, max_errors=None):

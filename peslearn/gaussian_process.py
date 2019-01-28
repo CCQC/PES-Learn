@@ -177,8 +177,12 @@ class GaussianProcess(Model):
         # obtain final model from best hyperparameters
         print("Fine-tuning final model architecture...")
         self.build_model(self.optimal_hyperparameters, nrestarts=10)
-        self.vet_model(self.model)
         print("Final model performance (cm-1):")
+        self.vet_model(self.model)
+        self.save_model(self.optimal_hyperparameters)
+
+
+    def save_model(self, params):
         # Save model. Currently GPy requires saving training data in model for some reason. 
         model_dict = self.model.to_dict(save_data=True)
         print("Saving ML model data...") 
@@ -191,7 +195,7 @@ class GaussianProcess(Model):
         with open('model.json', 'w') as f:
             json.dump(model_dict, f)
         with open('hyperparameters', 'w') as f:
-            print(self.optimal_hyperparameters, file=f)
+            print(params, file=f)
         self.dataset.iloc[self.train_indices].to_csv('train_set',sep=',',index=False,float_format='%12.12f')
         self.dataset.iloc[self.test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
         # print model performance
