@@ -4,9 +4,11 @@ import json
 import os
 import re
 import sys
+import gc
 from .model import Model
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
 import GPy
+
 
 from .constants import hartree2cm, package_directory 
 from .printing_helper import hyperopt_complete
@@ -95,6 +97,7 @@ class GaussianProcess(Model):
         self.model = GPy.models.GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
         self.model.optimize(max_iters=500, messages=False)
         self.model.optimize_restarts(nrestarts, optimizer="bfgs", verbose=False, max_iters=500, messages=False)
+        gc.collect(2) #fixes some memory leak issues with certain BLAS configs
 
     def hyperopt_model(self, params):
         # skip building this model if hyperparameter combination already attempted
@@ -161,13 +164,18 @@ class GaussianProcess(Model):
         print("Training with {} points (Full dataset contains {} points).".format(self.ntrain, self.n_datapoints))
         print("Using {} training set point sampling.".format(self.sampler))
         self.hyperopt_trials = Trials()
+        if self.input_obj.keywords['rseed']:
+            rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
+        else:
+            rstate = None
         best = fmin(self.hyperopt_model,
                     space=self.hyperparameter_space,
                     algo=tpe.suggest,
                     max_evals=self.hp_max_evals,
                     # set random seed for debugging
                     #rstate=np.random.RandomState(0),
-                    rstate=None, 
+                    rstate=rstate, 
+                    #rstate=None, 
                     trials=self.hyperopt_trials)
         hyperopt_complete()
         print("Best performing hyperparameters are:")
