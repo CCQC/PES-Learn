@@ -59,7 +59,7 @@ class Model(ABC):
         if (self.input_obj.keywords['pes_format'] == 'interatomics') and (self.input_obj.keywords['use_pips'] == 'true'):
             if self.mol:
                 self.pip = True
-                print("Using permutation invariant polynomial transformation for atoms ", self.mol.std_order_atom_labels)
+                print("Using permutation invariant polynomial transformation for molecule type ", self.mol.molecule_type)
             else:
                 raise Exception(
                 "The use of permutation invariant polynomials ('use_pips' = true) requires Model objects are",

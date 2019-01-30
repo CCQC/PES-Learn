@@ -98,12 +98,14 @@ class NeuralNetwork(Model):
                       'dense_1': hp.choice('dense_1', [16,32,64,128,256]),
                       'dense_2': hp.choice('dense_2', [16,32,64,128,256]),
                       'dense_3': hp.choice('dense_3', [16,32,64,128,256]),
-                      #'hlayers': hp.choice('hlayers', [1,2,3,4]),
-                      'hlayers': hp.choice('hlayers', [1,2]),
+                      'hlayers': hp.choice('hlayers', [1,2,3,4]),
+                      #'hlayers': hp.choice('hlayers', [1,2]),
                       'lr': hp.choice('lr',[0.001,0.005,0.01,0.05,0.1]),
-                      'decay': hp.choice('decay',[1e-5,1e-6,0.0]),
-                      'batch': hp.choice('batch', [16,32,64,128,256]),
-                      #'optimizer': hp.choice('optimizer',['SGD','RMSprop', 'Adagrad', 'Adadelta','Adam','Adamax']),
+                      #'decay': hp.choice('decay',[1e-5,1e-6,0.0]),
+                      'decay': hp.choice('decay',[0.0]),
+                      #'batch': hp.choice('batch', [64,128,256,self.ntrain]),
+                      'batch': hp.choice('batch', [int(self.ntrain/4), int(self.ntrain/2), self.ntrain]),
+                      'optimizer': hp.choice('optimizer',['SGD','RMSprop', 'Adagrad', 'Adadelta','Adam','Adamax']),
                       'optimizer': hp.choice('optimizer',['Adam']),
                      }
 
@@ -123,18 +125,18 @@ class NeuralNetwork(Model):
         """
         # TODO make more flexible. If keys don't exist, ignore them. smth like "if key: if param['key']: do transform"
         # Transform to FIs, degree reduce if called
+        #if params['morse_transform']['morse']:
+        #    raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])
         if params['pip']:
             # find path to fundamental invariants for an N atom system with molecule type AxByCz...
             path = os.path.join(package_directory, "lib", str(sum(self.mol.atom_count_vector))+"_atom_system", self.mol.molecule_type, "output")
             raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
-
         # Transform to morse variables (exp(-r/alpha))
         if params['morse_transform']['morse']:
             raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])
-
-
+        # Scale
         if params['scale_X']['scale_X']:
             X, Xscaler = general_scaler(params['scale_X']['scale_X'], raw_X)
         else:
@@ -174,7 +176,7 @@ class NeuralNetwork(Model):
     def build_model(self, params):
         self.split_train_test(params)
         #print("Hyperparameters: ", params)
-        config = ConfigProto(intra_op_parallelism_threads=0, inter_op_parallelism_threads=0)
+        config = ConfigProto(intra_op_parallelism_threads=4, inter_op_parallelism_threads=4)
         session = Session(config=config)
         K.set_session(session)
         in_dim = tuple([self.Xtr.shape[1]])
@@ -221,18 +223,18 @@ class NeuralNetwork(Model):
             opt = optimizers.Adamax(lr=params['lr'],
                                   decay=params['decay'])
     
-        # if y is scaled, our model performance metric is not in true units of energy
+        # if y is scaled, our loss MAE is not in true units of energy
         # we compensate for this here so that we can use early stopping effectively
-        # assuming error is the MAE, one can derive the factors which transform the MAE on scaled energies into the MAE on raw energies
+        # assuming error is the MAE, one can derive the factors which transform the MAE of scaled energies into the MAE of raw energies
         if ((params['scale_y'] == 'mm01') or (params['scale_y'] == 'mm11')):
             descaling_factor = (self.yscaler.data_max_[0] - self.yscaler.data_min_[0]) / (self.yscaler.feature_range[1] - self.yscaler.feature_range[0])
         if params['scale_y'] == 'std':
             descaling_factor = self.yscaler.var_[0]**0.5 
-        # 11 cm-1
-        # if error does not improve by 1 mH in 500 epochs, kill
+        # if error does not improve by self.early_stopping_error Hartrees in 500 epochs, kill
         delta = self.early_stopping_error / descaling_factor
         callback = [EarlyStopping(monitor='val_loss', min_delta=delta, patience=self.patience)]
-        self.model.compile(loss='mae', optimizer=opt, metrics=['mse'])
+        #self.model.compile(loss='mae', optimizer=opt, metrics=['mse'])
+        self.model.compile(loss='mae', optimizer=opt)
         self.model.fit(x=self.Xtr,y=self.ytr,epochs=self.epochs,validation_data=valid_set,batch_size=params['batch'],verbose=0,callbacks=callback)
 
     def hyperopt_model(self, params):
@@ -247,6 +249,7 @@ class NeuralNetwork(Model):
         else:
             self.build_model(params)
             error_test = self.vet_model(self.model)
+            K.clear_session()
             return {'loss': error_test, 'status': STATUS_OK, 'memo': params}
 
     def predict(self, model, data_in):
@@ -276,13 +279,14 @@ class NeuralNetwork(Model):
         print("Using {} training set point sampling.".format(self.sampler))
         print("\nPerforming neural architecture search with early stopping...")
         print("Trying {} combinations of hyperparameters".format(self.hp_max_evals))
+        print("\nNOTE: The errors of these iterations will likely be unfavorable, and ideally fixed in the next optimization round.\n")
         self.hyperopt_trials = Trials()
         if self.input_obj.keywords['rseed']:
             rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
         else:
             rstate = None
-        self.epochs = 2000 
-        self.early_stopping_error = 5.0e-4
+        self.epochs = 4000 
+        self.early_stopping_error = 5.0e-4 # 
         self.patience = 200
         best = fmin(self.hyperopt_model,
                     space=self.hyperparameter_space,
@@ -294,23 +298,29 @@ class NeuralNetwork(Model):
         final = space_eval(self.hyperparameter_space, best)
         print(str(sorted(final.items())))
         self.optimal_hyperparameters  = dict(final)
-        print("Fine-tuning final model architecture... optimizing learning rate and decay at high epoch limit")
+        print("\nFine-tuning final model architecture... optimizing learning rate and decay at high epoch limit")
         self.optimal_hyperparameters['decay'] = hp.choice('decay',[1e-5,1e-6,1e-7,0.0]) 
         self.optimal_hyperparameters['lr'] = hp.choice('lr',[0.005,0.01,0.05,0.1]) 
 
-        self.epochs = 30000
-        self.early_stopping_error = 5.0e-5
+        self.epochs = 10000
+        self.early_stopping_error = 5.0e-5 #~ 10 cm-1
         self.patience = 1000
+        fine_tune_trials = Trials()
         best = fmin(self.hyperopt_model,
                     space=self.optimal_hyperparameters,
                     algo=tpe.suggest,
-                    max_evals=10,
+                    max_evals=20,
                     rstate=rstate, 
-                    trials=self.hyperopt_trials)
-        hyperopt_complete()
+                    trials=fine_tune_trials)
         final = space_eval(self.optimal_hyperparameters, best)
         self.optimal_hyperparameters = dict(final)
+
+        print("\nTraining final model...")
+        self.epochs = 100000
+        self.early_stopping_error = 1.0e-5 #~2 cm-1
+        self.patience = 2000
         self.build_model(self.optimal_hyperparameters)
+        hyperopt_complete()
         print("Final model performance (cm-1):")
         self.vet_model(self.model)
         self.save_model(self.optimal_hyperparameters)
