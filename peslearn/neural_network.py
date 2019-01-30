@@ -17,6 +17,7 @@ from keras import backend as K
 import time
 import re
 import os
+import sys
 import pandas as pd
 import numpy as np
 from tensorflow import ConfigProto
@@ -26,7 +27,6 @@ from .constants import hartree2cm, package_directory
 from .printing_helper import hyperopt_complete
 from .data_sampler import DataSampler 
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
-
 
 
 class NeuralNetwork(Model):
@@ -77,11 +77,11 @@ class NeuralNetwork(Model):
                                #     'activation_3': hp.choice('activation_c3', ['tanh', 'linear'])},
 
 
-                               #{'scale_X': 'std', 
-                               #     'activation_0': hp.choice('activation_a0', ['sigmoid', 'tanh', 'linear']),
-                               #     'activation_1': hp.choice('activation_a1', ['sigmoid', 'tanh', 'linear']),
-                               #     'activation_2': hp.choice('activation_a2', ['sigmoid', 'tanh', 'linear']),
-                               #     'activation_3': hp.choice('activation_a3', ['sigmoid', 'tanh', 'linear'])},
+                               {'scale_X': 'std', 
+                                    'activation_0': hp.choice('activation_a0', ['sigmoid', 'tanh', 'linear']),
+                                    'activation_1': hp.choice('activation_a1', ['sigmoid', 'tanh', 'linear']),
+                                    'activation_2': hp.choice('activation_a2', ['sigmoid', 'tanh', 'linear']),
+                                    'activation_3': hp.choice('activation_a3', ['sigmoid', 'tanh', 'linear'])},
                                {'scale_X': 'mm01', 
                                     'activation_0': hp.choice('activation_b0', ['sigmoid']),
                                     'activation_1': hp.choice('activation_b1', ['sigmoid']),
@@ -94,16 +94,17 @@ class NeuralNetwork(Model):
                                     'activation_3': hp.choice('activation_c3', ['tanh'])},
                               ]),
                       'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11']), 
-                      'dense_0': hp.choice('dense_0', [16,32,64,128]),
-                      'dense_1': hp.choice('dense_1', [16,32,64,128]),
-                      'dense_2': hp.choice('dense_2', [16,32,64,128]),
-                      'dense_3': hp.choice('dense_3', [16,32,64,128]),
+                      'dense_0': hp.choice('dense_0', [16,32,64,128,256]),
+                      'dense_1': hp.choice('dense_1', [16,32,64,128,256]),
+                      'dense_2': hp.choice('dense_2', [16,32,64,128,256]),
+                      'dense_3': hp.choice('dense_3', [16,32,64,128,256]),
                       #'hlayers': hp.choice('hlayers', [1,2,3,4]),
-                      'hlayers': hp.choice('hlayers', [1]),
+                      'hlayers': hp.choice('hlayers', [1,2]),
                       'lr': hp.choice('lr',[0.001,0.005,0.01,0.05,0.1]),
                       'decay': hp.choice('decay',[1e-5,1e-6,0.0]),
                       'batch': hp.choice('batch', [16,32,64,128,256]),
-                      'optimizer': hp.choice('optimizer',['SGD','RMSprop', 'Adagrad', 'Adadelta','Adam','Adamax']),
+                      #'optimizer': hp.choice('optimizer',['SGD','RMSprop', 'Adagrad', 'Adadelta','Adam','Adamax']),
+                      'optimizer': hp.choice('optimizer',['Adam']),
                      }
 
         if self.input_obj.keywords['pes_format'] == 'interatomics':
@@ -166,17 +167,14 @@ class NeuralNetwork(Model):
         self.X, self.y, self.Xscaler, self.yscaler = self.preprocess(params, self.raw_X, self.raw_y)
         self.Xtr = self.X[self.train_indices]
         self.ytr = self.y[self.train_indices]
-        # possible temporary framework: take half of the test set and use for validation.
         Xtmp = self.X[self.test_indices]
         ytmp = self.y[self.test_indices]
-        self.Xvalid, self.Xtest, self.yvalid, self.ytest = train_test_split(Xtmp, ytmp, test_size = 0.5, random_state=42)
-
+        self.Xvalid, self.Xtest, self.yvalid, self.ytest = train_test_split(Xtmp, ytmp, train_size = self.input_obj.keywords['validation_points'], random_state=42)
 
     def build_model(self, params):
         self.split_train_test(params)
-        print("Hyperparameters: ", params)
-
-        config = ConfigProto(intra_op_parallelism_threads=4, inter_op_parallelism_threads=0)
+        #print("Hyperparameters: ", params)
+        config = ConfigProto(intra_op_parallelism_threads=0, inter_op_parallelism_threads=0)
         session = Session(config=config)
         K.set_session(session)
         in_dim = tuple([self.Xtr.shape[1]])
@@ -188,20 +186,20 @@ class NeuralNetwork(Model):
         activ2 = params['scale_X']['activation_2']
         activ3 = params['scale_X']['activation_3']
 
-        model = Sequential()
-        model.add(Dense(params['dense_0']))
-        model.add(Activation(activ0))
+        self.model = Sequential()
+        self.model.add(Dense(params['dense_0']))
+        self.model.add(Activation(activ0))
         if params['hlayers'] > 1:  
-            model.add(Dense(params['dense_1']))
-            model.add(Activation(activ1))
+            self.model.add(Dense(params['dense_1']))
+            self.model.add(Activation(activ1))
             if params['hlayers'] > 2:  
-                model.add(Dense(params['dense_2']))
-                model.add(Activation(activ2))
+                self.model.add(Dense(params['dense_2']))
+                self.model.add(Activation(activ2))
                 if params['hlayers'] > 3:  
-                    model.add(Dense(params['dense_3']))
-                    model.add(Activation(activ3))
-        model.add(Dense(out_dim))
-        model.add(Activation('linear'))
+                    self.model.add(Dense(params['dense_3']))
+                    self.model.add(Activation(activ3))
+        self.model.add(Dense(out_dim))
+        self.model.add(Activation('linear'))
     
         if params['optimizer'] == 'SGD':
             opt = optimizers.SGD(lr=params['lr'],
@@ -230,44 +228,12 @@ class NeuralNetwork(Model):
             descaling_factor = (self.yscaler.data_max_[0] - self.yscaler.data_min_[0]) / (self.yscaler.feature_range[1] - self.yscaler.feature_range[0])
         if params['scale_y'] == 'std':
             descaling_factor = self.yscaler.var_[0]**0.5 
-        
-        delta = 1.0e-3 / descaling_factor
-
-        def true_mae(y_true, y_pred):
-            mae = descaling_factor * sklearn.metrics.mean_absolute_error(y_true, y_pred)
-            return mae
-
+        # 11 cm-1
         # if error does not improve by 1 mH in 500 epochs, kill
-        #callbacks = [EarlyStopping(monitor='val_true_mae', min_delta=1.0e-3, patience=500)]
-        callback = [EarlyStopping(monitor='val_loss', min_delta=delta, patience=100)]
-        #model.compile(loss='mae', optimizer=opt, metrics=['accuracy', true_mae])
-        model.compile(loss='mae', optimizer=opt, metrics=['mse'])
-        # train with the "test" set, so its only 1000
-        model.fit(x=self.Xtr,y=self.ytr,epochs=2000,validation_data=valid_set,batch_size=params['batch'],verbose=0,callbacks=callback)
-
-        loss, mae = model.evaluate(self.Xtest, self.ytest)
-        print(mae * descaling_factor)
-        print(mae * descaling_factor * 219474.63)
-    
-        ## test on full dataset
-        pred_full = model.predict(self.Xtest)
-        if params['scale_y']:
-            unscaled_pred_full = self.yscaler.inverse_transform(pred_full)
-            #loss = np.sqrt(sklearn.metrics.mean_squared_error(raw_y, unscaled_pred_full))
-            loss = np.sqrt(sklearn.metrics.mean_squared_error(self.ytest, unscaled_pred_full))
-            #ahhh = np.sqrt(np.mean(np.square(self.ytest - unscaled_pred_full)))
-        print(loss)
-        #else:
-        #    #loss = np.sqrt(sklearn.metrics.mean_squared_error(y, pred_full))
-        #    loss = np.sqrt(np.mean(np.square(y - pred_full)))
-        #print("RMSE (eH): ", loss, end=' ')
-        #print("RMSE (cm-1): ", 219474.63 * loss, end='  ')
-        #print(str(sorted(params.items())))
-        ## deleting models to save computational time
-        self.model = model
-        #K.clear_session() this breaks it here
-        #return {'loss': loss, 'status': STATUS_OK, 'model':model}
-        return {'loss': loss, 'status': STATUS_OK}
+        delta = self.early_stopping_error / descaling_factor
+        callback = [EarlyStopping(monitor='val_loss', min_delta=delta, patience=self.patience)]
+        self.model.compile(loss='mae', optimizer=opt, metrics=['mse'])
+        self.model.fit(x=self.Xtr,y=self.ytr,epochs=self.epochs,validation_data=valid_set,batch_size=params['batch'],verbose=0,callbacks=callback)
 
     def hyperopt_model(self, params):
         # skip building this model if hyperparameter combination already attempted
@@ -289,42 +255,65 @@ class NeuralNetwork(Model):
 
     def vet_model(self, model):
         """Convenience method for getting model errors of test and full datasets"""
+        pred_train = self.predict(model, self.Xtr)
         pred_test = self.predict(model, self.Xtest)
+        pred_valid = self.predict(model, self.Xvalid)
         pred_full = self.predict(model, self.X)
+        error_train = self.compute_error(self.Xtr, self.ytr, pred_train, self.yscaler)
         error_test = self.compute_error(self.Xtest, self.ytest, pred_test, self.yscaler)
+        error_valid = self.compute_error(self.Xvalid, self.yvalid, pred_valid, self.yscaler)
         error_full, max_errors = self.compute_error(self.X, self.y, pred_full, self.yscaler, 10)
-        print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='    ')
-        print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='    ')
+        print("Train {}".format(round(hartree2cm * error_train,2)), end='    ')
+        print("Test {}".format(round(hartree2cm * error_test,2)), end='    ')
+        print("Validation {}".format(round(hartree2cm * error_valid,2)), end='    ')
+        print("Full {}".format(round(hartree2cm * error_full,2)), end='    ')
         print("Max 10 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))))
         return error_test
 
     def optimize_model(self):
-        print("Beginning hyperparameter optimization...")
-        print("Trying {} combinations of hyperparameters".format(self.hp_max_evals))
         print("Training with {} points (Full dataset contains {} points).".format(self.ntrain, self.n_datapoints))
+        print("Validating with {} points.".format(self.input_obj.keywords['validation_points']))
         print("Using {} training set point sampling.".format(self.sampler))
+        print("\nPerforming neural architecture search with early stopping...")
+        print("Trying {} combinations of hyperparameters".format(self.hp_max_evals))
         self.hyperopt_trials = Trials()
         if self.input_obj.keywords['rseed']:
             rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
         else:
             rstate = None
+        self.epochs = 2000 
+        self.early_stopping_error = 5.0e-4
+        self.patience = 200
         best = fmin(self.hyperopt_model,
                     space=self.hyperparameter_space,
                     algo=tpe.suggest,
                     max_evals=self.hp_max_evals,
                     rstate=rstate, 
                     trials=self.hyperopt_trials)
-        hyperopt_complete()
         print("Best performing hyperparameters are:")
         final = space_eval(self.hyperparameter_space, best)
         print(str(sorted(final.items())))
         self.optimal_hyperparameters  = dict(final)
-        # obtain final model from best hyperparameters
-        print("Fine-tuning final model architecture...")
+        print("Fine-tuning final model architecture... optimizing learning rate and decay at high epoch limit")
+        self.optimal_hyperparameters['decay'] = hp.choice('decay',[1e-5,1e-6,1e-7,0.0]) 
+        self.optimal_hyperparameters['lr'] = hp.choice('lr',[0.005,0.01,0.05,0.1]) 
+
+        self.epochs = 30000
+        self.early_stopping_error = 5.0e-5
+        self.patience = 1000
+        best = fmin(self.hyperopt_model,
+                    space=self.optimal_hyperparameters,
+                    algo=tpe.suggest,
+                    max_evals=10,
+                    rstate=rstate, 
+                    trials=self.hyperopt_trials)
+        hyperopt_complete()
+        final = space_eval(self.optimal_hyperparameters, best)
+        self.optimal_hyperparameters = dict(final)
         self.build_model(self.optimal_hyperparameters)
         print("Final model performance (cm-1):")
         self.vet_model(self.model)
-        #self.save_model(self.optimal_hyperparameters)
+        self.save_model(self.optimal_hyperparameters)
 
     def save_model(self, params):
         print("Saving ML model data...") 
