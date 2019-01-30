@@ -59,7 +59,9 @@ class InputProcessor(object):
                            'sampling': 'structure_based',    #'sobol', 'smart_random', 'random', 'energy_ordered'
                            'n_low_energy_train': 0,          # any int
                            'training_points': 50,            # any int
+                           'validation_points': 50,            # any int
                            'hp_max_evals': 50,               # any int
+                           'rseed': None,                    # any int
                            'gp_ard': 'true',                 # 'false'
                            'hp_opt': 'true'}                 # 'false'
 
