@@ -45,14 +45,9 @@ class Model(ABC):
                 data = pd.read_csv(dataset_path)
             except:   
                 raise Exception("Could not read dataset. Check to be sure the path is correct, and it is properly",
-                                "formatted. Can either be a csv-style file with the first line being a list of",
-                                "arbitrary geometry labels with last column labeled 'E', e.g.  r1,r2,r3,...,E")
-            #try:
-            #    data = gth.load_cartesian_dataset(dataset_path)
-            #except:   
-            #    raise Exception("Could not read dataset. Check to be sure the path is correct, and it is properly",
-            #                    "formatted. Can either be a csv-style file with the first line being a list of",
-            #                    "arbitrary geometry labels with last column labeled 'E', e.g.  r1,r2,r3,...,E")
+                                "formatted. Can either be 1. A csv-style file with the first line being a list of",
+                                "arbitrary geometry labels with last column labeled 'E', e.g.  r1,r2,r3,...,E or 2.",
+                                "A single energy value on its own line followed by a standard cartesian coordinate block.")
 
         self.dataset = data.sort_values("E")
         self.n_datapoints = self.dataset.shape[0]
@@ -64,6 +59,7 @@ class Model(ABC):
         if (self.input_obj.keywords['pes_format'] == 'interatomics') and (self.input_obj.keywords['use_pips'] == 'true'):
             if self.mol:
                 self.pip = True
+                print("Using permutation invariant polynomial transformation for atoms ", self.mol.std_order_atom_labels)
             else:
                 raise Exception(
                 "The use of permutation invariant polynomials ('use_pips' = true) requires Model objects are",
