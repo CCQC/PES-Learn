@@ -82,7 +82,7 @@ class GaussianProcess(Model):
         self.Xtest = self.X[self.test_indices]
         self.ytest = self.y[self.test_indices]
 
-    def build_model(self, params, nrestarts=10):
+    def build_model(self, params, nrestarts=10, maxit=500):
         # build train test sets
         print("Hyperparameters: ", params)
         self.split_train_test(params)
@@ -95,8 +95,8 @@ class GaussianProcess(Model):
         else:
             kernel = GPy.kern.RBF(dim, ARD=False) #TODO add more kernels to hyperopt space
         self.model = GPy.models.GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
-        self.model.optimize(max_iters=500, messages=False)
-        self.model.optimize_restarts(nrestarts, optimizer="bfgs", verbose=False, max_iters=500, messages=False)
+        self.model.optimize(max_iters=maxit, messages=False)
+        self.model.optimize_restarts(nrestarts, optimizer="bfgs", verbose=False, max_iters=maxit, messages=False)
         gc.collect(2) #fixes some memory leak issues with certain BLAS configs
 
     def hyperopt_model(self, params):
@@ -184,7 +184,7 @@ class GaussianProcess(Model):
         self.optimal_hyperparameters  = dict(final)
         # obtain final model from best hyperparameters
         print("Fine-tuning final model architecture...")
-        self.build_model(self.optimal_hyperparameters, nrestarts=10)
+        self.build_model(self.optimal_hyperparameters, nrestarts=20, maxit=1000)
         print("Final model performance (cm-1):")
         self.vet_model(self.model)
         self.save_model(self.optimal_hyperparameters)
