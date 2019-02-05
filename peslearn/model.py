@@ -32,22 +32,21 @@ class Model(ABC):
     mol_obj : peslearn object 
         Molecule object from peslearn. Used for molecule information if permutation-invariant geometry representation is used.
     """
-    def __init__(self, dataset_path, input_obj, mol_obj=None):
+
+    def __init__(self, dataset_path, input_obj, mol_obj=None, train_path=None, test_path=None):
         # load PES data, if interatomic distances CSV or standard cartesians
         #TODO relax formatting requirements, make more general
         # probe dataset to see if its cartesians or interatomics
-        with open(dataset_path) as f:
-            read = f.read()
-        if re.findall(xyz_block_regex, read):
-            data = gth.load_cartesian_dataset(dataset_path)
-        else:
-            try:
-                data = pd.read_csv(dataset_path)
-            except:   
-                raise Exception("Could not read dataset. Check to be sure the path is correct, and it is properly",
-                                "formatted. Can either be 1. A csv-style file with the first line being a list of",
-                                "arbitrary geometry labels with last column labeled 'E', e.g.  r1,r2,r3,...,E or 2.",
-                                "A single energy value on its own line followed by a standard cartesian coordinate block.")
+
+        data = self.interpret_dataset(dataset_path)
+        if train_path:
+            self.traindata = self.interpret_dataset(train_path)
+            self.raw_Xtr = self.traindata.values[:, :-1]
+            self.raw_ytr = self.traindata.values[:,-1].reshape(-1,1)
+            if test_path:
+                self.testdata = self.interpret_dataset(test_path)
+                self.raw_Xtest = self.testdata.values[:, :-1]
+                self.raw_ytest = self.testdata.values[:,-1].reshape(-1,1)
 
         self.dataset = data.sort_values("E")
         self.n_datapoints = self.dataset.shape[0]
@@ -72,10 +71,17 @@ class Model(ABC):
 
         # keyword control
         self.ntrain = self.input_obj.keywords['training_points']
-        if self.ntrain >= self.dataset.shape[0]:
+        if train_path:
+            self.ntrain = self.traindata.shape[0]
+        if self.ntrain > self.dataset.shape[0]:
             raise Exception("Requested number of training points is greater than size of the dataset.")
         self.hp_max_evals = self.input_obj.keywords['hp_max_evals']
-        self.sampler = self.input_obj.keywords['sampling']
+
+        if (train_path is None and test_path is None):
+            self.sampler = self.input_obj.keywords['sampling']
+        else:
+            self.sampler = 'user-supplied'
+
         # for input, output style
         self.do_hp_opt = self.input_obj.keywords['hp_opt']
         # more keywords...
@@ -98,6 +104,23 @@ class Model(ABC):
             sample.energy_ordered()
         self.train_indices, self.test_indices = sample.get_indices()
         super().__init__()
+
+
+    def interpret_dataset(self, path):
+        with open(path) as f:
+            read = f.read()
+        if re.findall(xyz_block_regex, read):
+            data = gth.load_cartesian_dataset(path)
+        else:
+            try:
+                data = pd.read_csv(path)
+            except:   
+                raise Exception("Could not read dataset. Check to be sure the path is correct, and it is properly",
+                                "formatted. Can either be 1. A csv-style file with the first line being a list of",
+                                "arbitrary geometry labels with last column labeled 'E', e.g.  r1,r2,r3,...,E or 2.",
+                                "A single energy value on its own line followed by a standard cartesian coordinate block.")
+        return data
+
 
     @abstractmethod
     def build_model(self):
@@ -129,6 +152,7 @@ class Model(ABC):
         error : float
             Root mean square error in wavenumbers (cm-1)
         """
+        # TODO prevent incorrectly shaped y from being inputted otherwise huge memory/cost requirements
         if yscaler:
             raw_y = yscaler.inverse_transform(y)
             unscaled_prediction = yscaler.inverse_transform(prediction)

@@ -19,8 +19,8 @@ class GaussianProcess(Model):
     """
     Constructs a Gaussian Process Model using GPy
     """
-    def __init__(self, dataset_path, input_obj, mol_obj=None):
-        super().__init__(dataset_path, input_obj, mol_obj)
+    def __init__(self, dataset_path, input_obj, mol_obj=None, train_set=None, test_set=None):
+        super().__init__(dataset_path, input_obj, mol_obj, train_set, test_set)
         self.set_default_hyperparameters()
     
     def get_hyperparameters(self):
@@ -77,10 +77,17 @@ class GaussianProcess(Model):
         self.ytest : test output data, transformed
         """
         self.X, self.y, self.Xscaler, self.yscaler = self.preprocess(params, self.raw_X, self.raw_y)
-        self.Xtr = self.X[self.train_indices]
-        self.ytr = self.y[self.train_indices]
-        self.Xtest = self.X[self.test_indices]
-        self.ytest = self.y[self.test_indices]
+        if self.sampler == 'user-supplied':
+            self.Xtr = self.transform_new_X(self.raw_Xtr, params, self.Xscaler)
+            self.ytr = self.transform_new_y(self.raw_ytr, self.yscaler)
+            self.Xtest = self.transform_new_X(self.raw_Xtest, params, self.Xscaler)
+            self.ytest = self.transform_new_y(self.raw_ytest, self.yscaler)
+            
+        else:
+            self.Xtr = self.X[self.train_indices]
+            self.ytr = self.y[self.train_indices]
+            self.Xtest = self.X[self.test_indices]
+            self.ytest = self.y[self.test_indices]
 
     def build_model(self, params, nrestarts=10, maxit=500):
         # build train test sets
@@ -184,7 +191,7 @@ class GaussianProcess(Model):
         self.optimal_hyperparameters  = dict(final)
         # obtain final model from best hyperparameters
         print("Fine-tuning final model architecture...")
-        self.build_model(self.optimal_hyperparameters, nrestarts=20, maxit=1000)
+        self.build_model(self.optimal_hyperparameters, nrestarts=10, maxit=1000)
         print("Final model performance (cm-1):")
         self.vet_model(self.model)
         self.save_model(self.optimal_hyperparameters)
@@ -204,8 +211,14 @@ class GaussianProcess(Model):
             json.dump(model_dict, f)
         with open('hyperparameters', 'w') as f:
             print(params, file=f)
-        self.dataset.iloc[self.train_indices].to_csv('train_set',sep=',',index=False,float_format='%12.12f')
-        self.dataset.iloc[self.test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
+        
+        if self.sampler == 'user-supplied':
+            self.raw_Xtr.to_csv('train_set',sep=',',index=False,float_format='%12.12f')
+            self.raw_ytr.to_csv('test_set', sep=',', index=False, float_format='%12.12f')
+
+        else:
+            self.dataset.iloc[self.train_indices].to_csv('train_set',sep=',',index=False,float_format='%12.12f')
+            self.dataset.iloc[self.test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
         # print model performance
         sys.stdout = open('performance', 'w')  
         self.vet_model(self.model)
@@ -235,6 +248,11 @@ class GaussianProcess(Model):
         if Xscaler:
             newX = Xscaler.transform(newX)
         return newX
+
+    def transform_new_y(self, newy, yscaler=None):    
+        if yscaler:
+            newy = yscaler.transform(newy)
+        return newy
 
     def inverse_transform_new_y(self, newy, yscaler=None):    
         if yscaler:
