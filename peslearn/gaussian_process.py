@@ -145,7 +145,7 @@ class GaussianProcess(Model):
         if params['morse_transform']['morse']:
             raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])
         # Transform to FIs, degree reduce if called
-        if params['pip']:
+        if params['pip']['pip']:
             # find path to fundamental invariants for an N atom system with molecule type AxByCz...
             path = os.path.join(package_directory, "lib", str(sum(self.mol.atom_count_vector))+"_atom_system", self.mol.molecule_type, "output")
             raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
@@ -213,9 +213,8 @@ class GaussianProcess(Model):
             print(params, file=f)
         
         if self.sampler == 'user-supplied':
-            self.raw_Xtr.to_csv('train_set',sep=',',index=False,float_format='%12.12f')
-            self.raw_ytr.to_csv('test_set', sep=',', index=False, float_format='%12.12f')
-
+            self.traindata.to_csv('train_set',sep=',',index=False,float_format='%12.12f')
+            self.testdata.to_csv('test_set', sep=',', index=False, float_format='%12.12f')
         else:
             self.dataset.iloc[self.train_indices].to_csv('train_set',sep=',',index=False,float_format='%12.12f')
             self.dataset.iloc[self.test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
@@ -238,7 +237,7 @@ class GaussianProcess(Model):
             
         if params['morse_transform']['morse']:
             newX = morse(newX, params['morse_transform']['morse_alpha'])
-        if params['pip']:
+        if params['pip']['pip']:
             # find path to fundamental invariants for an N atom system with molecule type AxByCz...
             path = os.path.join(package_directory, "lib", str(sum(self.mol.atom_count_vector))+"_atom_system", self.mol.molecule_type, "output")
             newX, degrees = interatomics_to_fundinvar(newX,path)
