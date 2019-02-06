@@ -58,7 +58,7 @@ class GaussianProcess(Model):
             val =  hp.choice('pip',[{'pip': True,'degree_reduction': hp.choice('degree_reduction', [True,False])}])
             self.set_hyperparameter('pip', val)
         else:
-            self.set_hyperparameter('pip', hp.choice('pip', [False]))
+            self.set_hyperparameter('pip', hp.choice('pip', [{'pip': False}]))
          #TODO add optional space inclusions 
          # something like: if option: self.hyperparameter_space['newoption'] = hp.choice(..)
 
