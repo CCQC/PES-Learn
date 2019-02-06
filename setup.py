@@ -2,7 +2,7 @@ import setuptools
 
 if __name__ == "__main__":
     setuptools.setup(
-        name='PES-Learn',
+        name='peslearn',
         version="0.0.1",
         description='Automated Construction of Machine Learning Models of Molecular Potential Energy Surfaces.',
         author='Adam Abbott',
@@ -11,7 +11,7 @@ if __name__ == "__main__":
         license='BSD-3C',
         packages=setuptools.find_packages(),
         install_requires=[
-            'numpy>=1.7',
+            'numpy>=1.15','GPy>=1.9','Keras>=2.2','scikit-learn.>=0.20','pandas>=0.24','hyperopt>=0.1.1','cclib>=1.6' 
         ],
         extras_require={
             'docs': [
@@ -21,18 +21,12 @@ if __name__ == "__main__":
                 'numpydoc',
             ],
             'tests': [
-                'pytest',
                 'pytest-cov',
-                'pytest-pep8',
-                'tox',
             ],
         },
 
         tests_require=[
-            'pytest',
             'pytest-cov',
-            'pytest-pep8',
-            'tox',
         ],
 
         classifiers=[
