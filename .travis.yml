@@ -22,22 +22,23 @@ before_install:
 
 # Install various required modules
   - pip install pytest pytest-cov
-  - pip install codecov
-  - pip install numpy
-  - pip install pandas
-  - pip install cclib 
-  - pip install keras
-  - pip install tensorflow
-  - pip install -U scikit-learn
-  - pip install hyperopt
-  - pip install matplotlib
-  - pip install GPy
+  - python setup.py install
+#  - pip install codecov
+#  - pip install numpy
+#  - pip install pandas
+#  - pip install cclib 
+#  - pip install keras
+#  - pip install tensorflow
+#  - pip install -U scikit-learn
+#  - pip install hyperopt
+#  - pip install matplotlib
+#  - pip install GPy
 
 # Install the plugin locally
   - pip install -e .
 
 script:
-  - py.test -v tests/ --cov=./
+  - py.test -v tests/ --cov=peslearn
 
 # after_success:
 #   - ./tools/travis-upload-wheel.sh
