@@ -34,10 +34,6 @@ class Model(ABC):
     """
 
     def __init__(self, dataset_path, input_obj, mol_obj=None, train_path=None, test_path=None):
-        # load PES data, if interatomic distances CSV or standard cartesians
-        #TODO relax formatting requirements, make more general
-        # probe dataset to see if its cartesians or interatomics
-
         data = self.interpret_dataset(dataset_path)
         if train_path:
             self.traindata = self.interpret_dataset(train_path)

@@ -84,12 +84,18 @@ class DataSampler(object):
         y = data[:,-1].reshape(-1,1)
         full_dataset_dist, binedges = np.histogram(y, bins='auto', density=True)
         pvalues = []
+        chi = []
         for seed in range(500):
             X_train, X_test, y_train, y_test  = train_test_split(X,y,train_size=self.ntrain, random_state=seed)
             train_dist, tmpbin = np.histogram(y_train, bins=binedges, density=True)
             chisq, p = stats.chisquare(train_dist, f_exp=full_dataset_dist)
+            chi.append(chisq)
             pvalues.append(p)
-        best_seed = np.argmax(pvalues)
+        best_seed = np.argmin(chi)
+        #best_seed = np.argmax(chi)
+        X_train, X_test, y_train, y_test  = train_test_split(X,y,train_size=self.ntrain, random_state=best_seed)
+        train_dist, tmpbin = np.histogram(y_train, bins=binedges, density=True)
+
         indices = np.arange(self.dataset_size)
         train_indices, test_indices  = train_test_split(indices, train_size=self.ntrain, random_state=best_seed)
         self.set_indices(train_indices, test_indices)

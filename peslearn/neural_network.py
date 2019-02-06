@@ -1,7 +1,11 @@
+import pandas as pd
 import numpy as np
-import sklearn.metrics
-from .model import Model
+import time
+import re
+import os
+import sys
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
+from keras import backend as K
 from keras.models import Sequential
 from keras.callbacks import EarlyStopping
 from keras.layers.core import Dense, Activation
@@ -13,16 +17,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
-from keras import backend as K
-import time
-import re
-import os
-import sys
-import pandas as pd
-import numpy as np
 from tensorflow import ConfigProto
 from tensorflow import Session
 
+from .model import Model
 from .constants import hartree2cm, package_directory 
 from .printing_helper import hyperopt_complete
 from .data_sampler import DataSampler 
@@ -75,13 +73,11 @@ class NeuralNetwork(Model):
                                #     'activation_1': hp.choice('activation_c1', ['tanh', 'linear']),
                                #     'activation_2': hp.choice('activation_c2', ['tanh', 'linear']),
                                #     'activation_3': hp.choice('activation_c3', ['tanh', 'linear'])},
-
-
-                               {'scale_X': 'std', 
-                                    'activation_0': hp.choice('activation_a0', ['sigmoid', 'tanh', 'linear']),
-                                    'activation_1': hp.choice('activation_a1', ['sigmoid', 'tanh', 'linear']),
-                                    'activation_2': hp.choice('activation_a2', ['sigmoid', 'tanh', 'linear']),
-                                    'activation_3': hp.choice('activation_a3', ['sigmoid', 'tanh', 'linear'])},
+                              # {'scale_X': 'std', 
+                              #      'activation_0': hp.choice('activation_a0', ['sigmoid', 'tanh', 'linear']),
+                              #      'activation_1': hp.choice('activation_a1', ['sigmoid', 'tanh', 'linear']),
+                              #      'activation_2': hp.choice('activation_a2', ['sigmoid', 'tanh', 'linear']),
+                              #      'activation_3': hp.choice('activation_a3', ['sigmoid', 'tanh', 'linear'])},
                                {'scale_X': 'mm01', 
                                     'activation_0': hp.choice('activation_b0', ['sigmoid']),
                                     'activation_1': hp.choice('activation_b1', ['sigmoid']),
@@ -93,19 +89,21 @@ class NeuralNetwork(Model):
                                     'activation_2': hp.choice('activation_c2', ['tanh']),
                                     'activation_3': hp.choice('activation_c3', ['tanh'])},
                               ]),
-                      'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11']), 
-                      'dense_0': hp.choice('dense_0', [16,32,64,128,256]),
+                      'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11', None]), 
+                      #'dense_0': hp.choice('dense_0', [16,32,64,128,256]),
+                      #'dense_0': hp.choice('dense_0', [64,128,256]),
+                      'dense_0': hp.choice('dense_0', [100]),
                       'dense_1': hp.choice('dense_1', [16,32,64,128,256]),
                       'dense_2': hp.choice('dense_2', [16,32,64,128,256]),
                       'dense_3': hp.choice('dense_3', [16,32,64,128,256]),
-                      'hlayers': hp.choice('hlayers', [1,2,3,4]),
-                      #'hlayers': hp.choice('hlayers', [1,2]),
+                      #'hlayers': hp.choice('hlayers', [1,2,3,4]),
+                      'hlayers': hp.choice('hlayers', [1,2]),
                       'lr': hp.choice('lr',[0.001,0.005,0.01,0.05,0.1]),
                       #'decay': hp.choice('decay',[1e-5,1e-6,0.0]),
                       'decay': hp.choice('decay',[0.0]),
                       #'batch': hp.choice('batch', [64,128,256,self.ntrain]),
                       'batch': hp.choice('batch', [int(self.ntrain/4), int(self.ntrain/2), self.ntrain]),
-                      'optimizer': hp.choice('optimizer',['SGD','RMSprop', 'Adagrad', 'Adadelta','Adam','Adamax']),
+                      #'optimizer': hp.choice('optimizer',['SGD','RMSprop', 'Adagrad', 'Adadelta','Adam','Adamax']),
                       'optimizer': hp.choice('optimizer',['Adam']),
                      }
 
@@ -127,12 +125,17 @@ class NeuralNetwork(Model):
         # Transform to FIs, degree reduce if called
         #if params['morse_transform']['morse']:
         #    raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])
+
+        # invert distances
+        #raw_X = np.reciprocal(raw_X)
+
         if params['pip']:
             # find path to fundamental invariants for an N atom system with molecule type AxByCz...
             path = os.path.join(package_directory, "lib", str(sum(self.mol.atom_count_vector))+"_atom_system", self.mol.molecule_type, "output")
             raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
+
         # Transform to morse variables (exp(-r/alpha))
         if params['morse_transform']['morse']:
             raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])
@@ -171,7 +174,7 @@ class NeuralNetwork(Model):
         self.ytr = self.y[self.train_indices]
         Xtmp = self.X[self.test_indices]
         ytmp = self.y[self.test_indices]
-        self.Xvalid, self.Xtest, self.yvalid, self.ytest = train_test_split(Xtmp, ytmp, train_size = self.input_obj.keywords['validation_points'], random_state=42)
+        self.Xvalid, self.Xtest, self.yvalid, self.ytest = train_test_split(Xtmp, ytmp, train_size = self.input_obj.keywords['validation_points'], random_state=42, shuffle=False)
 
     def build_model(self, params):
         self.split_train_test(params)
@@ -189,18 +192,18 @@ class NeuralNetwork(Model):
         activ3 = params['scale_X']['activation_3']
 
         self.model = Sequential()
-        self.model.add(Dense(params['dense_0']))
+        self.model.add(Dense(params['dense_0'], input_dim=self.Xtr.shape[1], kernel_initializer='normal'))
         self.model.add(Activation(activ0))
-        if params['hlayers'] > 1:  
-            self.model.add(Dense(params['dense_1']))
+        if params['hlayers'] > 1: 
+            self.model.add(Dense(params['dense_1'], kernel_initializer='normal'))
             self.model.add(Activation(activ1))
             if params['hlayers'] > 2:  
-                self.model.add(Dense(params['dense_2']))
+                self.model.add(Dense(params['dense_2'], kernel_initializer='normal'))
                 self.model.add(Activation(activ2))
                 if params['hlayers'] > 3:  
-                    self.model.add(Dense(params['dense_3']))
+                    self.model.add(Dense(params['dense_3'],kernel_initializer='normal'))
                     self.model.add(Activation(activ3))
-        self.model.add(Dense(out_dim))
+        self.model.add(Dense(out_dim, kernel_initializer='normal'))
         self.model.add(Activation('linear'))
     
         if params['optimizer'] == 'SGD':
@@ -230,6 +233,8 @@ class NeuralNetwork(Model):
             descaling_factor = (self.yscaler.data_max_[0] - self.yscaler.data_min_[0]) / (self.yscaler.feature_range[1] - self.yscaler.feature_range[0])
         if params['scale_y'] == 'std':
             descaling_factor = self.yscaler.var_[0]**0.5 
+        if params['scale_y'] == None:
+            descaling_factor = 1 
         # if error does not improve by self.early_stopping_error Hartrees in 500 epochs, kill
         delta = self.early_stopping_error / descaling_factor
         callback = [EarlyStopping(monitor='val_loss', min_delta=delta, patience=self.patience)]
@@ -287,7 +292,7 @@ class NeuralNetwork(Model):
             rstate = None
         self.epochs = 4000 
         self.early_stopping_error = 5.0e-4 # 
-        self.patience = 200
+        self.patience = 500
         best = fmin(self.hyperopt_model,
                     space=self.hyperparameter_space,
                     algo=tpe.suggest,
@@ -301,18 +306,19 @@ class NeuralNetwork(Model):
         print("\nFine-tuning final model architecture... optimizing learning rate and decay at high epoch limit")
         self.optimal_hyperparameters['decay'] = hp.choice('decay',[1e-5,1e-6,1e-7,0.0]) 
         self.optimal_hyperparameters['lr'] = hp.choice('lr',[0.005,0.01,0.05,0.1]) 
+        self.optimal_hyperparameters['optimizer'] = hp.choice('optimizer',['RMSprop', 'Adagrad', 'Adam','Adamax'])
 
         self.epochs = 10000
         self.early_stopping_error = 5.0e-5 #~ 10 cm-1
         self.patience = 1000
         fine_tune_trials = Trials()
-        best = fmin(self.hyperopt_model,
+        best2 = fmin(self.hyperopt_model,
                     space=self.optimal_hyperparameters,
                     algo=tpe.suggest,
-                    max_evals=20,
+                    max_evals=30,
                     rstate=rstate, 
                     trials=fine_tune_trials)
-        final = space_eval(self.optimal_hyperparameters, best)
+        final = space_eval(self.optimal_hyperparameters, best2)
         self.optimal_hyperparameters = dict(final)
 
         print("\nTraining final model...")
@@ -324,6 +330,7 @@ class NeuralNetwork(Model):
         print("Final model performance (cm-1):")
         self.vet_model(self.model)
         self.save_model(self.optimal_hyperparameters)
+        print(self.model.summary())
 
     def save_model(self, params):
         print("Saving ML model data...") 
