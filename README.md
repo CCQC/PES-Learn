@@ -8,6 +8,21 @@ PES-Learn is a Python library designed to facilitate the investigation molecular
 
 This project is very young and under active development.
 
+### Installation Instructions ### 
+
+First, git clone with either HTTPS or SSH:
+`git clone https://github.com/adabbott/PES-Learn.git`
+Then, to install the required dependencies:
+`python setup.py install`
+Finally install peslearn locally:
+`pip install -e .` 
+To run the test suite, you need pytest:
+`pip install pytest-cov` 
+To run the test suite:
+`py.test -v tests/`
+
+
+
 Anticipated features include:
 
 * Data Generation for Electronic Structure Theory Software
