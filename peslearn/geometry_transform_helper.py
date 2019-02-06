@@ -5,6 +5,7 @@ import math
 import numpy as np
 import pandas as pd
 import re
+import os
 from itertools import combinations
 from .regex import xyz_block_regex
 import collections
@@ -101,11 +102,11 @@ def load_cartesian_dataset(xyz_path):
         geoms[g] = [geoms[g][i] for i in p]
 
     # write new xyz file with standard order
-    with open('std_' + xyz_path, 'w+') as f:
-        for i in range(len(energies)):
-            f.write(energies[i] +'\n')
-            for j in range(natoms):
-                f.write(geoms[i][j] +'\n')
+    #with open('std_' + xyz_path, 'w+') as f:
+    #    for i in range(len(energies)):
+    #        f.write(energies[i] +'\n')
+    #        for j in range(natoms):
+    #            f.write(geoms[i][j] +'\n')
 
     # remove everything from XYZs except floats and convert to numpy arrays
     for i,geom in enumerate(geoms):
@@ -129,7 +130,11 @@ def load_cartesian_dataset(xyz_path):
         bond_columns.append("r%d" % (i))
     DF = pd.DataFrame(data=final_geoms, columns=bond_columns)
     DF['E'] = energies
-    DF.to_csv('interatomic_PES.dat',index=False, float_format='%12.10f')
+
+    # remove suffix of xyz path if it exists
+    finalpath = xyz_path.rsplit(".",1)[0]
+    finalpath = os.path.splitext(xyz_path)[0]
+    DF.to_csv(finalpath + '_interatomics.dat',index=False, float_format='%12.10f')
     return DF
 
 
