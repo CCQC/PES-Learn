@@ -82,7 +82,7 @@ class DataSampler(object):
         data = self.dataset.values
         X = data[:, :-1]
         y = data[:,-1].reshape(-1,1)
-        full_dataset_dist, binedges = np.histogram(y, bins='auto', density=True)
+        full_dataset_dist, binedges = np.histogram(y, bins=10, density=True)
         pvalues = []
         chi = []
         for seed in range(500):
