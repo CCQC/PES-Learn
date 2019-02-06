@@ -3,7 +3,7 @@ import setuptools
 if __name__ == "__main__":
     setuptools.setup(
         name='peslearn',
-        version="0.0.1",
+        version="0.1.1",
         description='Automated Construction of Machine Learning Models of Molecular Potential Energy Surfaces.',
         author='Adam Abbott',
         author_email='adabbott@uga.edu',
