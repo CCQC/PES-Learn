@@ -18,9 +18,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tuesday, 24 April 2018 02:51PM
+    Psi4 started on: Thursday, 31 January 2019 03:12PM
 
-    Process ID:   3182
+    Process ID:   9416
     PSIDATADIR: /home/adabbott/Git/psi4/objdir/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -32,18 +32,17 @@
 molecule o2 {
 0 3
 O 0.0000000000 0.0000000000 0.0000000000
-O 0.0000000000 0.0000000000 0.8848484848
+O 0.0000000000 0.0000000000 0.9714285714
 }
 
 set basis 6-31g
 set reference rohf
 
-gradient('scf')
+energy('scf')
 --------------------------------------------------------------------------
-gradient() will perform analytic gradient computation.
 
 *** tstart() called on adabbott
-*** at Tue Apr 24 14:51:07 2018
+*** at Thu Jan 31 15:12:38 2019
 
    => Loading Basis Set <=
 
@@ -70,14 +69,14 @@ gradient() will perform analytic gradient computation.
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.442424242400    15.994914619560
-           O          0.000000000000     0.000000000000     0.442424242400    15.994914619560
+           O          0.000000000000     0.000000000000    -0.485714285700    15.994914619560
+           O          0.000000000000     0.000000000000     0.485714285700    15.994914619560
 
   Running in d2h symmetry.
 
-  Rotational constants: A = ************  B =      2.69220  C =      2.69220 [cm^-1]
-  Rotational constants: A = ************  B =  80710.01768  C =  80710.01768 [MHz]
-  Nuclear repulsion =   38.274735089154781
+  Rotational constants: A = ************  B =      2.23369  C =      2.23369 [cm^-1]
+  Rotational constants: A = ************  B =  66964.32880  C =  66964.32880 [MHz]
+  Nuclear repulsion =   34.863439625778327
 
   Charge       = 0
   Multiplicity = 3
@@ -92,8 +91,8 @@ gradient() will perform analytic gradient computation.
   MOM disabled.
   Fractional occupation disabled.
   Guess Type is GWH.
-  Energy threshold   = 1.00e-08
-  Density threshold  = 1.00e-08
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
 
   ==> Primary Basis <==
@@ -155,7 +154,7 @@ gradient() will perform analytic gradient computation.
     Spherical Harmonics?: false
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 4.7022005073E-03.
+  Minimum eigenvalue in the overlap matrix is 7.7274210404E-03.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Generalized Wolfsberg-Helmholtz.
@@ -164,15 +163,14 @@ gradient() will perform analytic gradient computation.
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-ROHF iter   1:  -145.61699222218994   -1.45617e+02   1.99269e-01 
-   @DF-ROHF iter   2:  -149.06429503877169   -3.44730e+00   4.36074e-02 DIIS
-   @DF-ROHF iter   3:  -149.14957355797281   -8.52785e-02   1.20774e-02 DIIS
-   @DF-ROHF iter   4:  -149.15642668231834   -6.85312e-03   2.05143e-03 DIIS
-   @DF-ROHF iter   5:  -149.15667133782725   -2.44656e-04   1.95280e-04 DIIS
-   @DF-ROHF iter   6:  -149.15667489366433   -3.55584e-06   1.20210e-05 DIIS
-   @DF-ROHF iter   7:  -149.15667490666334   -1.29990e-08   1.11027e-06 DIIS
-   @DF-ROHF iter   8:  -149.15667490675926   -9.59233e-11   6.28465e-08 DIIS
-   @DF-ROHF iter   9:  -149.15667490675955   -2.84217e-13   5.75065e-09 DIIS
+   @DF-ROHF iter   1:  -146.29829911492800   -1.46298e+02   2.11153e-01 
+   @DF-ROHF iter   2:  -149.27503338305223   -2.97673e+00   4.70246e-02 DIIS
+   @DF-ROHF iter   3:  -149.37310186441755   -9.80685e-02   1.28643e-02 DIIS
+   @DF-ROHF iter   4:  -149.38088197413248   -7.78011e-03   1.89123e-03 DIIS
+   @DF-ROHF iter   5:  -149.38109611407964   -2.14140e-04   1.75665e-04 DIIS
+   @DF-ROHF iter   6:  -149.38109889692163   -2.78284e-06   1.34570e-05 DIIS
+   @DF-ROHF iter   7:  -149.38109891335154   -1.64299e-08   1.10638e-06 DIIS
+   @DF-ROHF iter   8:  -149.38109891344556   -9.40190e-11   4.87472e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -181,19 +179,19 @@ gradient() will perform analytic gradient computation.
 
     Doubly Occupied:                                                      
 
-       1Ag   -20.707954     1B1u  -20.701476     2Ag    -2.105580  
-       2B1u   -0.973096     1B3u   -0.917892     1B2u   -0.917892  
-       3Ag    -0.815554  
+       1Ag   -20.709719     1B1u  -20.706554     2Ag    -1.976237  
+       2B1u   -1.007465     1B3u   -0.845328     1B2u   -0.845328  
+       3Ag    -0.790678  
 
     Singly Occupied:                                                      
 
-       1B2g   -0.040573     1B3g   -0.040573  
+       1B2g   -0.103958     1B3g   -0.103958  
 
     Virtual:                                                              
 
-       3B1u    0.760077     4Ag     0.933503     2B2u    0.993452  
-       2B3u    0.993452     5Ag     1.174885     2B3g    1.226152  
-       2B2g    1.226152     4B1u    1.574165     5B1u    2.128317  
+       3B1u    0.713143     4Ag     0.990591     2B2u    1.033057  
+       2B3u    1.033057     5Ag     1.168573     2B2g    1.203293  
+       2B3g    1.203293     4B1u    1.396079     5B1u    1.894001  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
@@ -202,14 +200,14 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-ROHF Final Energy:  -149.15667490675955
+  @DF-ROHF Final Energy:  -149.38109891344556
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             38.2747350891547811
-    One-Electron Energy =                -279.8425947968202081
-    Two-Electron Energy =                  92.4111848009058718
-    Total Energy =                       -149.1566749067595765
+    Nuclear Repulsion Energy =             34.8634396257783266
+    One-Electron Energy =                -273.8566154686121763
+    Two-Electron Energy =                  89.6120769293883228
+    Total Energy =                       -149.3810989134455554
 
 
 
@@ -230,88 +228,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on adabbott at Tue Apr 24 14:51:07 2018
+*** tstop() called on adabbott at Thu Jan 31 15:12:38 2019
 Module time:
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.33 seconds =       0.01 minutes
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.21 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.33 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
-
-*** tstart() called on adabbott
-*** at Tue Apr 24 14:51:07 2018
-
-
-         ------------------------------------------------------------
-                                   SCF GRAD                          
-                          Rob Parrish, Justin Turney,                
-                       Andy Simmonett, and Alex Sokolov              
-         ------------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: d2h
-    Full point group: D_inf_h
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 3:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.442424242400    15.994914619560
-           O          0.000000000000     0.000000000000     0.442424242400    15.994914619560
-
-  Nuclear repulsion =   38.274735089154781
-
-  ==> Basis Set <==
-
-  Basis Set: 6-31G
-    Blend: 6-31G
-    Number of shells: 10
-    Number of basis function: 18
-    Number of Cartesian functions: 18
-    Spherical Harmonics?: false
-    Max angular momentum: 1
-
-  ==> DFJKGrad: Density-Fitted SCF Gradients <==
-
-    Gradient:                    1
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               375
-    Schwarz Cutoff:          0E+00
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: (6-31G AUX)
-    Blend: CC-PVDZ-JKFIT
-    Number of shells: 48
-    Number of basis function: 162
-    Number of Cartesian functions: 162
-    Spherical Harmonics?: false
-    Max angular momentum: 3
-
-
-  -Total Gradient:
-     Atom            X                  Y                   Z
-    ------   -----------------  -----------------  -----------------
-       1        0.000000000000    -0.000000000000     1.888306611684
-       2        0.000000000000     0.000000000000    -1.888306611684
-
-
-*** tstop() called on adabbott at Tue Apr 24 14:51:07 2018
-Module time:
-	user time   =       0.14 seconds =       0.00 minutes
-	system time =       0.43 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.30 seconds =       0.01 minutes
-	system time =       0.77 seconds =       0.01 minutes
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.21 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** Psi4 exiting successfully. Buy a developer a beer!

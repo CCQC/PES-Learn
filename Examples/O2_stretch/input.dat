@@ -1,12 +1,9 @@
 O
 O 1 r1
 
-r1 = [0.8, 1.5, 100]
+r1 = [0.8, 1.5, 50]
 
 energy = 'regex'
 energy_regex = 'Final Energy:\s+(-\d+\.\d+)'
-
-gradient = 'regex'
-gradient_header = "Total Gradient:"
-gradient_footer = "\*\*\* tstop() called on"
-gradient_line =  "\s+\d+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"
+use_pips = false
+training_points = 20

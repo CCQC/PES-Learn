@@ -8,4 +8,4 @@ O 0.000 0.000 1.000
 set basis 6-31g
 set reference rohf
 
-gradient('scf')
+energy('scf')

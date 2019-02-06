@@ -1,88 +1,64 @@
 
 Host: adabbott
 
-Timers On : Tue Apr 24 14:51:15 2018
-Timers Off: Tue Apr 24 14:51:15 2018
+Timers On : Thu Jan 31 15:12:50 2019
+Timers Off: Thu Jan 31 15:12:50 2019
 
-Wall Time:        0.38 seconds
+Wall Time:        0.27 seconds
 
-JK: (A|mn)                  :      0.017u      0.000s      0.007w      1 calls
+JK: (A|mn)                  :      0.000u      0.000s      0.006w      1 calls
 JK: (A|Q)^-1/2              :      0.017u      0.000s      0.011w      1 calls
 JK: (Q|mn)                  :      0.000u      0.000s      0.000w      1 calls
-HF: Form H                  :      0.000u      0.000s      0.002w      1 calls
+HF: Form H                  :      0.000u      0.000s      0.004w      1 calls
 HF: Form S/X                :      0.000u      0.000s      0.000w      1 calls
 HF: Guess                   :      0.000u      0.000s      0.000w      1 calls
-HF: Form G                  :      0.017u      0.067s      0.007w      9 calls
-JK: D                       :      0.000u      0.000s      0.000w      9 calls
-JK: USO2AO                  :      0.000u      0.000s      0.000w      9 calls
-JK: JK                      :      0.017u      0.067s      0.006w      9 calls
-JK: J                       :      0.000u      0.033s      0.003w      9 calls
-JK: J1                      :      0.000u      0.033s      0.003w     18 calls
-JK: J2                      :      0.000u      0.000s      0.000w     18 calls
-JK: K                       :      0.017u      0.033s      0.003w      9 calls
-JK: K1                      :      0.017u      0.033s      0.003w     18 calls
-JK: K2                      :      0.000u      0.000s      0.000w     18 calls
-JK: AO2USO                  :      0.000u      0.000s      0.000w      9 calls
-HF: Form F                  :      0.000u      0.000s      0.000w      9 calls
-HF: DIIS                    :      0.017u      0.000s      0.001w      9 calls
-DIISManager::add_entry      :      0.017u      0.000s      0.000w      9 calls
-DIISManager::extrapolate    :      0.000u      0.000s      0.000w      8 calls
-DIISManager::extrapolate: bMatrix setup:      0.000u      0.000s      0.000w      8 calls
-DIISManager::extrapolate: bMatrix pseudoinverse:      0.000u      0.000s      0.000w      8 calls
-DIISManager::extrapolate: form new data:      0.000u      0.000s      0.000w      8 calls
-HF: Form C                  :      0.000u      0.000s      0.000w      9 calls
-HF: Form D                  :      0.000u      0.000s      0.000w      9 calls
-Grad: T                     :      0.000u      0.017s      0.000w      1 calls
-Grad: V                     :      0.017u      0.050s      0.005w      1 calls
-Grad: S                     :      0.000u      0.000s      0.000w      1 calls
-Grad: JK                    :      0.183u      0.667s      0.063w      1 calls
-JKGrad: Amn                 :      0.017u      0.133s      0.012w      1 calls
-JKGrad: Awmn                :      0.000u      0.000s      0.000w      1 calls
-JKGrad: AB                  :      0.050u      0.150s      0.014w      1 calls
-JKGrad: UV                  :      0.000u      0.000s      0.000w      1 calls
-JKGrad: ABx                 :      0.017u      0.100s      0.009w      1 calls
-JKGrad: Amnx                :      0.083u      0.200s      0.022w      1 calls
-JKGrad: Awmnx               :      0.000u      0.000s      0.000w      1 calls
-Grad: XC                    :      0.000u      0.000s      0.000w      1 calls
+HF: Form G                  :      0.000u      0.050s      0.006w      8 calls
+JK: D                       :      0.000u      0.000s      0.000w      8 calls
+JK: USO2AO                  :      0.000u      0.000s      0.000w      8 calls
+JK: JK                      :      0.000u      0.050s      0.005w      8 calls
+JK: J                       :      0.000u      0.033s      0.003w      8 calls
+JK: J1                      :      0.000u      0.033s      0.002w     16 calls
+JK: J2                      :      0.000u      0.000s      0.000w     16 calls
+JK: K                       :      0.000u      0.017s      0.003w      8 calls
+JK: K1                      :      0.000u      0.017s      0.002w     16 calls
+JK: K2                      :      0.000u      0.000s      0.000w     16 calls
+JK: AO2USO                  :      0.000u      0.000s      0.000w      8 calls
+HF: Form F                  :      0.017u      0.000s      0.000w      8 calls
+HF: DIIS                    :      0.000u      0.000s      0.001w      8 calls
+DIISManager::add_entry      :      0.000u      0.000s      0.000w      8 calls
+DIISManager::extrapolate    :      0.000u      0.000s      0.000w      7 calls
+DIISManager::extrapolate: bMatrix setup:      0.000u      0.000s      0.000w      7 calls
+DIISManager::extrapolate: bMatrix pseudoinverse:      0.000u      0.000s      0.000w      7 calls
+DIISManager::extrapolate: form new data:      0.000u      0.000s      0.000w      7 calls
+HF: Form C                  :      0.000u      0.000s      0.000w      8 calls
+HF: Form D                  :      0.000u      0.000s      0.000w      8 calls
 
 -----------------------------------------------------------
-JK: (A|mn)                  :      0.017u      0.000s      0.007w      1 calls
+JK: (A|mn)                  :      0.000u      0.000s      0.006w      1 calls
 JK: (A|Q)^-1/2              :      0.017u      0.000s      0.011w      1 calls
 JK: (Q|mn)                  :      0.000u      0.000s      0.000w      1 calls
-HF: Form H                  :      0.000u      0.000s      0.002w      1 calls
+HF: Form H                  :      0.000u      0.000s      0.004w      1 calls
 HF: Form S/X                :      0.000u      0.000s      0.000w      1 calls
 HF: Guess                   :      0.000u      0.000s      0.000w      1 calls
-HF: Form G                  :      0.017u      0.067s      0.007w      9 calls
-| JK: D                     :      0.000u      0.000s      0.000w      9 calls
-| JK: USO2AO                :      0.000u      0.000s      0.000w      9 calls
-| JK: JK                    :      0.017u      0.067s      0.006w      9 calls
-| | JK: J                   :      0.000u      0.033s      0.003w      9 calls
-| | | JK: J1                :      0.000u      0.033s      0.003w     18 calls
-| | | JK: J2                :      0.000u      0.000s      0.000w     18 calls
-| | JK: K                   :      0.017u      0.033s      0.003w      9 calls
-| | | JK: K1                :      0.017u      0.033s      0.003w     18 calls
-| | | JK: K2                :      0.000u      0.000s      0.000w     18 calls
-| JK: AO2USO                :      0.000u      0.000s      0.000w      9 calls
-HF: Form F                  :      0.000u      0.000s      0.000w      9 calls
-HF: DIIS                    :      0.017u      0.000s      0.001w      9 calls
-| DIISManager::add_entry    :      0.017u      0.000s      0.000w      9 calls
-| DIISManager::extrapolate  :      0.000u      0.000s      0.000w      8 calls
-| | DIISManager::extrapolate: bMatrix setup:      0.000u      0.000s      0.000w      8 calls
-| | DIISManager::extrapolate: bMatrix pseudoinverse:      0.000u      0.000s      0.000w      8 calls
-| | DIISManager::extrapolate: form new data:      0.000u      0.000s      0.000w      8 calls
-HF: Form C                  :      0.000u      0.000s      0.000w      9 calls
-HF: Form D                  :      0.000u      0.000s      0.000w      9 calls
-Grad: T                     :      0.000u      0.017s      0.000w      1 calls
-Grad: V                     :      0.017u      0.050s      0.005w      1 calls
-Grad: S                     :      0.000u      0.000s      0.000w      1 calls
-Grad: JK                    :      0.183u      0.667s      0.063w      1 calls
-| JKGrad: Amn               :      0.017u      0.133s      0.012w      1 calls
-| JKGrad: Awmn              :      0.000u      0.000s      0.000w      1 calls
-| JKGrad: AB                :      0.050u      0.150s      0.014w      1 calls
-| JKGrad: UV                :      0.000u      0.000s      0.000w      1 calls
-| JKGrad: ABx               :      0.017u      0.100s      0.009w      1 calls
-| JKGrad: Amnx              :      0.083u      0.200s      0.022w      1 calls
-| JKGrad: Awmnx             :      0.000u      0.000s      0.000w      1 calls
-Grad: XC                    :      0.000u      0.000s      0.000w      1 calls
+HF: Form G                  :      0.000u      0.050s      0.006w      8 calls
+| JK: D                     :      0.000u      0.000s      0.000w      8 calls
+| JK: USO2AO                :      0.000u      0.000s      0.000w      8 calls
+| JK: JK                    :      0.000u      0.050s      0.005w      8 calls
+| | JK: J                   :      0.000u      0.033s      0.003w      8 calls
+| | | JK: J1                :      0.000u      0.033s      0.002w     16 calls
+| | | JK: J2                :      0.000u      0.000s      0.000w     16 calls
+| | JK: K                   :      0.000u      0.017s      0.003w      8 calls
+| | | JK: K1                :      0.000u      0.017s      0.002w     16 calls
+| | | JK: K2                :      0.000u      0.000s      0.000w     16 calls
+| JK: AO2USO                :      0.000u      0.000s      0.000w      8 calls
+HF: Form F                  :      0.017u      0.000s      0.000w      8 calls
+HF: DIIS                    :      0.000u      0.000s      0.001w      8 calls
+| DIISManager::add_entry    :      0.000u      0.000s      0.000w      8 calls
+| DIISManager::extrapolate  :      0.000u      0.000s      0.000w      7 calls
+| | DIISManager::extrapolate: bMatrix setup:      0.000u      0.000s      0.000w      7 calls
+| | DIISManager::extrapolate: bMatrix pseudoinverse:      0.000u      0.000s      0.000w      7 calls
+| | DIISManager::extrapolate: form new data:      0.000u      0.000s      0.000w      7 calls
+HF: Form C                  :      0.000u      0.000s      0.000w      8 calls
+HF: Form D                  :      0.000u      0.000s      0.000w      8 calls
 
 ***********************************************************
