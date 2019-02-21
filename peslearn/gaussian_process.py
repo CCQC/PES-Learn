@@ -77,7 +77,7 @@ class GaussianProcess(Model):
         self.ytest : test output data, transformed
         """
         self.X, self.y, self.Xscaler, self.yscaler = self.preprocess(params, self.raw_X, self.raw_y)
-        if self.sampler == 'user-supplied':
+        if self.sampler == 'user_supplied':
             self.Xtr = self.transform_new_X(self.raw_Xtr, params, self.Xscaler)
             self.ytr = self.transform_new_y(self.raw_ytr, self.yscaler)
             self.Xtest = self.transform_new_X(self.raw_Xtest, params, self.Xscaler)
@@ -97,6 +97,7 @@ class GaussianProcess(Model):
         np.random.seed(0)
         dim = self.X.shape[1]
         # TODO add HP control 
+        
         if self.input_obj.keywords['gp_ard'] == 'true':
             kernel = GPy.kern.RBF(dim, ARD=True) #TODO add more kernels to hyperopt space
         else:
@@ -212,7 +213,7 @@ class GaussianProcess(Model):
         with open('hyperparameters', 'w') as f:
             print(params, file=f)
         
-        if self.sampler == 'user-supplied':
+        if self.sampler == 'user_supplied':
             self.traindata.to_csv('train_set',sep=',',index=False,float_format='%12.12f')
             self.testdata.to_csv('test_set', sep=',', index=False, float_format='%12.12f')
         else:
@@ -230,6 +231,7 @@ class GaussianProcess(Model):
         so that prediction can be made.
         """
         # ensure X dimension is n x m (n new points, m input variables)
+        print(newX.shape)
         if len(newX.shape) == 1:
             newX = np.expand_dims(newX,0)
         elif len(newX.shape) > 2:

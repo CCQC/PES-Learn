@@ -219,7 +219,6 @@ class DataSampler(object):
         train_indices = np.asarray(train_indices)
         # do not sort. This ruins the building-up method of the PES
         #train_indices = np.sort(train_indices)
-
         self.set_indices(train_indices, test_indices)
 
     def energy_gaussian(self):

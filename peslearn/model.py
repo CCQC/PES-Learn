@@ -73,10 +73,10 @@ class Model(ABC):
             raise Exception("Requested number of training points is greater than size of the dataset.")
         self.hp_max_evals = self.input_obj.keywords['hp_max_evals']
 
-        if (train_path is None and test_path is None):
+        if (train_path==None and test_path==None):
             self.sampler = self.input_obj.keywords['sampling']
         else:
-            self.sampler = 'user-supplied'
+            self.sampler = 'user_supplied'
 
         # for input, output style
         self.do_hp_opt = self.input_obj.keywords['hp_opt']
@@ -98,6 +98,10 @@ class Model(ABC):
             sample.sobol()
         elif self.sampler == 'energy_ordered':
             sample.energy_ordered()
+        elif self.sampler == 'user_supplied':
+            pass
+        else:
+            raise Exception("Specified sampling method '{}' is not a valid option.".format(input_obj.keywords['sampling']))
         self.train_indices, self.test_indices = sample.get_indices()
         super().__init__()
 
