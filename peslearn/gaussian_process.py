@@ -9,7 +9,6 @@ from .model import Model
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
 import GPy
 
-
 from .constants import hartree2cm, package_directory 
 from .printing_helper import hyperopt_complete
 from .data_sampler import DataSampler 
@@ -51,16 +50,19 @@ class GaussianProcess(Model):
                                     }
 
         if self.input_obj.keywords['pes_format'] == 'interatomics':
-            self.hyperparameter_space['morse_transform'] = hp.choice('morse_transform',[{'morse': True,'morse_alpha': hp.uniform('morse_alpha', 1.0, 2.0)},{'morse': False}])
+            self.set_hyperparameter('morse_transform', hp.choice('morse_transform',[{'morse': True,'morse_alpha': hp.quniform('morse_alpha', 1, 2, 0.1)},{'morse': False}]))
         else:
-            self.hyperparameter_space['morse_transform'] = hp.choice('morse_transform',[{'morse': False}])
+            self.set_hyperparameter('morse_transform', hp.choice('morse_transform',[{'morse': False}]))
         if self.pip:
             val =  hp.choice('pip',[{'pip': True,'degree_reduction': hp.choice('degree_reduction', [True,False])}])
             self.set_hyperparameter('pip', val)
         else:
             self.set_hyperparameter('pip', hp.choice('pip', [{'pip': False}]))
-         #TODO add optional space inclusions 
-         # something like: if option: self.hyperparameter_space['newoption'] = hp.choice(..)
+
+        if self.input_obj.keywords['gp_ard'] == 'opt': # auto relevancy determination (independant length scales for each feature)
+            self.set_hyperparameter('ARD', hp.choice('ARD', [True,False]))
+
+         #TODO add optional space inclusions, something like: if option: self.hyperparameter_space['newoption'] = hp.choice(..)
 
     def split_train_test(self, params):
         """
@@ -89,19 +91,19 @@ class GaussianProcess(Model):
             self.Xtest = self.X[self.test_indices]
             self.ytest = self.y[self.test_indices]
 
-    def build_model(self, params, nrestarts=10, maxit=500):
-        # build train test sets
+    def build_model(self, params, nrestarts=10, maxit=1000):
         print("Hyperparameters: ", params)
         self.split_train_test(params)
-        # make GPy deterministic
-        np.random.seed(0)
+        np.random.seed(0)     # make GPy deterministic for a given hyperparameter config
         dim = self.X.shape[1]
-        # TODO add HP control 
-        
-        if self.input_obj.keywords['gp_ard'] == 'true':
-            kernel = GPy.kern.RBF(dim, ARD=True) #TODO add more kernels to hyperopt space
+        # TODO add HP control of kernels
+        if self.input_obj.keywords['gp_ard'] == 'opt':
+            kernel = GPy.kern.RBF(dim, ARD=params['ARD']) 
+        elif self.input_obj.keywords['gp_ard'] == 'true':
+            kernel = GPy.kern.RBF(dim, ARD=True) 
         else:
-            kernel = GPy.kern.RBF(dim, ARD=False) #TODO add more kernels to hyperopt space
+            kernel = GPy.kern.RBF(dim, ARD=False) 
+
         self.model = GPy.models.GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
         self.model.optimize(max_iters=maxit, messages=False)
         self.model.optimize_restarts(nrestarts, optimizer="bfgs", verbose=False, max_iters=maxit, messages=False)
@@ -136,16 +138,14 @@ class GaussianProcess(Model):
         print("Max 10 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))))
         return error_test
      
-        
     def preprocess(self, params, raw_X, raw_y):
         """
         Preprocess raw data according to hyperparameters
         """
         # TODO make more flexible. If keys don't exist, ignore them. smth like "if key: if param['key']: do transform"
-        # Transform to morse variables (exp(-r/alpha))
         if params['morse_transform']['morse']:
-            raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])
-        # Transform to FIs, degree reduce if called
+            raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])  # Transform to morse variables (exp(-r/alpha))
+        # Transform to FIs, degree reduce if called 
         if params['pip']['pip']:
             # find path to fundamental invariants for an N atom system with molecule type AxByCz...
             path = os.path.join(package_directory, "lib", str(sum(self.mol.atom_count_vector))+"_atom_system", self.mol.molecule_type, "output")
@@ -153,7 +153,6 @@ class GaussianProcess(Model):
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
         
-        # Scaling
         if params['scale_X']:
             X, Xscaler = general_scaler(params['scale_X'], raw_X)
         else:
@@ -180,10 +179,7 @@ class GaussianProcess(Model):
                     space=self.hyperparameter_space,
                     algo=tpe.suggest,
                     max_evals=self.hp_max_evals,
-                    # set random seed for debugging
-                    #rstate=np.random.RandomState(0),
                     rstate=rstate, 
-                    #rstate=None, 
                     trials=self.hyperopt_trials)
         hyperopt_complete()
         print("Best performing hyperparameters are:")

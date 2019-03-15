@@ -62,7 +62,7 @@ class InputProcessor(object):
                            'validation_points': 50,            # any int
                            'hp_max_evals': 50,               # any int
                            'rseed': None,                    # any int
-                           'gp_ard': 'true',                 # 'false'
+                           'gp_ard': 'opt',                  # 'true', 'false'. 'opt' treats as hyperparameter
                            'hp_opt': 'true'}                 # 'false'
 
         for k in string_keywords:
