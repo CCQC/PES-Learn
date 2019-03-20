@@ -91,37 +91,35 @@ class GaussianProcess(Model):
             self.Xtest = self.X[self.test_indices]
             self.ytest = self.y[self.test_indices]
 
-    def build_model(self, params, nrestarts=10, maxit=1000):
+    def build_model(self, params, nrestarts=10, maxit=1000, seed=0):
         print("Hyperparameters: ", params)
         self.split_train_test(params)
-        np.random.seed(0)     # make GPy deterministic for a given hyperparameter config
+        np.random.seed(seed)     # make GPy deterministic for a given hyperparameter config
         dim = self.X.shape[1]
-        # TODO add HP control of kernels
         if self.input_obj.keywords['gp_ard'] == 'opt':
-            kernel = GPy.kern.RBF(dim, ARD=params['ARD']) 
+            ard_val = params['ARD']
         elif self.input_obj.keywords['gp_ard'] == 'true':
-            kernel = GPy.kern.RBF(dim, ARD=True) 
+            ard_val = True
         else:
-            kernel = GPy.kern.RBF(dim, ARD=False) 
-
+            ard_val = False
+        kernel = GPy.kern.RBF(dim, ARD=ard_val)  # TODO add HP control of kernels
         self.model = GPy.models.GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
-        self.model.optimize(max_iters=maxit, messages=False)
-        self.model.optimize_restarts(nrestarts, optimizer="bfgs", verbose=False, max_iters=maxit, messages=False)
+        #self.model.optimize(max_iters=maxit, messages=False)
+        self.model.optimize_restarts(nrestarts, optimizer="lbfgsb", robust=True, verbose=False, max_iters=maxit, messages=False)
         gc.collect(2) #fixes some memory leak issues with certain BLAS configs
 
     def hyperopt_model(self, params):
         # skip building this model if hyperparameter combination already attempted
-        is_repeat = None
         for i in self.hyperopt_trials.results:
             if 'memo' in i:
                 if params == i['memo']:
-                    is_repeat = True
-        if is_repeat:
-            return {'loss': 0.0, 'status': STATUS_FAIL, 'memo': 'repeat'}
-        else:
-            self.build_model(params)
-            error_test = self.vet_model(self.model)
-            return {'loss': error_test, 'status': STATUS_OK, 'memo': params}
+                    return {'loss': i['loss'], 'status': STATUS_OK, 'memo': 'repeat'}
+        if self.itercount > self.hp_max_evals:
+            return {'loss': 0.0, 'status': STATUS_FAIL, 'memo': 'max iters reached'}
+        self.build_model(params)
+        error_test = self.vet_model(self.model)
+        self.itercount += 1
+        return {'loss': error_test, 'status': STATUS_OK, 'memo': params}
 
     def predict(self, model, data_in):
         prediction, v1 = model.predict(data_in, full_cov=False)
@@ -171,6 +169,7 @@ class GaussianProcess(Model):
         print("Training with {} points (Full dataset contains {} points).".format(self.ntrain, self.n_datapoints))
         print("Using {} training set point sampling.".format(self.sampler))
         self.hyperopt_trials = Trials()
+        self.itercount = 1  # keep track of hyperopt iterations 
         if self.input_obj.keywords['rseed']:
             rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
         else:
@@ -178,7 +177,7 @@ class GaussianProcess(Model):
         best = fmin(self.hyperopt_model,
                     space=self.hyperparameter_space,
                     algo=tpe.suggest,
-                    max_evals=self.hp_max_evals,
+                    max_evals=self.hp_max_evals*2,
                     rstate=rstate, 
                     trials=self.hyperopt_trials)
         hyperopt_complete()
