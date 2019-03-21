@@ -71,7 +71,11 @@ class OutputFile(object):
             Which energy to grab from the output file which matches the cclib_attribute. 
             Default is -1, the last energy printed in the output file which matches the cclib_attribute. 
         """
-        cclib_outputobj = ccio.ccread(self.output_path) 
+        try:
+            cclib_outputobj = ccio.ccread(self.output_path) 
+        except:
+            e = None 
+            return e
         e = None 
         # for whatever reason, sometimes each energy is a single element list, so we have to code around that 
         # also, cclib does not handle things well if something fails to parse, needtry/except pairs 
