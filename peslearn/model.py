@@ -29,10 +29,14 @@ class Model(ABC):
     input_obj : peslearn object 
         InputProcessor object from peslearn. Used for keywords related to machine learning.
 
-    mol_obj : peslearn object 
-        Molecule object from peslearn. Used for molecule information if permutation-invariant geometry representation is used.
+    molecule_type : str
+        Molecule type defining number of each atom in decreasing order. 
+        AxByCz... where x,y,z are integers. E.g., H2O --> A2B,  C2H4 --> A4B2
+
+    molecule : peslearn object 
+        Molecule object from peslearn. Used to automatically define molecule_type
     """
-    def __init__(self, dataset_path, input_obj, mol_obj=None, train_path=None, test_path=None):
+    def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None):
         data = self.interpret_dataset(dataset_path)
         if train_path:
             self.traindata = self.interpret_dataset(train_path)
@@ -48,22 +52,19 @@ class Model(ABC):
         self.raw_X = self.dataset.values[:, :-1]
         self.raw_y = self.dataset.values[:,-1].reshape(-1,1)
         self.input_obj = input_obj
-        self.mol = mol_obj
-        self.pip = False
-        if (self.input_obj.keywords['pes_format'] == 'interatomics') and (self.input_obj.keywords['use_pips'] == 'true'):
-            if self.mol:
-                self.pip = True
-                print("Using permutation invariant polynomial transformation for molecule type ", self.mol.molecule_type)
-            else:
-                raise Exception(
-                "The use of permutation invariant polynomials ('use_pips' = true) requires Model objects are",
-                "instantiated with a Molecule object: model = Model(dataset_path, input_obj, mol_obj)")
-        else:
-            print(
-            "Warning: Molecular geometry will not be transformed to permutation-invariant representation", 
-            "(either pes_format is not 'interatomics' or 'use_pips' = false). The model will therefore not generalize", 
-            "to symmetry-equivalent points. Ensure that the dataset is properly built to compensate for this.")
 
+        self.pip = False
+        if molecule:
+            self.molecule_type = molecule.molecule_type
+            if self.input_obj.keywords['use_pips'] == 'true':
+                self.pip = True
+                print("Using permutation invariant polynomial transformation for molecule type ", self.molecule_type)
+        if molecule_type:
+            self.molecule_type = molecule_type
+            if self.input_obj.keywords['use_pips'] == 'true':
+                self.pip = True
+                print("Using permutation invariant polynomial transformation for molecule type ", self.molecule_type)
+            
         # keyword control
         self.ntrain = self.input_obj.keywords['training_points']
         if train_path:
@@ -76,10 +77,6 @@ class Model(ABC):
             self.sampler = self.input_obj.keywords['sampling']
         else:
             self.sampler = 'user_supplied'
-
-        # for input, output style
-        self.do_hp_opt = self.input_obj.keywords['hp_opt']
-        # more keywords...
 
         # train test split
         if self.input_obj.keywords['n_low_energy_train']:
@@ -104,7 +101,6 @@ class Model(ABC):
         self.train_indices, self.test_indices = sample.get_indices()
         super().__init__()
 
-
     def interpret_dataset(self, path):
         with open(path) as f:
             read = f.read()
@@ -119,7 +115,6 @@ class Model(ABC):
                                 "arbitrary geometry labels with last column labeled 'E', e.g.  r1,r2,r3,...,E or 2.",
                                 "A single energy value on its own line followed by a standard cartesian coordinate block.")
         return data
-
 
     @abstractmethod
     def build_model(self):
