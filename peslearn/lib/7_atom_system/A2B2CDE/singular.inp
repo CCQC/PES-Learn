@@ -1,5 +1,0 @@
-LIB "finvar.lib";
-ring R=0,(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,x18,x19,x20,x21),dp;
-def GEN=list(list(list(2, 3),list(4, 5),list(7, 8),list(11, 12),list(16, 17)),list(list(2, 4),list(3, 5),list(9, 10),list(13, 14),list(18, 19)));
-matrix G = invariant_algebra_perm(GEN,0);
-G;
