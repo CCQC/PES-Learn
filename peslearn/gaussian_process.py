@@ -145,8 +145,8 @@ class GaussianProcess(Model):
             raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])  # Transform to morse variables (exp(-r/alpha))
         # Transform to FIs, degree reduce if called 
         if params['pip']['pip']:
-            # find path to fundamental invariants for an N atom system with molecule type AxByCz...
-            path = os.path.join(package_directory, "lib", str(sum(self.mol.atom_count_vector))+"_atom_system", self.mol.molecule_type, "output")
+            # find path to fundamental invariants form molecule type AxByCz...
+            path = os.path.join(package_directory, "lib", self.mol.molecule_type, "output")
             raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)

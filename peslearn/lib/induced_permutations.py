@@ -242,7 +242,7 @@ def atom_combinations(N):
     return combos
 
 # use this to test. vector should be in same order as axis of interatomic distances. i.e., if columns are indexed by H H H C C O, vector should be [3,2,1]
-atomtype_vector = [2,1]
+atomtype_vector = [3]
 bond_indice_permutations = permute_bond_indices(atomtype_vector)
 IP  = induced_permutations(atomtype_vector, bond_indice_permutations)
 singular = write_singular_input(sum(atomtype_vector), IP)

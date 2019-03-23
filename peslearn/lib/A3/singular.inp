@@ -1,0 +1,5 @@
+LIB "finvar.lib";
+ring R=0,(x1,x2,x3),dp;
+def GEN=list(list(list(1, 2)),list(list(2, 3)),list(list(1, 2, 3)),list(list(1, 3, 2)),list(list(1, 3)));
+matrix G = invariant_algebra_perm(GEN,0);
+G;

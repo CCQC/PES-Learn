@@ -32,7 +32,6 @@ class Model(ABC):
     mol_obj : peslearn object 
         Molecule object from peslearn. Used for molecule information if permutation-invariant geometry representation is used.
     """
-
     def __init__(self, dataset_path, input_obj, mol_obj=None, train_path=None, test_path=None):
         data = self.interpret_dataset(dataset_path)
         if train_path:
