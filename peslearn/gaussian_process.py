@@ -18,8 +18,8 @@ class GaussianProcess(Model):
     """
     Constructs a Gaussian Process Model using GPy
     """
-    def __init__(self, dataset_path, input_obj, mol_obj=None, train_set=None, test_set=None):
-        super().__init__(dataset_path, input_obj, mol_obj, train_set, test_set)
+    def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None):
+        super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path)
         self.set_default_hyperparameters()
     
     def get_hyperparameters(self):
@@ -146,7 +146,7 @@ class GaussianProcess(Model):
         # Transform to FIs, degree reduce if called 
         if params['pip']['pip']:
             # find path to fundamental invariants form molecule type AxByCz...
-            path = os.path.join(package_directory, "lib", self.mol.molecule_type, "output")
+            path = os.path.join(package_directory, "lib", self.molecule_type, "output")
             raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
@@ -214,6 +214,13 @@ class GaussianProcess(Model):
         else:
             self.dataset.iloc[self.train_indices].to_csv('train_set',sep=',',index=False,float_format='%12.12f')
             self.dataset.iloc[self.test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
+    
+        self.dataset.to_csv('PES.dat', sep=',',index=False,float_format='%12.12f')
+        # write convenience function
+        with open('compute_energy.py', 'w+') as f:
+            print(self.write_convenience_function(), file=f)
+
+
         # print model performance
         sys.stdout = open('performance', 'w')  
         self.vet_model(self.model)
@@ -226,17 +233,15 @@ class GaussianProcess(Model):
         so that prediction can be made.
         """
         # ensure X dimension is n x m (n new points, m input variables)
-        print(newX.shape)
         if len(newX.shape) == 1:
             newX = np.expand_dims(newX,0)
         elif len(newX.shape) > 2:
             raise Exception("Dimensions of input data is incorrect.")
-            
         if params['morse_transform']['morse']:
             newX = morse(newX, params['morse_transform']['morse_alpha'])
         if params['pip']['pip']:
             # find path to fundamental invariants for an N atom system with molecule type AxByCz...
-            path = os.path.join(package_directory, "lib", str(sum(self.mol.atom_count_vector))+"_atom_system", self.mol.molecule_type, "output")
+            path = os.path.join(package_directory, "lib", self.molecule_type, "output")
             newX, degrees = interatomics_to_fundinvar(newX,path)
             if params['pip']['degree_reduction']:
                 newX = degree_reduce(newX, degrees)
@@ -254,3 +259,22 @@ class GaussianProcess(Model):
         if yscaler:
             newy = yscaler.inverse_transform(newy)
         return newy
+
+    def write_convenience_function(self):
+        string = "import peslearn\nimport GPy\nimport numpy as np\nimport json\n\n"
+        string += "gp = peslearn.gaussian_process.GaussianProcess('PES.dat', peslearn.input_process.InputProcessor(''), molecule_type={})\n".format(self.molecule_type)
+        with open('hyperparameters', 'r') as f:
+            hyperparameters = f.read()
+        string += "params = {}\n".format(hyperparameters)
+        string += "X, y, Xscaler, yscaler =  gp.preprocess(params, gp.raw_X, gp.raw_y)\n"
+        string += "model = GPy.core.model.Model('mymodel')\n"
+        string += "with open('model.json', 'r') as f:\n"
+        string += "    model_dict = json.load(f)\n"
+        string += "final = model.from_dict(model_dict)\n\n"
+        string += "def compute_energy(geometries):\n"
+        string += "    g = np.asarray(geometries)\n"
+        string += "    newX = gp.transform_new_X(g, params, Xscaler)\n"
+        string += "    E, cov = final.predict(newX, full_cov=False)\n"
+        string += "    E = gp.inverse_transform_new_y(E,yscaler)\n"
+        string += "    return E"
+        return string
