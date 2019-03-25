@@ -9,7 +9,7 @@ from .model import Model
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
 import GPy
 
-from .constants import hartree2cm, package_directory 
+from .constants import hartree2cm, package_directory, gp_convenience_function
 from .printing_helper import hyperopt_complete
 from .data_sampler import DataSampler 
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
@@ -261,7 +261,7 @@ class GaussianProcess(Model):
         return newy
 
     def write_convenience_function(self):
-        string = "import peslearn\nimport GPy\nimport numpy as np\nimport json\n\n"
+        string = "import peslearn\nimport GPy\nimport numpy as np\nimport json\nfrom itertools import combinations\n\n"
         string += "gp = peslearn.gaussian_process.GaussianProcess('PES.dat', peslearn.input_processor.InputProcessor(''), molecule_type='{}')\n".format(self.molecule_type)
         with open('hyperparameters', 'r') as f:
             hyperparameters = f.read()
@@ -271,21 +271,7 @@ class GaussianProcess(Model):
         string += "with open('model.json', 'r') as f:\n"
         string += "    model_dict = json.load(f)\n"
         string += "final = model.from_dict(model_dict)\n\n"
-        string += "# 'geom_vectors' is a column vector of one or more sets of coordinates\n"
-        string += "# as a list of lists or NumPy array\n"
-        string += "# the coordinates should be the same format as the raw data the model was trained on (internal Zmatrix coordinates or interatomic distances).\n"
-        string += "# The order of coordinates matters.\n"
-        string += "# If you used interatomic distances, a 1D cartesian coordinate vectors can be fed in as well by setting cartesian=True.\n"
-        string += "# The atom order of cartesian coordinates should be most common atom first, alphabetical tiebraker. E.g., \n"
-        string += "def compute_energy(geom_vectors, cartesian=False):\n"
-        string += "    g = np.asarray(geom_vectors)\n"
-        string += "    if cartesian:\n"
-        string += "        g = convert_cartesians(g)\n"
-        string += "    newX = gp.transform_new_X(g, params, Xscaler)\n"
-        string += "    E, cov = final.predict(newX, full_cov=False)\n"
-        string += "    E = gp.inverse_transform_new_y(E,yscaler)\n"
-        string += "    return E"
-        # TODO write convert cartesians
+        string += gp_convenience_function
         return string
 
 
