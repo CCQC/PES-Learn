@@ -21,21 +21,22 @@ with open('input.dat', 'r') as f:
 input_obj = peslearn.input_processor.InputProcessor(input_string)
 mol = peslearn.molecule.Molecule(input_obj.zmat_string)
 text = input("Do you want to 'generate' data, 'parse' data, or 'learn'?")
+text = text.strip()
 start = timeit.default_timer()
 
-if text == 'generate':
+if text == 'generate' or text == 'g':
     config = peslearn.configuration_space.ConfigurationSpace(mol, input_obj)
     template_obj = peslearn.template.Template("./template.dat")
     config.generate_PES(template_obj)
     print("Data generation finished in {} seconds".format(round((timeit.default_timer() - start),2)))
 
-if text == 'parse':
+if text == 'parse' or text == 'p':
     peslearn.parsing_helper.parse(input_obj, mol)
 
-if text == 'learn':
+if text == 'learn' or text == 'l':
     if input_obj.keywords["ml_model"] == 'gp':
-        gp = peslearn.gaussian_process.GaussianProcess(input_obj.keywords["pes_name"], input_obj, mol)
+        gp = peslearn.gaussian_process.GaussianProcess(input_obj.keywords["pes_name"], input_obj, molecule_type=mol.molecule_type)
         gp.optimize_model()
     
 stop = timeit.default_timer()
-print("Total run time: {} seconds".format(stop - start))
+print("Total run time: {} seconds".format(round(stop - start,2)))
