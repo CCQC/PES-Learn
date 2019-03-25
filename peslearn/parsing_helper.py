@@ -48,9 +48,11 @@ def parse(input_obj, mol):
     if input_obj.keywords['pes_format'] == 'internals':
         data = pd.DataFrame(index=None, columns = mol.unique_geom_parameters)
         geom_path = "/geom"
-    else: 
+    elif input_obj.keywords['pes_format'] == 'interatomics':
         data = pd.DataFrame(index=None, columns = mol.interatomic_labels)
         geom_path = "/interatomics"
+    else:
+        raise Exception("pes_format keyword value invalid. Must be 'internals' or 'interatomics'")
 
     if input_obj.keywords['energy']: 
         data['E'] = ''
