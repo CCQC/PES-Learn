@@ -102,9 +102,8 @@ class GaussianProcess(Model):
             ard_val = True
         else:
             ard_val = False
-        kernel = GPy.kern.RBF(dim, ARD=ard_val)  # TODO add HP control of kernels
+        kernel = GPy.kern.RBF(dim, ARD=ard_val)  # TODO add HP control of kernel
         self.model = GPy.models.GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
-        #self.model.optimize(max_iters=maxit, messages=False)
         self.model.optimize_restarts(nrestarts, optimizer="lbfgsb", robust=True, verbose=False, max_iters=maxit, messages=False)
         gc.collect(2) #fixes some memory leak issues with certain BLAS configs
 
@@ -130,10 +129,11 @@ class GaussianProcess(Model):
         pred_test = self.predict(model, self.Xtest)
         pred_full = self.predict(model, self.X)
         error_test = self.compute_error(self.Xtest, self.ytest, pred_test, self.yscaler)
-        error_full, max_errors = self.compute_error(self.X, self.y, pred_full, self.yscaler, 10)
-        print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='    ')
-        print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='    ')
-        print("Max 10 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))))
+        error_full, median_error, max_errors = self.compute_error(self.X, self.y, pred_full, yscaler=self.yscaler, max_errors=5)
+        print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='  ')
+        print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='     ')
+        print("Median error: {}".format(np.round(median_error[0],2)), end='  ')
+        print("Max 5 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))),'\n')
         return error_test
      
     def preprocess(self, params, raw_X, raw_y):

@@ -123,7 +123,7 @@ class Model(ABC):
     def save_model(self):
         pass
 
-    def compute_error(self, X, y, prediction, yscaler, max_errors=None):
+    def compute_error(self, X, y, prediction, yscaler=None, max_errors=None):
         """
         Predict the root-mean-square error (in wavenumbers) of model given 
         known X,y, a prediction, and a y scaling object, if it exists.
@@ -153,14 +153,16 @@ class Model(ABC):
             error = np.sqrt(sklearn.metrics.mean_squared_error(raw_y,  unscaled_prediction))
             if max_errors:
                 e = np.abs(raw_y - unscaled_prediction) * hartree2cm
+                median_error = np.median(e, axis=0)
                 largest_errors = np.partition(e, -max_errors, axis=0)[-max_errors:]
         else:
             error = np.sqrt(sklearn.metrics.mean_squared_error(y, prediction))
             if max_errors:
                 e = np.abs(y - prediction) * hartree2cm
+                median_error = np.median(e, axis=0)
                 largest_errors = np.partition(e, -max_errors, axis=0)[-max_errors:]
         if max_errors:
-            return error, largest_errors
+            return error, median_error, largest_errors
         else:
             return error
 
