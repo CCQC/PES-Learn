@@ -2,8 +2,8 @@
 A class for extracting information from the main input of the user
 """
 
-from . import regex 
-from . import molecule
+from .utils import regex 
+from .datagen import molecule
 import re
 import collections
 import numpy as np
@@ -23,7 +23,6 @@ class InputProcessor(object):
         if re.search(regex.intcoords_regex, self.full_string):
             self.zmat_string = re.findall(regex.intcoords_regex, self.full_string)[0] 
         self.intcos_ranges = None 
-        #self.extract_intcos_ranges()
         self.keywords = self.get_keywords()
         self.ndisps = None
     

@@ -10,7 +10,7 @@ from six.moves import input
 from collections import OrderedDict
 # find MLChem module
 #from .constants import package_directory 
-sys.path.insert(0, "../../../")
+#sys.path.insert(0, "../../../")
 import peslearn
 import numpy as np
 import pandas as pd
