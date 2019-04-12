@@ -1,6 +1,5 @@
 # PES-Learn
 [![Build Status](https://travis-ci.org/CCQC/PES-Learn.svg?branch=master)](https://travis-ci.org/CCQC/PES-Learn)
-[//]: #  [![codecov](https://codecov.io/gh/adabbott/PES-Learn/branch/master/graph/badge.svg)](https://codecov.io/gh/adabbott/PES-Learn)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 
