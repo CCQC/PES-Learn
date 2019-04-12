@@ -7,7 +7,7 @@ if __name__ == "__main__":
         description='Automated Construction of Machine Learning Models of Molecular Potential Energy Surfaces.',
         author='Adam Abbott',
         author_email='adabbott@uga.edu',
-        url="https://github.com/adabbott/PES-Learn",
+        url="https://github.com/CCQC/PES-Learn",
         license='BSD-3C',
         packages=setuptools.find_packages(),
         install_requires=[
@@ -30,7 +30,7 @@ if __name__ == "__main__":
         ],
 
         classifiers=[
-            'Development Status :: 1 - Planning',
+            'Development Status :: 4 - Beta',
             'Intended Audience :: Science/Research',
             'Programming Language :: Python :: 3',
         ],
