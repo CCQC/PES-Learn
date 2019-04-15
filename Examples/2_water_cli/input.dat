@@ -1,0 +1,15 @@
+O 
+H 1 r1
+H 1 r2 2 a2 
+
+r1 = [0.85,1.20, 5]
+r2 = [0.85,1.20, 5]
+a2 = [90.0,120.0, 5]
+
+energy = 'regex'
+use_pips = true
+energy_regex = 'Total Energy\s+=\s+(-\d+\.\d+)'
+hp_max_evals = 15
+training_points = 40
+sampling = smart_random
+

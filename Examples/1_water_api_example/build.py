@@ -10,21 +10,20 @@ input_string = ("""
                a2 = [90.0,120.0, 5]
 
                energy = 'regex'
+               use_pips = true
                energy_regex = 'Total Energy\s+=\s+(-\d+\.\d+)'
                hp_max_evals = 15
                training_points = 40
                sampling = smart_random
                """)
 
-input_obj = peslearn.input_processor.InputProcessor(input_string)
-template_obj = peslearn.template.Template("./template.dat")
-mol = peslearn.molecule.Molecule(input_obj.zmat_string)
-
-config = peslearn.configuration_space.ConfigurationSpace(mol, input_obj) 
+input_obj = peslearn.InputProcessor(input_string)
+template_obj = peslearn.datagen.Template("./template.dat")
+mol = peslearn.datagen.Molecule(input_obj.zmat_string)
+config = peslearn.datagen.ConfigurationSpace(mol, input_obj)
 config.generate_PES(template_obj)
 
 # run single point energies with Psi4
-print('\nRunning single point eneriges...')
 import os
 os.chdir("PES_data")
 dirs = [i for i in os.listdir(".") if os.path.isdir(i) ]
@@ -38,10 +37,12 @@ os.chdir("../")
 
 
 print('\nParsing ab initio data...')
-peslearn.parsing_helper.parse(input_obj, mol)
+peslearn.utils.parsing_helper.parse(input_obj, mol)
 
 print('\nBeginning GP optimization...')
-gp = peslearn.gaussian_process.GaussianProcess("PES.dat", input_obj, mol)
+#gp = peslearn.ml.GaussianProcess("PES.dat", input_obj, molecule=mol)
+gp = peslearn.ml.gaussian_process.GaussianProcess("PES.dat", input_obj, 'A2B')
 gp.optimize_model()
-
-
+#gp.build_model(params =  {'morse_transform': {'morse': True, 'morse_alpha': 1.7000000000000002}, 'pip': {'degree_reduction': False, 'pip': True}, 'scale_X': 'std', 'scale_y': None})
+##
+#
