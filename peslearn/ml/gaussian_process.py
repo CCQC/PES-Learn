@@ -9,7 +9,7 @@ from .model import Model
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
 import GPy
 
-from ..utils.constants import hartree2cm, package_directory, gp_convenience_function
+from ..constants import hartree2cm, package_directory, gp_convenience_function
 from ..utils.printing_helper import hyperopt_complete
 from .data_sampler import DataSampler 
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler

@@ -1,4 +1,4 @@
-from ..utils import constants
+from .. import constants
 from ..utils import regex
 from ..utils import geometry_transform_helper as gth 
 import re

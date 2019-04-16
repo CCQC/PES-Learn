@@ -1,5 +1,5 @@
 from .data_sampler import DataSampler 
-from ..utils.constants import hartree2cm, package_directory 
+from ..constants import hartree2cm, package_directory 
 from ..utils.regex import xyz_block_regex
 from abc import ABC, abstractmethod
 import re

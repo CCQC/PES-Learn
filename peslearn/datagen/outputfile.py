@@ -3,7 +3,7 @@ Contains the OutputFile class for extracting information from output files produ
 """
 
 from ..utils import regex
-from ..utils import constants
+from .. import constants
 
 import re
 import numpy as np

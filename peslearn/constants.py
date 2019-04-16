@@ -9,8 +9,8 @@ bohr2angstroms = 0.52917720859
 hartree2ev =  27.21138505
 hartree2cm =  219474.63 
 
-#MLChem package absolute path
-package_directory = os.path.dirname(os.path.abspath(__file__))
+#PES-Learn package absolute path (used for accessing FI library)
+package_directory = os.path.dirname(os.path.abspath(__file__)) 
 
 # Gaussian process convenience function writer 
 gp_convenience_function = """
