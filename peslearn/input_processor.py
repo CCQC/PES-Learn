@@ -37,31 +37,31 @@ class InputProcessor(object):
         # keywords which have values that are strings, not other datatypes
         regex_keywords = {'energy_regex': None, 'gradient_header': None, 'gradient_footer': None, 
                           'gradient_line': None, 'input_name': 'input.dat'}
-        string_keywords = {'energy': None, 
-                           'energy_regex': None, 
-                           'energy_cclib': None,
-                           'gradient': None, 
-                           'gradient_header': None, 
-                           'gradient_footer': None, 
-                           'gradient_line': None,            
-                           'input_name': 'input.dat',        # any input file name
-                           'ml_model': 'gp',                 # 'nn'
+        string_keywords = {'energy': None,                   # parse energies with 'cclib', 'regex'
+                           'energy_regex': None,             # a regular expression string, surround by '' or ""
+                           'energy_cclib': None,             # a cclib energy option. 'scfenergies', 'mpenergies', 'ccenergies'
+                           'gradient': None,                 # parse gradients with 'cclib', 'regex'
+                           'gradient_header': None,          # gradient header regular expression string
+                           'gradient_footer': None,          # gradient footer regular expression string
+                           'gradient_line': None,            # regular expression string for one line of the cartesian gradient
+                           'input_name': 'input.dat',        # what to call new input files generated from template, can be any name
+                           'ml_model': 'gp',                 # 'gp', 'nn'
                            'pes_name': 'PES.dat',            # any name
                            'pes_redundancy': 'false',        # 'true'
                            'pes_format': 'interatomics',     # 'zmat'
                            'remove_redundancy': 'true',      # 'false'
                            'remember_redundancy' : 'false',  # 'true'
-                           'filter_geoms' : None,            # any int
+                           'grid_reduction' : None,          # any int
                            'eq_geom'      : None,            #[1.05, 1.15, 104.5] etc
                            'use_pips': 'true',               #'false'
                            'sort_pes': 'true',               #'false'
                            'sampling': 'structure_based',    #'sobol', 'smart_random', 'random', 'energy_ordered'
                            'n_low_energy_train': 0,          # any int
                            'training_points': 50,            # any int
-                           'validation_points': 50,            # any int
-                           'hp_maxit': 20,               # any int
+                           'validation_points': 10,          # any int
+                           'hp_maxit': 20,                   # any int
                            'rseed': None,                    # any int
-                           'gp_ard': 'true',                  # 'true', 'false'. 'opt' treats as hyperparameter
+                           'gp_ard': 'true',                 # 'true', 'false'. 'opt' treats as hyperparameter
                            'hp_opt': 'true'}                 # 'false'
 
         for k in string_keywords:

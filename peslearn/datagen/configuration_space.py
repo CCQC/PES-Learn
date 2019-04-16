@@ -144,9 +144,9 @@ class ConfigurationSpace(object):
         into the set of currently accepted points 
         """
         start = timeit.default_timer()
-        npoints = self.input_obj.keywords['filter_geoms']
+        npoints = self.input_obj.keywords['grid_reduction']
         if npoints > self.unique_geometries.shape[0]:
-            raise Exception("filter_geoms number of points is greater than the number of points in dataset")
+            raise Exception("grid_reduction number of points is greater than the number of points in dataset")
         print("Reducing size of configuration space from {} datapoints to {} datapoints".format(self.n_disps, npoints))
         df = self.unique_geometries.copy()
         df = df[self.bond_columns]
@@ -209,7 +209,7 @@ class ConfigurationSpace(object):
             # for debugging suspicious redundancy removal:
             #self.old_remove_redundancies()
 
-            if self.input_obj.keywords['filter_geoms']:
+            if self.input_obj.keywords['grid_reduction']:
                 self.filter_configurations()
             if self.input_obj.keywords['remember_redundancy'].lower().strip() == 'true':
                 self.add_redundancies_back()
@@ -252,83 +252,6 @@ class ConfigurationSpace(object):
         os.chdir("../")
         print("Your PES inputs are now generated. Run the jobs in the PES_data directory and then parse.")
         
-        
-    #def norm_based_remove_redundancies(self, max_dupes=5):
-    #    """
-    #     Removes "redundancies" based on norms. Can set tolerance so that cluster of geometries get filtered.
-    #    Near-linear scaling wrt size of dataset. Assumes only 'max_dupes' duplicates of a given geometry at most
-    #    """
-    #    start = timeit.default_timer()
-    #    nrows_before = len(self.all_geometries.index)
-    #    # Take the interatomic distances, identify their bond type (CH, OH, etc)  
-    #    # this may be good for speed up: droppoing angular redudnandt duplicates
-    #    #tmp = self.all_geometries.drop_duplicates(subset=self.bond_columns)
-    #    #tmp  = self.all_geometries.drop_duplicates(subset=self.bond_columns)
-    #    #self.all_interatomics = tmp[self.bond_columns]
-    #    #self.all_interatomics = self.all_geometries.drop_duplicates(subset=self.bond_columns)[self.bond_columns]
-    #    self.all_interatomics = self.all_geometries[self.bond_columns]
-    #    og_cols = self.all_interatomics.columns.tolist()
-    #    # sort interatomic distance columns according to alphabetized bond types
-    #    newcols = [og_cols[i] for i in self.mol.alpha_bond_types_indices]
-    #    df = self.all_interatomics[newcols]
-    #    df_cols = df.columns.tolist()
-    #    # sort values of each 'bondtype' subpartition of interatomic distance columns
-    #    # subpartitions are defined by the index of the first occurance of each 
-    #    # bond_type label.  CH CH CH HH HH OH would be [0,3,5]. These define partition bounds.
-    #    ind = self.mol.alpha_bond_types_first_occur_indices
-    #    K = len(ind)
-    #    # sort each subpartition
-    #    for i in range(K):
-    #        if i < (K - 1):
-    #            cut = slice(ind[i], ind[i+1])
-    #            mask = df_cols[cut]
-    #            # may need to copy df?
-    #            df.loc[:,mask] = np.sort(df.loc[:,mask].values, axis=1)
-    #            #df.loc[:,mask] = np.sort(newdata.loc[:,mask].values, axis=1)
-    #        else:
-    #            mask = df_cols[i+1:]
-    #            df.loc[:,mask] = np.sort(df.loc[:,mask].values, axis=1)
-    #            #df.loc[:,mask] = np.sort(newdata.loc[:,mask].values, axis=1)
-
-        # define function to compute norms between one geometry and all geometries below it
-        #def norm(vec, df):
-        #    """Assumes dataframe with only interatomic distances """
-        #    tmp1 = np.tile(vec, (df.shape[0], 1))
-        #    diff = tmp1 - df.values[:]
-        #    diff = diff.astype(float)
-        #    #print(diff.dtype)
-        #    norm_vector = np.sqrt(np.einsum('ij,ij->i', diff, diff))
-        #    return norm_vector
-
-        #redundancy_indices = [] 
-        #size = df.shape[0]
-        #max_dupes = 5   # assumes at most 5 duplicates for any given geometry!!!
-#       #                  this assumption improves scaling dramatically.
-        #for i in range(1, size + 1):
-        #    n = norm(df.values[i-1], df[i:])
-        #    if n.shape[0] == max_dupes:
-        #        max_dupes -= 1
-        #    # have to include last one, +1
-        #    indices = np.argpartition(n, max_dupes)[:max_dupes+1]
-        #    count = 0
-        #    for k in indices:
-        #        #if n[k] < 1e-8:
-        #        if n[k] == 0.0:
-        #            count += 1
-        #            # additively adjust since k is based on norm array, which shrinks over time
-        #            redundancy_indices.append(k + i)
-        ## remove duplicate redundancy indices
-        #redundancy_indices = list(set(redundancy_indices))
-        #r = np.asarray(redundancy_indices)
-        ## now obtain unique indices
-        #all_indices = np.arange(nrows_before)
-        #unique_indices = np.delete(all_indices, all_indices[r])
-        #self.unique_geometries = self.all_geometries.iloc[unique_indices]
-        #self.unique_geometries = df.drop_duplicates(subset=self.bond_columns)
-        #nrows_after = len(self.unique_geometries.index)
-        #print("Removed {} redundant geometries from a set of {} geometries".format(nrows_before-nrows_after, nrows_before))
-        #print("Redundancy removal took {} seconds".format(round((timeit.default_timer() - start),2)))
-
 
     def old_remove_redundancies(self):
         """
