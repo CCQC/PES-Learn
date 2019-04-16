@@ -7,11 +7,11 @@ import pytest
 import re
 
 path = 'tests/datafiles/xyz_template'
-template_object = peslearn.template.Template(path)
+template_object = peslearn.datagen.Template(path)
 
 def test_extract_xyz():
     x = template_object.extract_xyz()
-    assert re.match(peslearn.regex.xyz_block_regex, x)
+    assert re.match(peslearn.utils.regex.xyz_block_regex, x)
    
 def test_header_xyz():
     x = template_object.header_xyz()

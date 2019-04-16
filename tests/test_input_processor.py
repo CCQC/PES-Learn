@@ -9,9 +9,9 @@ path = 'tests/datafiles/input_zmat_1'
 with open(path, 'r') as f:
     input_string = f.read()
 
-input_object = peslearn.input_processor.InputProcessor(input_string)
+input_object = peslearn.InputProcessor(input_string)
 
-mol = peslearn.molecule.Molecule(input_object.zmat_string)
+mol = peslearn.datagen.Molecule(input_object.zmat_string)
 
 def test_extract_intcos_ranges():
     input_object.extract_intcos_ranges()

@@ -5,4 +5,5 @@ from . import model
 #from . import neural_network
 
 from .gaussian_process import GaussianProcess
+from .data_sampler import DataSampler
 #from .neural_network import NeuralNetwork
