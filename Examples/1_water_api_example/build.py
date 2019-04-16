@@ -12,7 +12,7 @@ input_string = ("""
                energy = 'regex'
                use_pips = true
                energy_regex = 'Total Energy\s+=\s+(-\d+\.\d+)'
-               hp_max_evals = 15
+               hp_maxit = 15
                training_points = 40
                sampling = smart_random
                """)

@@ -115,7 +115,7 @@ class GaussianProcess(Model):
             if 'memo' in i:
                 if params == i['memo']:
                     return {'loss': i['loss'], 'status': STATUS_OK, 'memo': 'repeat'}
-        if self.itercount > self.hp_max_evals:
+        if self.itercount > self.hp_maxit:
             return {'loss': 0.0, 'status': STATUS_FAIL, 'memo': 'max iters reached'}
         self.build_model(params)
         error_test = self.vet_model(self.model)
@@ -167,7 +167,7 @@ class GaussianProcess(Model):
     
     def optimize_model(self):
         print("Beginning hyperparameter optimization...")
-        print("Trying {} combinations of hyperparameters".format(self.hp_max_evals))
+        print("Trying {} combinations of hyperparameters".format(self.hp_maxit))
         print("Training with {} points (Full dataset contains {} points).".format(self.ntrain, self.n_datapoints))
         print("Using {} training set point sampling.".format(self.sampler))
         self.hyperopt_trials = Trials()
@@ -179,7 +179,7 @@ class GaussianProcess(Model):
         best = fmin(self.hyperopt_model,
                     space=self.hyperparameter_space,
                     algo=tpe.suggest,
-                    max_evals=self.hp_max_evals*2,
+                    max_evals=self.hp_maxit*2,
                     rstate=rstate, 
                     show_progressbar=False,
                     trials=self.hyperopt_trials)

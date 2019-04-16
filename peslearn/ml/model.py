@@ -70,7 +70,7 @@ class Model(ABC):
             self.ntrain = self.traindata.shape[0]
         if self.ntrain > self.dataset.shape[0]:
             raise Exception("Requested number of training points is greater than size of the dataset.")
-        self.hp_max_evals = self.input_obj.keywords['hp_max_evals']
+        self.hp_maxit = self.input_obj.keywords['hp_maxit']
 
         if (train_path==None and test_path==None):
             self.sampler = self.input_obj.keywords['sampling']

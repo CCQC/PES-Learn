@@ -59,7 +59,7 @@ class InputProcessor(object):
                            'n_low_energy_train': 0,          # any int
                            'training_points': 50,            # any int
                            'validation_points': 50,            # any int
-                           'hp_max_evals': 20,               # any int
+                           'hp_maxit': 20,               # any int
                            'rseed': None,                    # any int
                            'gp_ard': 'true',                  # 'true', 'false'. 'opt' treats as hyperparameter
                            'hp_opt': 'true'}                 # 'false'
