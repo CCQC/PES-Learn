@@ -35,8 +35,8 @@ def unit_cross_product(uvec1, uvec2):
 def get_local_axes(coords1, coords2, coords3):
     u12 = unit_vector(coords1, coords2)
     u23 = unit_vector(coords2, coords3)
-    if (abs(np.dot(u12, u23)) >= 1.0):
-      print('\nError: Co-linear atoms in an internal coordinate definition')
+    #if (abs(np.dot(u12, u23)) >= 1.0):
+      #print('\nError: Co-linear atoms in an internal coordinate definition')
     u23_x_u12 = unit_cross_product(u23, u12)
     u12_x_u23_x_u12 = unit_cross_product(u12, u23_x_u12)
     z = u12
