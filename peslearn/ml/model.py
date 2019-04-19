@@ -35,8 +35,12 @@ class Model(ABC):
     molecule : peslearn object 
         Molecule object from peslearn. Used to automatically define molecule_type
     """
-    def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None):
+    def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None, valid_path=None):
+        self.hyperparameter_space = {}
         data = self.interpret_dataset(dataset_path)
+        self.train_path = train_path
+        self.test_path = test_path
+        self.valid_path = valid_path
         if train_path:
             self.traindata = self.interpret_dataset(train_path)
             self.raw_Xtr = self.traindata.values[:, :-1]
@@ -45,6 +49,10 @@ class Model(ABC):
                 self.testdata = self.interpret_dataset(test_path)
                 self.raw_Xtest = self.testdata.values[:, :-1]
                 self.raw_ytest = self.testdata.values[:,-1].reshape(-1,1)
+                if valid_path:
+                    self.validdata = self.interpret_dataset(valid_path)
+                    self.raw_Xvalid = self.validdata.values[:, :-1]
+                    self.raw_yvalid = self.validdata.values[:,-1].reshape(-1,1)
 
         self.dataset = data.sort_values("E")
         self.n_datapoints = self.dataset.shape[0]
@@ -121,6 +129,30 @@ class Model(ABC):
     @abstractmethod
     def save_model(self):
         pass
+    @abstractmethod
+    def preprocess(self):
+        pass
+    @abstractmethod
+    def split_train_test(self):
+        pass
+
+    def get_hyperparameters(self):
+        """
+        Returns hyperparameters of this model
+        """
+        return self.hyperparameter_space
+
+    def set_hyperparameter(self, key, val):
+        """
+        Set hyperparameter 'key' to value 'val'.
+        Parameters
+        ---------
+        key : str
+            A hyperparameter name
+        val : obj
+            A HyperOpt object such as hp.choice, hp.uniform, etc.
+        """
+        self.hyperparameter_space[key] = val
 
     def compute_error(self, X, y, prediction, yscaler=None, max_errors=None):
         """
