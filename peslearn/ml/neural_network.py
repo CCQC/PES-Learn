@@ -17,32 +17,41 @@ class NeuralNetwork(Model):
     """
     def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None):
         super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path)
-        #self.set_default_hyperparameters()
-
-    def set_nas_hyperparameters(self):
-        """
-        Set default hyperparameter space for neural architecture search.
-        Actual hyperparameter optimization will occur later.
-        """
-        self.hyperparameter_space = {
-                                    'scale_X': hp.choice('scale_X', ['mm01']),
-                                    'scale_y': hp.choice('scale_y', ['mm01']),
-                                    }
-        self.set_hyperparameter('morse_transform', hp.choice('morse_transform',[{'morse': False}]))
-        if self.pip:
-            val =  hp.choice('pip',[{'pip': True,'degree_reduction': hp.choice('degree_reduction', [False])}])
-            self.set_hyperparameter('pip', val)
-        else:
-            self.set_hyperparameter('pip', hp.choice('pip', [{'pip': False}]))
         
-        self.set_hyperparameter('activation', hp.choice('activation', ['tanh']))
-        # Later, when NAS is done,
-        #self.set_hyperparameter('hidden_layers': hp.choice('hidden_layers', LAYERLIST),
-
-        #if self.input_obj.keywords['pes_format'] == 'interatomics':
-        #    self.set_hyperparameter('morse_transform', hp.choice('morse_transform',[{'morse': True,'morse_alpha': hp.quniform('morse_alpha', 1, 2, 0.1)},{'morse': False}]))
-        #else:
-        #    self.set_hyperparameter('morse_transform', hp.choice('morse_transform',[{'morse': False}]))
+        if self.input_obj.keywords['validation_points']:
+            self.nvalid = self.input_obj.keywords['validation_points']
+        
+        if self.pip:
+            if molecule_type:
+                path = os.path.join(package_directory, "lib", molecule_type, "output")
+                self.inp_dim = len(open(path).readlines())
+            if molecule:
+                path = os.path.join(package_directory, "lib", molecule.molecule_type, "output")
+                self.inp_dim = len(open(path).readlines())
+        else:
+            self.inp_dim = self.raw_X.shape[1]
+        
+    def neural_architecture_search(self):
+        tmp_layers = [(16,), (16,16), (16,16,16), (16,16,16,16),
+                      (32,), (32,32), (32,32,32), (32,32,32,32),
+                      (64,), (64,64), (64,64,64), (64,64,64,64),
+                      (128,), (128,128), (128,128,128),
+                      (256,), (256,256)] 
+        self.nas_layers = sort_architectures(tmp_layers, self.inp_dim)
+        self.nas_size = len(self.nas_layers)
+        params = {'morse_transform': {'morse':False},'scale_X':'std', 'scale_y':'std','activation': 'tanh'} 
+        if self.pip:
+            params['pip'] = {'degree_reduction': False, 'pip': True} 
+        else:
+            params['pip'] = {'degree_reduction': False, 'pip': False} 
+        test = []
+        validation = []
+        for i in self.nas_layers:
+            params['layers'] = i
+            testerror, valid = self.build_model(params)
+            test.append(testerror)
+            validation.append(valid)
+        print("Best performing Neural Network: {} (test) {} (validation)".format(min(test), min(validation)))
 
     def split_train_test(self, params, validation_size=None):
         """
@@ -89,75 +98,84 @@ class NeuralNetwork(Model):
         self.Xvalid = torch.Tensor(data=self.Xvalid)
         self.yvalid = torch.Tensor(data=self.yvalid)        
 
+    def get_optimizer(self, opt_type, mdata, lr=None): 
+        if lr:
+            rate = lr
+        elif opt_type == 'lbfgs':
+            rate = 0.5
+        else: 
+            rate = 0.01
+        if opt_type == 'lbfgs':
+            optimizer = torch.optim.LBFGS(mdata, tolerance_grad=1e-7, tolerance_change=1e-12, lr=rate)
+        if opt_type == 'adam':
+            optimizer = torch.optim.Adam(mdata, lr=rate)
+        return optimizer
+
     def build_model(self, params):
-        #if self.input_obj.keywords['validation_points']:
-        #    nvalid = self.input_obj.keywords['validation_points']
-        self.split_train_test(params, validation_size=20)
-        inp_dim = self.Xtr.shape[1]
-        all_layers = [(20,), (20,20), (20,20,20), (20,20,20,20),
-                  (40,), (40,40), (40,40,40), (40,40,40,40),
-                  (60,), (60,60), (60,60,60), (60,60,60,60),
-                  (80,), (80,80), (80,80,80), (80,80,80,80)]
-        layers = sort_architectures(all_layers, inp_dim)
+        self.split_train_test(params, validation_size=self.nvalid)  # split data, according to scaling hp's
+        scale = params['scale_y']                                   # Find descaling factor to convert loss to original energy units
+        if scale == 'std':
+            factor = self.yscaler.var_[0]
+        if scale.startswith('mm'):
+            factor = (1/self.yscaler.scale_[0]**2)
 
-        #factor = self.yscaler.var_[0]
+        inp_dim = self.inp_dim
+        l = params['layers']
+        torch.manual_seed(0)
+        depth = len(l)
+        structure = OrderedDict([('input', nn.Linear(inp_dim, l[0])),
+                                 ('activ_in' , nn.Tanh())])
+        model = nn.Sequential(structure)
+        for i in range(depth-1):
+            model.add_module('layer' + str(i), nn.Linear(l[i], l[i+1]))
+            model.add_module('activ' + str(i), nn.Tanh())
+        model.add_module('output', nn.Linear(l[depth-1], 1))
 
-        for layers in all_layers:
-            torch.manual_seed(0)
-            depth = len(layers)
-            structure = OrderedDict([('input', nn.Linear(inp_dim, layers[0])),
-                                     ('activ_in' , nn.Tanh())])
-            model = nn.Sequential(structure)
-            for i in range(depth-1):
-                model.add_module('layer' + str(i), nn.Linear(layers[i], layers[i+1]))
-                model.add_module('activ' + str(i), nn.Tanh())
-            model.add_module('output', nn.Linear(layers[depth-1], 1))
+        metric = torch.nn.MSELoss()
+        optimizer = self.get_optimizer('lbfgs', model.parameters(), lr=None)
+        prev_loss = 1.0
+        # Early stopping tracker
+        es_tracker = 0
+        for epoch in range(1,1000):
+            def closure():
+                optimizer.zero_grad()
+                y_pred = model(self.Xtr)
+                loss = metric(y_pred, self.ytr)
+                loss.backward()
+                return loss
+            optimizer.step(closure)
+            # validate
+            if epoch % 10 == 0:
+                with torch.no_grad():
+                    tmp_pred = model(self.Xvalid) 
+                    loss = metric(tmp_pred, self.yvalid)
+                    val_error_rmse = np.sqrt(loss.item() * factor) * 219474.63
+                    print('epoch: ', epoch,'Validation set RMSE (cm-1): ', val_error_rmse)
+                    # very simple early stopping implementation
+                    if epoch > 1:
+                        # does validation error not improve by > 1.0% for 2 sets of 10 epochs in a row?
+                        if ((prev_loss - val_error_rmse) / prev_loss) < 1e-2:
+                            es_tracker += 1
+                            if es_tracker > 2:
+                                prev_loss = val_error_rmse * 1.0
+                                break
+                        else:
+                            es_tracker = 0
 
-            metric = torch.nn.MSELoss()
-            #optimizer = self.get_optimizer('lbfgs', model.parameters(), lr=None)
-            optimizer = torch.optim.LBFGS(model.parameters(), tolerance_grad=1e-7, tolerance_change=1e-12, lr=1.0)
-            prev_loss = 1.0
-            # Find descaling factor to convert loss to original energy units
-            scale = params['scale_y']
-            if scale == 'std':
-                factor = self.yscaler.var_[0]
-            if scale.startswith('mm'):
-                factor = (1/self.yscaler.scale_[0]**2)
-            # Early stopping tracker
-            es_tracker = 0
-            for epoch in range(1,100):
-                def closure():
-                    optimizer.zero_grad()
-                    y_pred = model(self.Xtr)
-                    loss = metric(y_pred, self.ytr)
-                    loss.backward()
-                    return loss
-                optimizer.step(closure)
-                # validate
-                if epoch % 10 == 0:
-                    with torch.no_grad():
-                        tmp_pred = model(self.Xvalid) 
-                        loss = metric(tmp_pred, self.yvalid)
-                        val_error_rmse = np.sqrt(loss.item() * factor) * 219474.63
-                        print('epoch: ', epoch,'Validation set RMSE (cm-1): ', val_error_rmse)
-                        # very simple early stopping implementation
-                        #TODO add checks for nan's, very large numbers
-                        if epoch > 1:
-                            # does validation error not improve by > 1.0% for 2 sets of 10 epochs in a row?
-                            if ((prev_loss - val_error_rmse) / prev_loss) < 1e-2:
-                                es_tracker += 1
-                                if es_tracker > 2:
-                                    prev_loss = val_error_rmse * 1.0
-                                    break
-                            else:
-                                es_tracker = 0
-                        prev_loss = val_error_rmse * 1.0  # save previous loss to track improvement
+                    # exploding gradients 
+                    if epoch > 10:
+                        if (val_error_rmse > prev_loss*10): # detect large increases in loss
+                            break
+                        if val_error_rmse != val_error_rmse: # detect NaN 
+                            break
+                        
+                    prev_loss = val_error_rmse * 1.0  # save previous loss to track improvement
 
-            test_pred = model(self.Xtest)
-            loss = metric(test_pred, self.ytest)
-            test_error_rmse = np.sqrt(loss.item()*factor)* 219474.63
-            print(layers, test_error_rmse)
-        return loss
+        test_pred = model(self.Xtest)
+        loss = metric(test_pred, self.ytest)
+        test_error_rmse = np.sqrt(loss.item()*factor)* 219474.63
+        print(l, test_error_rmse)
+        return test_error_rmse, val_error_rmse
 
     def hyperopt_model(self, params):
         # skip building this model if hyperparameter combination already attempted
@@ -170,38 +188,6 @@ class NeuralNetwork(Model):
         self.build_model(params)
         #error_test = self.vet_model(self.model)
         return {'loss': error_test, 'status': STATUS_OK, 'memo': params}
-
-    def neural_architecture_search(self):
-        """
-        Trys several models with varying complexity 
-        """
-        self.set_nas_hyperparameters()
-        #layers = [(20,), (20,20), (20,20,20), (20,20,20,20),
-        #          (40,), (40,40), (40,40,40), (40,40,40,40),
-        #          (60,), (60,60), (60,60,60), (60,60,60,60),
-        #          (80,), (80,80), (80,80,80), (80,80,80,80)]
-        #          (100,), (200,), (300,), (100,100), 
-        layers = [(16,), (16,16), (16,16,16), (16,16,16,16),
-                  (32,), (32,32), (32,32,32), (32,32,32,32),
-                  (64,), (64,64), (64,64,64), (64,64,64,64),
-                  (128,), (128,128), (128,128,128),
-                  (256,), (256,256)] 
-        inp_dim = self.raw_X.shape[0]
-        self.sorted_layers = sort_architectures(layers, inp_dim)
-        self.set_hyperparameter('model_complexity', hp.quniform('model_complexity', 0, len(self.sorted_layers), 1))
-
-        self.hyperopt_trials = Trials()
-        if self.input_obj.keywords['rseed']:
-            rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
-        else:
-            rstate = None
-        best = fmin(self.hyperopt_model,
-                    space=self.hyperparameter_space,
-                    algo=tpe.suggest,
-                    max_evals=10, # TODO add keyword for NAS search iterations
-                    rstate=rstate, 
-                    show_progressbar=False,
-                    trials=self.hyperopt_trials)
 
     def preprocess(self, params, raw_X, raw_y):
         """
@@ -234,18 +220,6 @@ class NeuralNetwork(Model):
 
 
 
-    #def get_optimizer(self, opt_type, mdata, lr=None): 
-    #    if lr:
-    #        rate = lr
-    #    elif opt_type == 'lbfgs':
-    #        rate = 1.0
-    #    else: 
-    #        rate = 0.001
-    #    if opt_type == 'lbfgs':
-    #        optimizer = torch.optim.LBFGS(mdata, tolerance_grad=1e-7, tolerance_change=1e-12, lr=rate)
-    #    if opt_type == 'adam':
-    #        optimizer = torch.optim.Adam(mdata, lr=rate)
-    #    return optimizer
 
 
 
