@@ -5,10 +5,10 @@ import os
 import re
 import sys
 import gc
-from .model import Model
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
 import GPy
 
+from .model import Model
 from ..constants import hartree2cm, package_directory, gp_convenience_function
 from ..utils.printing_helper import hyperopt_complete
 from .data_sampler import DataSampler 
@@ -22,24 +22,6 @@ class GaussianProcess(Model):
         super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path)
         self.set_default_hyperparameters()
     
-    def get_hyperparameters(self):
-        """
-        Returns hyperparameters of this model
-        """
-        return self.hyperparameter_space
-
-    def set_hyperparameter(self, key, val):
-        """
-        Set hyperparameter 'key' to value 'val'.
-        Parameters
-        ---------
-        key : str
-            A hyperparameter name
-        val : obj
-            A HyperOpt object such as hp.choice, hp.uniform, etc.
-        """
-        self.hyperparameter_space[key] = val
-
     def set_default_hyperparameters(self):
         """
         Set default hyperparameter space. If none is provided, default is used.
@@ -61,7 +43,6 @@ class GaussianProcess(Model):
 
         if self.input_obj.keywords['gp_ard'] == 'opt': # auto relevancy determination (independant length scales for each feature)
             self.set_hyperparameter('ARD', hp.choice('ARD', [True,False]))
-
          #TODO add optional space inclusions, something like: if option: self.hyperparameter_space['newoption'] = hp.choice(..)
 
     def split_train_test(self, params):
@@ -104,8 +85,6 @@ class GaussianProcess(Model):
             ard_val = False
         kernel = GPy.kern.RBF(dim, ARD=ard_val)  # TODO add HP control of kernel
         self.model = GPy.models.GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
-        #self.model.optimize('bfgs', max_iters=maxit)
-        #self.model.optimize(optimizer="lbfgsb", max_iters=maxit, messages=False)
         self.model.optimize_restarts(nrestarts, optimizer="lbfgsb", robust=True, verbose=False, max_iters=maxit, messages=False)
         gc.collect(2) #fixes some memory leak issues with certain BLAS configs
 
@@ -170,6 +149,7 @@ class GaussianProcess(Model):
         print("Trying {} combinations of hyperparameters".format(self.hp_maxit))
         print("Training with {} points (Full dataset contains {} points).".format(self.ntrain, self.n_datapoints))
         print("Using {} training set point sampling.".format(self.sampler))
+        print("Errors are root-mean-square error in wavenumbers (cm-1)")
         self.hyperopt_trials = Trials()
         self.itercount = 1  # keep track of hyperopt iterations 
         if self.input_obj.keywords['rseed']:
@@ -194,7 +174,6 @@ class GaussianProcess(Model):
         print("Final model performance (cm-1):")
         self.vet_model(self.model)
         self.save_model(self.optimal_hyperparameters)
-
 
     def save_model(self, params):
         # Save model. Currently GPy requires saving training data in model for some reason. 
@@ -223,7 +202,6 @@ class GaussianProcess(Model):
         with open('compute_energy.py', 'w+') as f:
             print(self.write_convenience_function(), file=f)
 
-
         # print model performance
         sys.stdout = open('performance', 'w')  
         self.vet_model(self.model)
@@ -248,7 +226,6 @@ class GaussianProcess(Model):
             newX, degrees = interatomics_to_fundinvar(newX,path)
             if params['pip']['degree_reduction']:
                 newX = degree_reduce(newX, degrees)
-
         if Xscaler:
             newX = Xscaler.transform(newX)
         return newX
