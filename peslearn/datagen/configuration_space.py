@@ -75,10 +75,15 @@ class ConfigurationSpace(object):
         cartesians = []
         internals = []
         interatomics = []
+        failed = 0 # keep track of failed 3 co-linear atom configurations
         # this loop of geometry transformations/saving is pretty slow, but scales linearly at least
         for i, disp in enumerate(self.disps):
             self.mol.update_intcoords(disp)
-            cart = self.mol.zmat2xyz()
+            try:
+                cart = self.mol.zmat2xyz()
+            except:
+                failed += 1
+                continue
             cartesians.append(cart)
             internals.append(disp)
             idm = gth.get_interatom_distances(cart)
@@ -86,7 +91,9 @@ class ConfigurationSpace(object):
             idm = np.round(idm[np.tril_indices(len(idm),-1)],10)
             interatomics.append(idm)
         # preallocate dataframe space 
-        df = pd.DataFrame(index=np.arange(0, len(self.disps)), columns=self.bond_columns)
+        if failed > 0:
+            print("Warning: {} configurations had invalid Z-Matrices with 3 co-linear atoms, tossing them out! Use a dummy atom to prevent.".format(failed))
+        df = pd.DataFrame(index=np.arange(0, len(self.disps)-failed), columns=self.bond_columns)
         df[self.bond_columns] = interatomics
         df['cartesians'] = cartesians
         df['internals'] = internals 
