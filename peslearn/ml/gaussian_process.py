@@ -6,11 +6,13 @@ import re
 import sys
 import gc
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
-import GPy
+from GPy.models import GPRegression
+from GPy.kern import RBF
 
 from .model import Model
 from ..constants import hartree2cm, package_directory, gp_convenience_function
 from ..utils.printing_helper import hyperopt_complete
+from ..lib.path import fi_dir
 from .data_sampler import DataSampler 
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
 
@@ -83,8 +85,8 @@ class GaussianProcess(Model):
             ard_val = True
         else:
             ard_val = False
-        kernel = GPy.kern.RBF(dim, ARD=ard_val)  # TODO add HP control of kernel
-        self.model = GPy.models.GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
+        kernel = RBF(dim, ARD=ard_val)  # TODO add HP control of kernel
+        self.model = GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
         self.model.optimize_restarts(nrestarts, optimizer="lbfgsb", robust=True, verbose=False, max_iters=maxit, messages=False)
         gc.collect(2) #fixes some memory leak issues with certain BLAS configs
 
@@ -127,7 +129,9 @@ class GaussianProcess(Model):
         # Transform to FIs, degree reduce if called 
         if params['pip']['pip']:
             # find path to fundamental invariants form molecule type AxByCz...
-            path = os.path.join(package_directory, "lib", self.molecule_type, "output")
+            #path = os.path.join(package_directory, "lib", self.molecule_type, "output")
+            path = os.path.join(fi_dir, self.molecule_type, "output")
+            print(path)
             raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
