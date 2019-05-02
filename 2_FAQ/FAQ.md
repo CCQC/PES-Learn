@@ -1,6 +1,6 @@
 # PES-Learn usage FAQ
 
-##1. How to I install PES-Learn...
+## 1. How to I install PES-Learn...
   * from source?
     *  On Linux, OSX, or [Windows 10 Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10): 
       * `git clone https://github.com/CCQC/PES-Learn.git`
