@@ -246,4 +246,5 @@ atomtype_vector = [3]
 bond_indice_permutations = permute_bond_indices(atomtype_vector)
 IP  = induced_permutations(atomtype_vector, bond_indice_permutations)
 singular = write_singular_input(sum(atomtype_vector), IP)
+print("Here is your Singular input file. Install Singular, copy paste text into a file, and run with 'Singular (inputfilename)'\n\n")
 print(singular)
