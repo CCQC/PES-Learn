@@ -131,7 +131,6 @@ class GaussianProcess(Model):
             # find path to fundamental invariants form molecule type AxByCz...
             #path = os.path.join(package_directory, "lib", self.molecule_type, "output")
             path = os.path.join(fi_dir, self.molecule_type, "output")
-            print(path)
             raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
@@ -245,13 +244,13 @@ class GaussianProcess(Model):
         return newy
 
     def write_convenience_function(self):
-        string = "import peslearn\nimport GPy\nimport numpy as np\nimport json\nfrom itertools import combinations\n\n"
-        string += "gp = peslearn.gaussian_process.GaussianProcess('PES.dat', peslearn.input_processor.InputProcessor(''), molecule_type='{}')\n".format(self.molecule_type)
+        string = "from peslearn.ml import GaussianProcess\nfrom peslearn import InputProcessor\nfrom GPy.core.model import Model\nimport numpy as np\nimport json\nfrom itertools import combinations\n\n"
+        string += "gp = GaussianProcess('PES.dat', InputProcessor(''), molecule_type='{}')\n".format(self.molecule_type)
         with open('hyperparameters', 'r') as f:
             hyperparameters = f.read()
         string += "params = {}\n".format(hyperparameters)
         string += "X, y, Xscaler, yscaler =  gp.preprocess(params, gp.raw_X, gp.raw_y)\n"
-        string += "model = GPy.core.model.Model('mymodel')\n"
+        string += "model = Model('mymodel')\n"
         string += "with open('model.json', 'r') as f:\n"
         string += "    model_dict = json.load(f)\n"
         string += "final = model.from_dict(model_dict)\n\n"

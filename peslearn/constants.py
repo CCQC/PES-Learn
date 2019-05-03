@@ -17,12 +17,14 @@ gp_convenience_function = """
 # How to use 'compute_energy()' function
 # --------------------------------------
 # E = compute_energy(geom_vectors, cartesian=bool)
-# 'geom_vectors' is a column vector of one or more sets of 1d coordinate vectors as a list of lists or 2D NumPy array.
+# 'geom_vectors' is either: 
+#  1. A list or tuple of coordinates for a single geometry. 
+#  2. A column vector of one or more sets of 1d coordinate vectors as a list of lists or 2D NumPy array:
 # [[ coord1, coord2, ..., coordn],
 #  [ coord1, coord2, ..., coordn],
-#                             ...,
+#      :       :             :  ], 
 #  [ coord1, coord2, ..., coordn]]
-# In cases, coordinates should be supplied in the exact same format and exact same order the model was trained on.
+# In all cases, coordinates should be supplied in the exact same format and exact same order the model was trained on.
 # If the coordinates format used to train the model was interatomic distances, each set of coordinates should be a 1d array of either interatom distances or cartesian coordinates. 
 # If cartesian coordinates are supplied, cartesian=True should be passed and it will convert them to interatomic distances. 
 # The order of coordinates matters. If PES-Learn datasets were used they should be in standard order;
@@ -38,16 +40,22 @@ gp_convenience_function = """
 # O  11 12 13 14 15
 # O  16 17 18 19 20 21
 
-# The returned energy array is a column vector of corresponding energies.
+# The returned energy array is a column vector of corresponding energies. Elements can be accessed with E[0,0], E[0,1], E[0,2]
+# NOTE: Sending multiple geometries through at once is much faster than a loop of sending single geometries through.
 
-def compute_energy(geom_vectors, cartesian=True):
+def pes(geom_vectors, cartesian=True):
     g = np.asarray(geom_vectors)
     if cartesian:
-        g = np.apply_along_axis(cart1d_to_distances1d, 1, g)
+        axis = 1
+        if len(g.shape) < 2:
+            axis = 0
+        g = np.apply_along_axis(cart1d_to_distances1d, axis, g)
     newX = gp.transform_new_X(g, params, Xscaler)
     E, cov = final.predict(newX, full_cov=False)
     E = gp.inverse_transform_new_y(E,yscaler)
-    return E
+    e = E[0,0] - -76.436618591492
+    e *= 219474.63
+    return e
 
 def cart1d_to_distances1d(vec):
     vec = vec.reshape(-1,3)
