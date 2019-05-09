@@ -45,14 +45,14 @@ def parse(input_obj, mol):
             raise Exception("For regular expression gradient extraction, gradient_header, gradient_footer, and gradient_line string identifiers are required to isolate the cartesian gradient block. See documentation for details")   
 
     # parse original internals or interatomics?
-    if input_obj.keywords['pes_format'] == 'internals':
+    if input_obj.keywords['pes_format'] == 'zmat':
         data = pd.DataFrame(index=None, columns = mol.unique_geom_parameters)
         geom_path = "/geom"
     elif input_obj.keywords['pes_format'] == 'interatomics':
         data = pd.DataFrame(index=None, columns = mol.interatomic_labels)
         geom_path = "/interatomics"
     else:
-        raise Exception("pes_format keyword value invalid. Must be 'internals' or 'interatomics'")
+        raise Exception("pes_format keyword value invalid. Must be 'zmat' or 'interatomics'")
 
     if input_obj.keywords['energy']: 
         data['E'] = ''
