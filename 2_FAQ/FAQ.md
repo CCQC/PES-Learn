@@ -31,7 +31,7 @@
       
       
 ## 6. How do I use this machine learning model?
-  * When a model is finished training PES-Learn exports a folder `model1_data` which contains a bunch of stuff including a convenience function `compute_energy.py` for evaluating energies with the ML model. Directions for use are written directly into the `compute_energy.py` file. This convenience function can be imported into other Python codes that are in the same directory with `from compute_energy import compute_energy`.  This is also in principle accessible from codes written in other programming languages such as C, C++ through their respective Python APIs, though these can be tricky to use.
+  * When a model is finished training PES-Learn exports a folder `model1_data` which contains a bunch of stuff including a Python code `compute_energy.py` with convenience function `pes()` for evaluating energies with the ML model. Directions for use are written directly into the `compute_energy.py` file. The convenience function can be imported into other Python codes that are in the same directory with `from compute_energy import pes`.  This is also in principle accessible from codes written in other programming languages such as C, C++ through their respective Python APIs, though these can be tricky to use.
     
 ## 7. What are all these Hyperparameters?
   * `scale_X` is how each individual input (geometry parameter) is scaled. `scale_y` is how the energies (outputs) are scaled. 
