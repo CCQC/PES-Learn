@@ -7,6 +7,7 @@ from collections import OrderedDict
 from .model import Model
 from ..constants import hartree2cm, package_directory
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
+from ..utils.printing_helper import hyperopt_complete
 from sklearn.model_selection import train_test_split   
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
 from .preprocessing_helper import sort_architectures
@@ -17,6 +18,7 @@ class NeuralNetwork(Model):
     """
     def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None):
         super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path)
+        self.set_default_hyperparameters()
         
         if self.input_obj.keywords['validation_points']:
             self.nvalid = self.input_obj.keywords['validation_points']
@@ -30,16 +32,74 @@ class NeuralNetwork(Model):
                 self.inp_dim = len(open(path).readlines())
         else:
             self.inp_dim = self.raw_X.shape[1]
+
+    def set_default_hyperparameters(self):
+        """
+        Set default hyperparameter space. If none is provided, default is used.
+        """
+        self.hyperparameter_space = {
+                      'scale_X': hp.choice('scale_X',
+                               [
+                               {'scale_X': 'mm01', 
+                                    'activation': hp.choice('activ1', ['sigmoid'])},
+                               {'scale_X': 'mm11',
+                                    'activation': hp.choice('activ2', ['tanh'])},
+                               {'scale_X': 'std',
+                                    'activation': hp.choice('activ3', ['tanh'])},
+                               ]),
+                      'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11']),
+                                    }
+
+        if self.input_obj.keywords['pes_format'] == 'interatomics':
+            self.set_hyperparameter('morse_transform', hp.choice('morse_transform',[{'morse': True,'morse_alpha': hp.quniform('morse_alpha', 1, 2, 0.1)},{'morse': False}]))
+        else:
+            self.set_hyperparameter('morse_transform', hp.choice('morse_transform',[{'morse': False}]))
+        if self.pip:
+            val =  hp.choice('pip',[{'pip': True,'degree_reduction': hp.choice('degree_reduction', [True,False])}])
+            self.set_hyperparameter('pip', val)
+        else:
+            self.set_hyperparameter('pip', hp.choice('pip', [{'pip': False}]))
+
+    def optimize_model(self):
+        best_hlayers = self.neural_architecture_search()
+        self.set_hyperparameter('layers', hp.choice('layers', best_hlayers))
+        
+        self.hyperopt_trials = Trials()
+        self.itercount = 1
+        if self.input_obj.keywords['rseed']:
+            rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
+        else:
+            rstate = None
+        best = fmin(self.hyperopt_model,
+                    space=self.hyperparameter_space,
+                    algo=tpe.suggest,
+                    max_evals=self.hp_maxit*2,
+                    rstate=rstate, 
+                    show_progressbar=False,
+                    trials=self.hyperopt_trials)
+        hyperopt_complete()
+        print("Best performing hyperparameters are:")
+        final = space_eval(self.hyperparameter_space, best)
+        print(str(sorted(final.items())))
+        self.optimal_hyperparameters  = dict(final)
+        print("Fine-tuning final model architecture...")
+        self.build_model(self.optimal_hyperparameters, es_patience=3, decay=True, verbose=True)
+
         
     def neural_architecture_search(self):
+        """
+        Finds optimal hidden layer structure
+        """
         tmp_layers = [(16,), (16,16), (16,16,16), (16,16,16,16),
                       (32,), (32,32), (32,32,32), (32,32,32,32),
                       (64,), (64,64), (64,64,64), (64,64,64,64),
                       (128,), (128,128), (128,128,128),
                       (256,), (256,256)] 
+        #tmp_layers = [(16,), (16,16),
+        #              (32,), (32,32)]
         self.nas_layers = sort_architectures(tmp_layers, self.inp_dim)
         self.nas_size = len(self.nas_layers)
-        params = {'morse_transform': {'morse':False},'scale_X':'std', 'scale_y':'std','activation': 'tanh'} 
+        params = {'morse_transform': {'morse':False},'scale_X':{'scale_X':'std', 'activation':'tanh'}, 'scale_y':'std'}#,'activation': 'tanh'} 
         if self.pip:
             params['pip'] = {'degree_reduction': False, 'pip': True} 
         else:
@@ -51,7 +111,11 @@ class NeuralNetwork(Model):
             testerror, valid = self.build_model(params)
             test.append(testerror)
             validation.append(valid)
-        print("Best performing Neural Network: {} (test) {} (validation)".format(min(test), min(validation)))
+        #print("Best performing Neural Network: {} (test) {} (validation)".format(min(test), min(validation)))
+        # save best architectures
+        indices = np.argsort(test)
+        best_hlayers = [tmp_layers[i] for i in indices[:3]]
+        return best_hlayers
 
     def split_train_test(self, params, validation_size=None):
         """
@@ -111,7 +175,8 @@ class NeuralNetwork(Model):
             optimizer = torch.optim.Adam(mdata, lr=rate)
         return optimizer
 
-    def build_model(self, params):
+    def build_model(self, params, es_patience=2, decay=False, verbose=False):
+        print("Hyperparameters: ", params)
         self.split_train_test(params, validation_size=self.nvalid)  # split data, according to scaling hp's
         scale = params['scale_y']                                   # Find descaling factor to convert loss to original energy units
         if scale == 'std':
@@ -119,16 +184,22 @@ class NeuralNetwork(Model):
         if scale.startswith('mm'):
             factor = (1/self.yscaler.scale_[0]**2)
 
+        activation = params['scale_X']['activation']
+        if activation == 'tanh':
+            activ = nn.Tanh()
+        if activation == 'sigmoid':
+            activ = nn.Sigmoid()
+        
         inp_dim = self.inp_dim
         l = params['layers']
         torch.manual_seed(0)
         depth = len(l)
         structure = OrderedDict([('input', nn.Linear(inp_dim, l[0])),
-                                 ('activ_in' , nn.Tanh())])
+                                 ('activ_in' , activ)])
         model = nn.Sequential(structure)
         for i in range(depth-1):
             model.add_module('layer' + str(i), nn.Linear(l[i], l[i+1]))
-            model.add_module('activ' + str(i), nn.Tanh())
+            model.add_module('activ' + str(i), activ)
         model.add_module('output', nn.Linear(l[depth-1], 1))
 
         metric = torch.nn.MSELoss()
@@ -136,6 +207,8 @@ class NeuralNetwork(Model):
         prev_loss = 1.0
         # Early stopping tracker
         es_tracker = 0
+        if decay:
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5)
         for epoch in range(1,1000):
             def closure():
                 optimizer.zero_grad()
@@ -149,14 +222,18 @@ class NeuralNetwork(Model):
                 with torch.no_grad():
                     tmp_pred = model(self.Xvalid) 
                     loss = metric(tmp_pred, self.yvalid)
-                    val_error_rmse = np.sqrt(loss.item() * factor) * 219474.63
-                    print('epoch: ', epoch,'Validation set RMSE (cm-1): ', val_error_rmse)
+                    val_error_rmse = np.sqrt(loss.item() * factor) * hartree2cm
+                    if verbose:
+                        print("Epoch {} Validation RMSE (cm-1): {5.2f}".format(val_error_rmse))
+                    if decay:
+                        scheduler.step(val_error_rmse)
+    
                     # very simple early stopping implementation
                     if epoch > 1:
                         # does validation error not improve by > 1.0% for 2 sets of 10 epochs in a row?
                         if ((prev_loss - val_error_rmse) / prev_loss) < 1e-2:
                             es_tracker += 1
-                            if es_tracker > 2:
+                            if es_tracker > es_patience:
                                 prev_loss = val_error_rmse * 1.0
                                 break
                         else:
@@ -171,10 +248,15 @@ class NeuralNetwork(Model):
                         
                     prev_loss = val_error_rmse * 1.0  # save previous loss to track improvement
 
-        test_pred = model(self.Xtest)
-        loss = metric(test_pred, self.ytest)
-        test_error_rmse = np.sqrt(loss.item()*factor)* 219474.63
-        print(l, test_error_rmse)
+        with torch.no_grad():
+            test_pred = model(self.Xtest)
+            loss = metric(test_pred, self.ytest)
+            test_error_rmse = np.sqrt(loss.item()*factor)* hartree2cm 
+            tmp_pred = model(self.Xvalid) 
+            loss = metric(tmp_pred, self.yvalid)
+            val_error_rmse = np.sqrt(loss.item() * factor) * hartree2cm
+        #print(l, test_error_rmse)
+        print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f}".format( test_error_rmse, val_error_rmse))
         return test_error_rmse, val_error_rmse
 
     def hyperopt_model(self, params):
@@ -183,11 +265,15 @@ class NeuralNetwork(Model):
             if 'memo' in i:
                 if params == i['memo']:
                     return {'loss': i['loss'], 'status': STATUS_OK, 'memo': 'repeat'}
-        #if self.itercount > self.hp_maxit:
-        #    return {'loss': 0.0, 'status': STATUS_FAIL, 'memo': 'max iters reached'}
-        self.build_model(params)
+        if self.itercount > self.hp_maxit:
+            return {'loss': 0.0, 'status': STATUS_FAIL, 'memo': 'max iters reached'}
+        error_test, error_valid = self.build_model(params)
         #error_test = self.vet_model(self.model)
-        return {'loss': error_test, 'status': STATUS_OK, 'memo': params}
+        self.itercount += 1
+        if np.isnan(error_valid):
+            return {'loss': error_valid, 'status': STATUS_FAIL, 'memo': params}
+        else:
+            return {'loss': error_valid, 'status': STATUS_OK, 'memo': params}
 
     def preprocess(self, params, raw_X, raw_y):
         """
@@ -202,7 +288,7 @@ class NeuralNetwork(Model):
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
         if params['scale_X']:
-            X, Xscaler = general_scaler(params['scale_X'], raw_X)
+            X, Xscaler = general_scaler(params['scale_X']['scale_X'], raw_X)
         else:
             X = raw_X
             Xscaler = None
