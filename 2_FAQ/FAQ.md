@@ -38,13 +38,19 @@
     * `std` is standard scaling, each column of data is scaled to a mean of 0 and variance of 1. 
     * `mm01` is minmax scaling, each column of data is scaled such that it runs from 0 to 1
     * `mm11` is minmax scaling with a range -1 to 1
-  * `morse` is whether interatomic distances are transformed into morse variables r_1 --> exp(-r_1/alpha)
+  * `morse` is whether interatomic distances are transformed into morse variables $r_1 \rightarrow e^{r_1/\alpha}$
   * `pip` stands for permutation invariant polynomials; i.e. the geometries are being transformed into a permutation invariant representation using the fundamental invariants library. 
   * `degree_reduce` is when each fundamental invariant polynomial result is taken to the $1/n$ power where $n$ is the degree of the polynomial
-  * `nlayers` is the number of layers in the neural network
-  * `nnodes` is the number of nodes in each layer
+  * `layers` is a list of the number of nodes in each hidden layer of the neural network
 
+## 8. How many points do I need to generate?
 
-    
+ *  It's very hard to say what size of training set is required for a given target accuracy; it depends on a lot of things. First, the application: if you are doing some variational computation of the vibrational energy levels and only want the fundamentals, you might be able to get away with less points because you really just need a good description of the surface around the minimum. If one wants high-lying vibrational states with VCI, the surface needs a lot more coverage, and therefore more points. If the application involves a reactive potential energy surface across several stationary points, even more points are needed. The structure of the surface itself can also influence the number of points needed.
+**You don't know until you try.** For a given system, one should try out a few internal coordinate grids, reduce them to some size with `grid_reduction`, compute the points at a low level of theory, and see how well the models perform.  
+
+## 9. How big can the molecular system be? 
+
+No more than 5-6 atoms for 'full' PESs. Any larger than that, and generating data by displacing in internal coordinates is impractical (if you have 6 atoms and want 5 increments along each internal coordinate, that's already ~240 million points). This is just an unfortunate reality of high-dimensional spaces: ample coverage over each coordinate and all possible coordinate displacement couplings requires an impossibly large grid of points for meaningful results. **One can still do large systems if they only scan over some of the coordinates.** For example, you can do relaxed scans across the surface, fixing just a few internal coordinates and relaxing all others through geometry optimization at each point, and creating a model of this 'sub-manifold' of the surface is no problem (i.e., train on the fixed coordinate parameters and 'learn' the relaxed energies). This is useful for inspecting reaction coordinates/reaction entrance channels, for example. 
+Future releases will support including gradient information in training the model, and this may allow for slightly larger systems and smaller dataset sizes. In theory, gradients can give the models more indication of the curvature of the surface with less points.
 
 
