@@ -45,6 +45,7 @@ class InputProcessor(object):
                            'input_name': 'input.dat',        # what to call new input files generated from template, can be any name
                            'output_name': 'output.dat',      # the name of electronic structure theory output files corresponding to input_name
                            'ml_model': 'gp',                 # 'gp', 'nn'
+                           'mode': None,                     # 'generate', 'parse', 'learn', or shorthand: 'g', 'p', 'l'
                            'pes_name': 'PES.dat',            # any name
                            'pes_redundancy': 'false',        # 'true'
                            'pes_format': 'interatomics',     # 'zmat'

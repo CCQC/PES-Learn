@@ -1,16 +1,12 @@
 """
-Data Generation Driver
+Driver for PES-Learn
 """
 import timeit
 import sys
 import os
 import json
-# python 2 and 3 command line input compatibility
 from six.moves import input
 from collections import OrderedDict
-# find MLChem module
-#from .constants import package_directory 
-#sys.path.insert(0, "../../../")
 import peslearn
 import numpy as np
 import pandas as pd
@@ -20,8 +16,14 @@ with open('input.dat', 'r') as f:
 
 input_obj = peslearn.InputProcessor(input_string)
 mol = peslearn.datagen.Molecule(input_obj.zmat_string)
-text = input("Do you want to 'generate' data, 'parse' data, or 'learn'?")
-text = text.strip()
+
+if input_obj.keywords['mode'] == None:
+    text = input("Do you want to 'generate' data, 'parse' data, or 'learn'?")
+    text = text.strip()
+
+else:
+    text = input_obj.keywords['mode']
+
 start = timeit.default_timer()
 
 if text == 'generate' or text == 'g':
