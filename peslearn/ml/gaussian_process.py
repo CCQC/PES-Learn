@@ -245,7 +245,10 @@ class GaussianProcess(Model):
 
     def write_convenience_function(self):
         string = "from peslearn.ml import GaussianProcess\nfrom peslearn import InputProcessor\nfrom GPy.core.model import Model\nimport numpy as np\nimport json\nfrom itertools import combinations\n\n"
-        string += "gp = GaussianProcess('PES.dat', InputProcessor(''), molecule_type='{}')\n".format(self.molecule_type)
+        if self.pip:
+            string += "gp = GaussianProcess('PES.dat', InputProcessor(''), molecule_type='{}')\n".format(self.molecule_type)
+        else:
+            string += "gp = GaussianProcess('PES.dat', InputProcessor(''))\n"
         with open('hyperparameters', 'r') as f:
             hyperparameters = f.read()
         string += "params = {}\n".format(hyperparameters)
