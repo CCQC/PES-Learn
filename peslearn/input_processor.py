@@ -16,10 +16,8 @@ class InputProcessor(object):
     A Class which handles information contained within an input file
     """
     def __init__(self, input_string):
-        #self.input_path = input_path
-        #with open(self.input_path, 'r') as f:
-        #    self.full_string = f.read() 
-        self.full_string = input_string
+        # Remove all comments denoted by '#'
+        self.full_string = re.sub('\s*#.+', '', input_string) 
         if re.search(regex.intcoords_regex, self.full_string):
             self.zmat_string = re.findall(regex.intcoords_regex, self.full_string)[0] 
         self.intcos_ranges = None 
@@ -45,6 +43,7 @@ class InputProcessor(object):
                            'gradient_footer': None,          # gradient footer regular expression string
                            'gradient_line': None,            # regular expression string for one line of the cartesian gradient
                            'input_name': 'input.dat',        # what to call new input files generated from template, can be any name
+                           'output_name': 'output.dat',      # the name of electronic structure theory output files corresponding to input_name
                            'ml_model': 'gp',                 # 'gp', 'nn'
                            'pes_name': 'PES.dat',            # any name
                            'pes_redundancy': 'false',        # 'true'
@@ -55,7 +54,7 @@ class InputProcessor(object):
                            'eq_geom'      : None,            #[1.05, 1.15, 104.5] etc
                            'use_pips': 'true',               #'false'
                            'sort_pes': 'true',               #'false'
-                           'sampling': 'structure_based',    #'sobol', 'smart_random', 'random', 'energy_ordered'
+                           'sampling': 'structure_based',    # 'structure_based','sobol', 'smart_random', 'random', 'energy_ordered'
                            'n_low_energy_train': 0,          # any int
                            'training_points': 50,            # any int
                            'validation_points': 10,          # any int
