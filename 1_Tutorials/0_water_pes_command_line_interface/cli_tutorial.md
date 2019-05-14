@@ -484,8 +484,6 @@ The print statements yield the following output. The energy is in units of Hartr
  [-76.24024971]]
 ```
 
-Keeping all of the coordinates in the right order and supplying them in the write format can be tricky.
-
 
 ### 3.3 Neural Network Regression
 
