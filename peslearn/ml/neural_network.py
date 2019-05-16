@@ -183,8 +183,8 @@ class NeuralNetwork(Model):
         else: 
             rate = 0.01
         if opt_type == 'lbfgs':
-            #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=100, max_eval=None, tolerance_grad=1e-10, tolerance_change=1e-12, history_size=200)
-            optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-5, tolerance_change=1e-9, history_size=100) # Defaults
+            #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-5, tolerance_change=1e-9, history_size=100) # Defaults
+            optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=100, max_eval=None, tolerance_grad=1e-10, tolerance_change=1e-12, history_size=200)
         if opt_type == 'adam':
             optimizer = torch.optim.Adam(mdata, lr=rate)
         return optimizer
@@ -244,13 +244,13 @@ class NeuralNetwork(Model):
         # Early stopping tracker
         es_tracker = 0
         if decay:
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.8, threshold=0.1, threshold_mode='abs', min_lr=0.0001, cooldown=2, patience=10, verbose=verbose)
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.8, threshold=0.05, threshold_mode='abs', min_lr=0.0001, cooldown=2, patience=10, verbose=verbose)
 
         for epoch in range(1,maxit):
             def closure():
                 optimizer.zero_grad()
                 y_pred = model(self.Xtr)
-                loss = torch.sqrt(metric(y_pred, self.ytr))
+                loss = torch.sqrt(metric(y_pred, self.ytr)) # passing RMSE instead of MSE improves precision IMMENSELY
                 #loss = metric(y_pred, self.ytr)
                 loss.backward()
                 return loss
@@ -295,14 +295,9 @@ class NeuralNetwork(Model):
             val_pred = model(self.Xvalid) 
             loss = metric(val_pred, self.yvalid)
             val_error_rmse = np.sqrt(loss.item() * loss_descaler) * hartree2cm
-            #full_pred = model(self.X)
-            #loss = metric(full_pred, self.y)
-            #full_error_rmse = np.sqrt(loss.item() * loss_descaler) * hartree2cm
         print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f}".format(test_error_rmse, val_error_rmse))
-        #compute_error(self.yscaler.inverse_transform(test_pred.numpy())
         e = self.compute_error(self.Xtest, self.ytest, test_pred.numpy(), self.yscaler)
         print(e * hartree2cm)
-        #print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f} Full Dataset RMSE (cm-1): {:5.2f}".format(test_error_rmse, val_error_rmse, full_error_rmse))
         return test_error_rmse, val_error_rmse
 
     def hyperopt_model(self, params):
