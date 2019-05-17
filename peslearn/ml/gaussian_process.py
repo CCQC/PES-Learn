@@ -111,8 +111,8 @@ class GaussianProcess(Model):
         """Convenience method for getting model errors of test and full datasets"""
         pred_test = self.predict(model, self.Xtest)
         pred_full = self.predict(model, self.X)
-        error_test = self.compute_error(self.Xtest, self.ytest, pred_test, self.yscaler)
-        error_full, median_error, max_errors = self.compute_error(self.X, self.y, pred_full, yscaler=self.yscaler, max_errors=5)
+        error_test = self.compute_error(self.ytest, pred_test, self.yscaler)
+        error_full, median_error, max_errors = self.compute_error(self.y, pred_full, yscaler=self.yscaler, max_errors=5)
         print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='  ')
         print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='     ')
         print("Median error: {}".format(np.round(median_error[0],2)), end='  ')

@@ -154,18 +154,16 @@ class Model(ABC):
         """
         self.hyperparameter_space[key] = val
 
-    def compute_error(self, X, y, prediction, yscaler=None, max_errors=None):
+    def compute_error(self, known_y, prediction, yscaler=None, max_errors=None):
         """
         Predict the root-mean-square error (in wavenumbers) of model given 
         known X,y, a prediction, and a y scaling object, if it exists.
         
         Parameters
         ----------
-        X : array
-            Array of model inputs (geometries)
-        y : array
+        known_y : ndarray
             Array of expected model outputs (energies)
-        prediction: array
+        prediction: ndarray
             Array of actual model outputs (energies)
         yscaler: object
             Sci-kit learn scaler object
@@ -177,9 +175,10 @@ class Model(ABC):
         error : float
             Root mean square error in wavenumbers (cm-1)
         """
-        # TODO prevent incorrectly shaped y from being inputted otherwise huge memory/cost requirements
+        if known_y.shape != prediction.shape:
+            raise Exception("Shape of known_y and prediction must be the same")
         if yscaler:
-            raw_y = yscaler.inverse_transform(y)
+            raw_y = yscaler.inverse_transform(known_y)
             unscaled_prediction = yscaler.inverse_transform(prediction)
             error = np.sqrt(sklearn.metrics.mean_squared_error(raw_y,  unscaled_prediction))
             if max_errors:
@@ -187,9 +186,9 @@ class Model(ABC):
                 median_error = np.median(e, axis=0)
                 largest_errors = np.partition(e, -max_errors, axis=0)[-max_errors:]
         else:
-            error = np.sqrt(sklearn.metrics.mean_squared_error(y, prediction))
+            error = np.sqrt(sklearn.metrics.mean_squared_error(known_y, prediction))
             if max_errors:
-                e = np.abs(y - prediction) * hartree2cm
+                e = np.abs(known_y - prediction) * hartree2cm
                 median_error = np.median(e, axis=0)
                 largest_errors = np.partition(e, -max_errors, axis=0)[-max_errors:]
         if max_errors:
