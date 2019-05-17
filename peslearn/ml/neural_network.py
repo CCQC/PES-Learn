@@ -19,8 +19,8 @@ class NeuralNetwork(Model):
     """
     Constructs a Neural Network Model using PyTorch
     """
-    def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None):
-        super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path)
+    def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None, valid_path=None):
+        super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path, valid_path)
         self.trial_layers = self.input_obj.keywords['nas_trial_layers']
         self.set_default_hyperparameters()
         
@@ -373,6 +373,38 @@ class NeuralNetwork(Model):
 
     def save_model(self, params):
         pass
+
+    def transform_new_X(self, newX, params, Xscaler=None):
+        """
+        Transform a new, raw input according to the model's transformation procedure 
+        so that prediction can be made.
+        """
+        # ensure X dimension is n x m (n new points, m input variables)
+        if len(newX.shape) == 1:
+            newX = np.expand_dims(newX,0)
+        elif len(newX.shape) > 2:
+            raise Exception("Dimensions of input data is incorrect.")
+        if params['morse_transform']['morse']:
+            newX = morse(newX, params['morse_transform']['morse_alpha'])
+        if params['pip']['pip']:
+            # find path to fundamental invariants for an N atom system with molecule type AxByCz...
+            path = os.path.join(package_directory, "lib", self.molecule_type, "output")
+            newX, degrees = interatomics_to_fundinvar(newX,path)
+            if params['pip']['degree_reduction']:
+                newX = degree_reduce(newX, degrees)
+        if Xscaler:
+            newX = Xscaler.transform(newX)
+        return newX
+
+    def transform_new_y(self, newy, yscaler=None):    
+        if yscaler:
+            newy = yscaler.transform(newy)
+        return newy
+
+    def inverse_transform_new_y(self, newy, yscaler=None):    
+        if yscaler:
+            newy = yscaler.inverse_transform(newy)
+        return newy
 
 
 
