@@ -63,7 +63,8 @@ def parse(input_obj, mol):
     os.chdir("./PES_data")
     dirs = [i for i in os.listdir(".") if os.path.isdir(i) ]
     for d in dirs: 
-        path = d + "/output.dat"
+        #path = d + "/" + "output.dat" 
+        path = d + "/" + input_obj.keywords['output_name']
         #output_obj = MLChem.outputfile.OutputFile(path)
         output_obj = OutputFile(path)
         if input_obj.keywords['energy']:
