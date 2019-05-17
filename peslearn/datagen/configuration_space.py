@@ -55,7 +55,7 @@ class ConfigurationSpace(object):
         for key, value in d.items():
             if len(value) == 3:
                 d[key] = np.linspace(value[0], value[1], value[2])
-            if len(value) == 1:
+            elif len(value) == 1:
                 d[key] = np.asarray(value[0])    
             else:
                 raise Exception("Internal coordinate range improperly specified")
