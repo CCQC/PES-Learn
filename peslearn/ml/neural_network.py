@@ -21,10 +21,8 @@ class NeuralNetwork(Model):
     """
     def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None):
         super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path)
+        self.trial_layers = self.input_obj.keywords['nas_trial_layers']
         self.set_default_hyperparameters()
-
-        if self.input_obj.keywords['nas_trial_layers']:
-            self.trial_layers = self.input_obj.keywords['nas_trial_layers']
         
         if self.input_obj.keywords['validation_points']:
             self.nvalid = self.input_obj.keywords['validation_points']
@@ -61,7 +59,7 @@ class NeuralNetwork(Model):
             'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11']),}
         # TODO make more expansive search spaces, benchmark them, expose them as input options
         #elif nn_search_space == 2:
-        #elif nn_search_space == 2:
+        #elif nn_search_space == 3:
         else:
             raise Exception("Invalid search space specification")
 
