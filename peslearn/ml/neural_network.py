@@ -22,6 +22,9 @@ class NeuralNetwork(Model):
     def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None):
         super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path)
         self.set_default_hyperparameters()
+
+        if self.input_obj.keywords['nas_trial_layers']:
+            self.trial_layers = self.input_obj.keywords['nas_trial_layers']
         
         if self.input_obj.keywords['validation_points']:
             self.nvalid = self.input_obj.keywords['validation_points']
@@ -36,23 +39,33 @@ class NeuralNetwork(Model):
         else:
             self.inp_dim = self.raw_X.shape[1]
 
-    def set_default_hyperparameters(self):
+    def set_default_hyperparameters(self, nn_search_space=1):
         """
         Set default hyperparameter space. If none is provided, default is used.
-        """
-        self.hyperparameter_space = {
-                      'scale_X': hp.choice('scale_X',
-                               [
-                               #{'scale_X': 'mm01', 
-                               #     'activation': hp.choice('activ1', ['sigmoid'])},
-                               {'scale_X': 'mm11',
-                                    'activation': hp.choice('activ2', ['tanh'])},
-                               {'scale_X': 'std',
-                                    'activation': hp.choice('activ3', ['tanh'])},
-                               ]),
-                      'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11']),
-                                    }
 
+        Parameters
+        ----------
+        nn_search_space : int
+            Which tier of default hyperparameter search spaces to use. Neural networks have too many hyperparameter configurations to search across, 
+            so this option reduces the number of variable hyperparameters to search over. Generally, larger integer => more hyperparameters, and more iterations of hp_maxit are recommended.
+        """
+        if nn_search_space == 1:
+            self.hyperparameter_space = {
+            'scale_X': hp.choice('scale_X',
+                     [
+                     {'scale_X': 'mm11',
+                          'activation': hp.choice('activ2', ['tanh'])},
+                     {'scale_X': 'std',
+                          'activation': hp.choice('activ3', ['tanh'])},
+                     ]),
+            'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11']),}
+        # TODO make more expansive search spaces, benchmark them, expose them as input options
+        #elif nn_search_space == 2:
+        #elif nn_search_space == 2:
+        else:
+            raise Exception("Invalid search space specification")
+
+        # Standard geometry transformations, always use these.
         if self.input_obj.keywords['pes_format'] == 'interatomics':
             self.set_hyperparameter('morse_transform', hp.choice('morse_transform',[{'morse': True,'morse_alpha': hp.quniform('morse_alpha', 1, 2, 0.1)},{'morse': False}]))
         else:
@@ -65,10 +78,9 @@ class NeuralNetwork(Model):
 
     def optimize_model(self):
         print("\nPerforming neural architecture search...\n")
-        best_hlayers = self.neural_architecture_search()
+        best_hlayers = self.neural_architecture_search(trial_layers = self.trial_layers)
         print("Neural architecture search complete. Best hidden layer structures: {}".format(best_hlayers))
         self.set_hyperparameter('layers', hp.choice('layers', best_hlayers))
-        
         self.hyperopt_trials = Trials()
         self.itercount = 1
         if self.input_obj.keywords['rseed']:
@@ -90,15 +102,23 @@ class NeuralNetwork(Model):
         print("Fine-tuning final model...")
         self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=30, opt='lbfgs', tol=0.1,  decay=False, verbose=True)
 
-    def neural_architecture_search(self):
+    def neural_architecture_search(self, trial_layers=None):
         """
         Finds 'optimal' hidden layer structure. (i.e., tries both wide and deep homogenous hidden layer structures and finds the best 3 for follow-up hyperparameter optimization)
+        
+        Parameters
+        ----------
+        trial_layers : list
+            A list of tuples describing the number of nodes in each hidden layer. Example: a 3-20-20-1 NN would be a tuple (20,20).
         """
-        tmp_layers = [(16,), (16,16), (16,16,16), (16,16,16,16),
-                      (32,), (32,32), (32,32,32), (32,32,32,32),
-                      (64,), (64,64), (64,64,64), (64,64,64,64),
-                      (128,), (128,128), (128,128,128),
-                      (256,), (256,256)] 
+        if trial_layers == None:
+            tmp_layers = [(16,), (16,16), (16,16,16), (16,16,16,16),
+                          (32,), (32,32), (32,32,32), (32,32,32,32),
+                          (64,), (64,64), (64,64,64), (64,64,64,64),
+                          (128,), (128,128), (128,128,128),
+                          (256,), (256,256)] 
+        else:
+            tmp_layers = trial_layers
         self.nas_layers = sort_architectures(tmp_layers, self.inp_dim)
         self.nas_size = len(self.nas_layers)
         # force reliable set of hyperparameters
@@ -111,10 +131,7 @@ class NeuralNetwork(Model):
         validation = []
         for i in self.nas_layers:
             params['layers'] = i
-            #testerror, valid = self.build_model(params, tol=1.0, maxit=1000, opt='lbfgs', verbose=True, maxit=1000, es_patience=5, decay=True)
             testerror, valid = self.build_model(params, maxit=300, val_freq=10, es_patience=2, opt='lbfgs', tol=1.0,  decay=False, verbose=False)
-            #testerror, valid = self.build_model(params, opt='adam', verbose=True, maxit=50000, es_patience=50, decay=False)
-            #testerror, valid = self.build_model(params, opt='adam', verbose=True, maxit=10000, es_patience=100, val_freq=20, decay=True)
             test.append(testerror)
             validation.append(valid)
         # save best architectures for hyperparameter optimization
@@ -122,7 +139,7 @@ class NeuralNetwork(Model):
         best_hlayers = [self.nas_layers[i] for i in indices[:3]]
         return best_hlayers
 
-    def split_train_test(self, params, validation_size=None):
+    def split_train_test(self, params, validation_size=None, precision=32):
         """
         Take raw dataset and apply hyperparameters/input keywords/preprocessing
         and train/test (tr,test) splitting.
@@ -160,20 +177,23 @@ class NeuralNetwork(Model):
                                                                    train_size = validation_size, 
                                                                                 random_state=42)
 
-
         # convert to Torch Tensors
-        #self.Xtr    = torch.tensor(self.Xtr,   dtype=torch.float32)
-        #self.ytr    = torch.tensor(self.ytr,   dtype=torch.float32)
-        #self.Xtest  = torch.tensor(self.Xtest, dtype=torch.float32)
-        #self.ytest  = torch.tensor(self.ytest, dtype=torch.float32)
-        #self.Xvalid = torch.tensor(self.Xvalid,dtype=torch.float32)
-        #self.yvalid = torch.tensor(self.yvalid,dtype=torch.float32)
-        self.Xtr    = torch.tensor(self.Xtr,   dtype=torch.float64)
-        self.ytr    = torch.tensor(self.ytr,   dtype=torch.float64)
-        self.Xtest  = torch.tensor(self.Xtest, dtype=torch.float64)
-        self.ytest  = torch.tensor(self.ytest, dtype=torch.float64)
-        self.Xvalid = torch.tensor(self.Xvalid,dtype=torch.float64)
-        self.yvalid = torch.tensor(self.yvalid,dtype=torch.float64)
+        if precision == 32:
+            self.Xtr    = torch.tensor(self.Xtr,   dtype=torch.float32)
+            self.ytr    = torch.tensor(self.ytr,   dtype=torch.float32)
+            self.Xtest  = torch.tensor(self.Xtest, dtype=torch.float32)
+            self.ytest  = torch.tensor(self.ytest, dtype=torch.float32)
+            self.Xvalid = torch.tensor(self.Xvalid,dtype=torch.float32)
+            self.yvalid = torch.tensor(self.yvalid,dtype=torch.float32)
+        elif precision == 64:
+            self.Xtr    = torch.tensor(self.Xtr,   dtype=torch.float64)
+            self.ytr    = torch.tensor(self.ytr,   dtype=torch.float64)
+            self.Xtest  = torch.tensor(self.Xtest, dtype=torch.float64)
+            self.ytest  = torch.tensor(self.ytest, dtype=torch.float64)
+            self.Xvalid = torch.tensor(self.Xvalid,dtype=torch.float64)
+            self.yvalid = torch.tensor(self.yvalid,dtype=torch.float64)
+        else:
+            raise Exception("Invalid option for 'precision'")
 
     def get_optimizer(self, opt_type, mdata, lr=None): 
         if lr:
@@ -190,7 +210,7 @@ class NeuralNetwork(Model):
             optimizer = torch.optim.Adam(mdata, lr=rate)
         return optimizer
 
-    def build_model(self, params, maxit=1000, val_freq=10, es_patience=2, opt='lbfgs', tol=1.0,  decay=False, verbose=False):
+    def build_model(self, params, maxit=1000, val_freq=10, es_patience=2, opt='lbfgs', tol=1.0,  decay=False, verbose=False, precision=32):
         """
         Parameters
         ----------
@@ -212,8 +232,8 @@ class NeuralNetwork(Model):
             If true, print training progress after every validation  
         """
         print("Hyperparameters: ", params)
-        self.split_train_test(params, validation_size=self.nvalid)  # split data, according to scaling hp's
-        scale = params['scale_y']                                   # Find descaling factor to convert loss to original energy units
+        self.split_train_test(params, validation_size=self.nvalid, precision=precision)  # split data, according to scaling hp's
+        scale = params['scale_y']                                                        # Find descaling factor to convert loss to original energy units
         if scale == 'std':
             loss_descaler = self.yscaler.var_[0]
         if scale.startswith('mm'):
@@ -237,7 +257,9 @@ class NeuralNetwork(Model):
             model.add_module('layer' + str(i), nn.Linear(l[i], l[i+1]))
             model.add_module('activ' + str(i), activ)
         model.add_module('output', nn.Linear(l[depth-1], 1))
-        model = model.double() 
+
+        if precision == 64: # cast model proper precision
+            model = model.double() 
 
         metric = torch.nn.MSELoss()
         optimizer = self.get_optimizer(opt, model.parameters(), lr=None)
@@ -263,11 +285,8 @@ class NeuralNetwork(Model):
             if epoch % val_freq == 0:
                 with torch.no_grad():
                     tmp_pred = model(self.Xvalid) 
-                    #tmp_loss = torch.sqrt(metric(tmp_pred, self.yvalid))
                     tmp_loss = metric(tmp_pred, self.yvalid)
-                    val_error_rmse = np.sqrt(tmp_loss.item() * loss_descaler) * hartree2cm
-                    #val_error_rmse = tmp_loss.item() * np.sqrt(loss_descaler) * hartree2cm
-                    #val_error_rmse = tmp_loss.item() * np.sqrt(loss_descaler) * hartree2cm
+                    val_error_rmse = np.sqrt(tmp_loss.item() * loss_descaler) * hartree2cm # loss_descaler converts MSE in scaled data domain to MSE in unscaled data domain
                     if verbose:
                         print("Epoch {} Validation RMSE (cm-1): {:5.2f}".format(epoch, val_error_rmse))
                     if decay:
@@ -283,25 +302,33 @@ class NeuralNetwork(Model):
                         else:
                             es_tracker = 0
 
-                    # exploding gradients 
+                    # Halt for exploding gradients 
                     if epoch > 10:
                         if (val_error_rmse > prev_loss*10): # detect large increases in loss
                             break
                         if val_error_rmse != val_error_rmse: # detect NaN 
+                            break
+                        if ((prev_loss < 1.0) and (precision == 32)):  # if 32 bit precision and model is giving very high accuracy, kill so the accuracy does not go beyond 32 bit precision
                             break
                         
                     prev_loss = val_error_rmse * 1.0  # save previous loss to track improvement
 
         with torch.no_grad():
             test_pred = model(self.Xtest)
-            loss = metric(test_pred, self.ytest)
-            test_error_rmse = np.sqrt(loss.item() * loss_descaler) * hartree2cm 
+            test_loss = metric(test_pred, self.ytest)
+            test_error_rmse = np.sqrt(test_loss.item() * loss_descaler) * hartree2cm 
             val_pred = model(self.Xvalid) 
-            loss = metric(val_pred, self.yvalid)
-            val_error_rmse = np.sqrt(loss.item() * loss_descaler) * hartree2cm
+            val_loss = metric(val_pred, self.yvalid)
+            val_error_rmse = np.sqrt(val_loss.item() * loss_descaler) * hartree2cm
+
+            #full_pred = model(self.X)
+            #full_loss = metric(val_pred, self.yvalid)
         print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f}".format(test_error_rmse, val_error_rmse))
-        e = self.compute_error(self.Xtest, self.ytest, test_pred.numpy(), self.yscaler)
-        print(e * hartree2cm)
+        # these numbers can disagree if float precision is 32 (sklearn-backed compute_error function is float64)
+        #e = self.compute_error(self.ytest, test_pred.numpy(), self.yscaler)  
+        #g = self.compute_error(self.yvalid, val_pred.numpy(), self.yscaler)
+        #print(e * hartree2cm)
+        #print(g * hartree2cm)
         return test_error_rmse, val_error_rmse
 
     def hyperopt_model(self, params):
