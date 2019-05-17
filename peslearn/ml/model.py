@@ -1,6 +1,7 @@
 from .data_sampler import DataSampler 
 from ..constants import hartree2cm, package_directory 
 from ..utils.regex import xyz_block_regex
+from ..utils.geometry_transform_helper import load_cartesian_dataset
 from abc import ABC, abstractmethod
 import re
 import pandas as pd
@@ -112,7 +113,7 @@ class Model(ABC):
         with open(path) as f:
             read = f.read()
         if re.findall(xyz_block_regex, read):
-            data = gth.load_cartesian_dataset(path)
+            data = load_cartesian_dataset(path)
         else:
             try:
                 data = pd.read_csv(path)
