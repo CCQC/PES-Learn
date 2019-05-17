@@ -184,7 +184,8 @@ class NeuralNetwork(Model):
             rate = 0.01
         if opt_type == 'lbfgs':
             #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-5, tolerance_change=1e-9, history_size=100) # Defaults
-            optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=100, max_eval=None, tolerance_grad=1e-10, tolerance_change=1e-12, history_size=200)
+            #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=100, max_eval=None, tolerance_grad=1e-10, tolerance_change=1e-14, history_size=200)
+            optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-8, tolerance_change=1e-12, history_size=100)
         if opt_type == 'adam':
             optimizer = torch.optim.Adam(mdata, lr=rate)
         return optimizer
@@ -251,7 +252,10 @@ class NeuralNetwork(Model):
                 optimizer.zero_grad()
                 y_pred = model(self.Xtr)
                 loss = torch.sqrt(metric(y_pred, self.ytr)) # passing RMSE instead of MSE improves precision IMMENSELY
+                #loss = 1000 * metric(y_pred, self.ytr)
                 #loss = metric(y_pred, self.ytr)
+                #loss = torch.sqrt(metric(y_pred, self.ytr))
+                #loss = torch.mul(10000, metric(y_pred, self.ytr))
                 loss.backward()
                 return loss
             optimizer.step(closure)
