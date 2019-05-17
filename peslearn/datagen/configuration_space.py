@@ -18,12 +18,15 @@ pd.set_option('display.max_rows',1000)
 
 class ConfigurationSpace(object):
     """
-    Generates PES geometries and removes redundancies.
+    Class for generating PES geometries, removing redundancies, reducing grid size.
 
     Parameters
     ----------
-    molecule_obj : Instance of Molecule class. Required for basic information about the molecule; internal coordinates, xyz coordinates, number of atoms
-    input_obj    : Instance of InputProcessor class. Required for user keyword considerations.
+    molecule_obj : :class:`~peslearn.datagen.molecule.Molecule`. 
+        Instance of PES-Learn Molecule class. Required for basic information about the molecule; 
+        internal coordinates, xyz coordinates, number of atoms.
+    input_obj :  :class:`~peslearn.input_processor.InputProcessor`
+        Instance of InputProcessor class. Required for user keyword considerations.
     """
     def __init__(self, molecule_obj, input_obj):
         self.mol = molecule_obj
@@ -43,20 +46,19 @@ class ConfigurationSpace(object):
             self.bond_columns.append("r%d" % (i))
 
     def generate_displacements(self):
+        """
+        Generates internal coordinate displacements according to internal coordinate ranges.
+        """
         start = timeit.default_timer()
         self.input_obj.extract_intcos_ranges()
         d = self.input_obj.intcos_ranges
-        #print(d.items())
         for key, value in d.items():
             if len(value) == 3:
                 d[key] = np.linspace(value[0], value[1], value[2])
             if len(value) == 1:
                 d[key] = np.asarray(value[0])    
-            # somehow this was breaking for dummy atom ch3 test?
-            #else:
-            #    print('no!')
-            #    print(key,value,len(value))
-            #    raise Exception("Range of parameter {} specified improperly.".format(key))
+            else:
+                raise Exception("Internal coordinate range improperly specified")
         grid = np.meshgrid(*d.values())
         # 2d array (ngridpoints x ndim) each row is one datapoint
         grid = np.vstack(map(np.ravel, grid)).T

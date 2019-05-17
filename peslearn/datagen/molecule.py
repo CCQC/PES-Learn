@@ -14,20 +14,21 @@ Built around reading internal coordinates
 class Atom(object):
     """
     The Atom class holds information about the geometry of an atom
-        Parameters
-        ----------
-        label : str
-            The atomic symbol
-        r_idx  : str
-            The bond connectivity index, as represented in a Z-matrix
-        a_idx  : str
-            The angle connectivity index, as represented in a Z-matrix
-        d_idx  : str
-            The dihedral connectivity index, as represented in a Z-matrix
-        intcoords  : dict
-            A dictionary of geometry parameter labels (e.g. "R1") and the value for this atom
-        coords : array
-            An array of cartesian coordinates for this atom
+
+    Parameters
+    ----------
+    label : str
+        The atomic symbol
+    r_idx  : str
+        The bond connectivity index, as represented in a Z-matrix
+    a_idx  : str
+        The angle connectivity index, as represented in a Z-matrix
+    d_idx  : str
+        The dihedral connectivity index, as represented in a Z-matrix
+    intcoords  : dict
+        A dictionary of geometry parameter labels (e.g. "R1") and the value for this atom
+    coords : array
+        An array of cartesian coordinates for this atom
     """
     def __init__(self, label, r_idx=None, a_idx=None, d_idx=None, intcoords=collections.OrderedDict()):
         self.label = label
@@ -47,8 +48,6 @@ class Atom(object):
         self.dval = self.geom_vals[2]
 
     
-# This framework is likely temporary. 
-# It is probably better to let github/mcocdawc/chemcoord handle internals and cartesians in the future.
 class Molecule(object):
     """
     The Molecule class holds geometry information about all the atoms in the molecule
