@@ -62,6 +62,7 @@ class InputProcessor(object):
                            'hp_maxit': 20,                   # any int
                            'rseed': None,                    # any int
                            'gp_ard': 'true',                 # 'true', 'false'. 'opt' treats as hyperparameter
+                           'nas_trial_layers': None,          # List of tuples e.g. [(10,), (10,10,10), (50,50)]
                            'hp_opt': 'true'}                 # 'false'
 
         for k in string_keywords:
