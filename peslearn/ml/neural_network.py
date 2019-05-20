@@ -75,9 +75,14 @@ class NeuralNetwork(Model):
             self.set_hyperparameter('pip', hp.choice('pip', [{'pip': False}]))
 
     def optimize_model(self):
+        print("Training with {} points (Full dataset contains {} points).".format(self.ntrain, self.n_datapoints))
+        print("Using {} training set point sampling.".format(self.sampler))
+        print("Errors are root-mean-square error in wavenumbers (cm-1)")
         print("\nPerforming neural architecture search...\n")
         best_hlayers = self.neural_architecture_search(trial_layers = self.trial_layers)
-        print("Neural architecture search complete. Best hidden layer structures: {}".format(best_hlayers))
+        print("\nNeural architecture search complete. Best hidden layer structures: {}\n".format(best_hlayers))
+        print("Beginning hyperparameter optimization...")
+        print("Trying {} combinations of hyperparameters".format(self.hp_maxit))
         self.set_hyperparameter('layers', hp.choice('layers', best_hlayers))
         self.hyperopt_trials = Trials()
         self.itercount = 1
@@ -97,6 +102,15 @@ class NeuralNetwork(Model):
         final = space_eval(self.hyperparameter_space, best)
         print(str(sorted(final.items())))
         self.optimal_hyperparameters  = dict(final)
+        print("Optimizing learning rate...")
+        learning_rates = [1.0, 0.8, 0.6, 0.5, 0.4, 0.2]
+        val_errors = []
+        for i in learning_rates:
+            self.optimal_hyperparameters['lr'] = i
+            test_error, val_error = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=10, es_patience=5, opt='lbfgs', tol=0.5,  decay=False, verbose=False)
+            val_errors.append(val_error)
+        best_lr = learning_rates[np.argsort(val_errors)[0]]
+        self.optimal_hyperparameters['lr'] = best_lr
         print("Fine-tuning final model...")
         self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=30, opt='lbfgs', tol=0.1,  decay=False, verbose=True)
 
@@ -129,6 +143,7 @@ class NeuralNetwork(Model):
         validation = []
         for i in self.nas_layers:
             params['layers'] = i
+            print("Hidden layer structure: ", i)
             testerror, valid = self.build_model(params, maxit=300, val_freq=10, es_patience=2, opt='lbfgs', tol=1.0,  decay=False, verbose=False)
             test.append(testerror)
             validation.append(valid)
@@ -183,6 +198,8 @@ class NeuralNetwork(Model):
             self.ytest  = torch.tensor(self.ytest, dtype=torch.float32)
             self.Xvalid = torch.tensor(self.Xvalid,dtype=torch.float32)
             self.yvalid = torch.tensor(self.yvalid,dtype=torch.float32)
+            self.X = torch.tensor(self.X,dtype=torch.float32)
+            self.y = torch.tensor(self.y,dtype=torch.float32)
         elif precision == 64:
             self.Xtr    = torch.tensor(self.Xtr,   dtype=torch.float64)
             self.ytr    = torch.tensor(self.ytr,   dtype=torch.float64)
@@ -190,6 +207,8 @@ class NeuralNetwork(Model):
             self.ytest  = torch.tensor(self.ytest, dtype=torch.float64)
             self.Xvalid = torch.tensor(self.Xvalid,dtype=torch.float64)
             self.yvalid = torch.tensor(self.yvalid,dtype=torch.float64)
+            self.X = torch.tensor(self.X,dtype=torch.float64)
+            self.y = torch.tensor(self.y,dtype=torch.float64)
         else:
             raise Exception("Invalid option for 'precision'")
 
@@ -199,7 +218,7 @@ class NeuralNetwork(Model):
         elif opt_type == 'lbfgs':
             rate = 0.5 #TODO 0.5
         else: 
-            rate = 0.01
+            rate = 0.1
         if opt_type == 'lbfgs':
             #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-5, tolerance_change=1e-9, history_size=100) # Defaults
             #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=100, max_eval=None, tolerance_grad=1e-10, tolerance_change=1e-14, history_size=200)
@@ -260,9 +279,13 @@ class NeuralNetwork(Model):
             model = model.double() 
 
         metric = torch.nn.MSELoss()
-        optimizer = self.get_optimizer(opt, model.parameters(), lr=None)
+        # Define optimizer
+        lr = None 
+        if 'lr' in params:
+            lr = params['lr']
+        optimizer = self.get_optimizer(opt, model.parameters(), lr=lr)
+        # Updated variables for early stopping 
         prev_loss = 1.0
-        # Early stopping tracker
         es_tracker = 0
         if decay:
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.8, threshold=0.05, threshold_mode='abs', min_lr=0.0001, cooldown=2, patience=10, verbose=verbose)
