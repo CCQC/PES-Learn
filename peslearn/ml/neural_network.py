@@ -272,10 +272,6 @@ class NeuralNetwork(Model):
                 optimizer.zero_grad()
                 y_pred = model(self.Xtr)
                 loss = torch.sqrt(metric(y_pred, self.ytr)) # passing RMSE instead of MSE improves precision IMMENSELY
-                #loss = 1000 * metric(y_pred, self.ytr)
-                #loss = metric(y_pred, self.ytr)
-                #loss = torch.sqrt(metric(y_pred, self.ytr))
-                #loss = torch.mul(10000, metric(y_pred, self.ytr))
                 loss.backward()
                 return loss
             optimizer.step(closure)
@@ -318,10 +314,10 @@ class NeuralNetwork(Model):
             val_pred = model(self.Xvalid) 
             val_loss = metric(val_pred, self.yvalid)
             val_error_rmse = np.sqrt(val_loss.item() * loss_descaler) * hartree2cm
-
-            #full_pred = model(self.X)
-            #full_loss = metric(val_pred, self.yvalid)
-        print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f}".format(test_error_rmse, val_error_rmse))
+            full_pred = model(self.X)
+            full_loss = metric(full_pred, self.y)
+            full_error_rmse = np.sqrt(full_loss.item() * loss_descaler) * hartree2cm
+        print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f} Full dataset RMSE (cm-1): {:5.2f}".format(test_error_rmse, val_error_rmse, full_error_rmse))
         # these numbers can disagree if float precision is 32 (sklearn-backed compute_error function is float64)
         #e = self.compute_error(self.ytest, test_pred.numpy(), self.yscaler)  
         #g = self.compute_error(self.yvalid, val_pred.numpy(), self.yscaler)
