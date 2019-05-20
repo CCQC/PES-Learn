@@ -11,10 +11,10 @@ This project is young and under active development. It is recommended to take a 
 * **Ease of Use**
   * PES-Learn can be run by writing an input file and running the code (much like most electronic structure theory packages)
   * PES-Learn also features a Python API for more advanced workflows
-  * Once ML models are finished training, PES-Learn auotmatically writes a Python file containing a function for evaluating the energies at new geometries. 
+  * Once ML models are finished training, PES-Learn automatically writes a Python file containing a function for evaluating the energies at new geometries. 
   
 * **Data Generation**
-  * PES-Learn supports input file generation and output file parsing for arbitrary electronic structure theory packages such as Psi4, Molpro, Gaussian, NWChem, etc. are supported
+  * PES-Learn supports input file generation and output file parsing for arbitrary electronic structure theory packages such as Psi4, Molpro, Gaussian, NWChem, etc. 
   * Data is generated with user-defined internal coordinate displacements with support for:
     * Redundant geometry removal
     * Configuration space filtering
@@ -22,7 +22,7 @@ This project is young and under active development. It is recommended to take a 
 * **Automated Data Transformation**
   * Rotation, translation, and permutation invariant molecular geometry representations
 
-* **Machine Learning Algorithms**
+* **Automated Machine Learning Model Generation**
   * Neural network models are built using PyTorch
   * Gaussian process models are built using GPy
 
