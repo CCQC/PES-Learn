@@ -112,7 +112,9 @@ class NeuralNetwork(Model):
         best_lr = learning_rates[np.argsort(val_errors)[0]]
         self.optimal_hyperparameters['lr'] = best_lr
         print("Fine-tuning final model...")
-        self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=30, opt='lbfgs', tol=0.1,  decay=False, verbose=True)
+        test_error, val_error, model = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=30, opt='lbfgs', tol=0.1,  decay=False, verbose=True)
+        print("Saving final model...")
+        self.save_model(self.optimal_hyperparameters, model)
 
     def neural_architecture_search(self, trial_layers=None):
         """
@@ -227,7 +229,7 @@ class NeuralNetwork(Model):
             optimizer = torch.optim.Adam(mdata, lr=rate)
         return optimizer
 
-    def build_model(self, params, maxit=1000, val_freq=10, es_patience=2, opt='lbfgs', tol=1.0,  decay=False, verbose=False, precision=32):
+    def build_model(self, params, maxit=1000, val_freq=10, es_patience=2, opt='lbfgs', tol=1.0,  decay=False, verbose=False, precision=32, return_model=False):
         """
         Parameters
         ----------
@@ -343,10 +345,11 @@ class NeuralNetwork(Model):
         print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f} Full dataset RMSE (cm-1): {:5.2f}".format(test_error_rmse, val_error_rmse, full_error_rmse))
         # these numbers can disagree if float precision is 32 (sklearn-backed compute_error function is float64)
         #e = self.compute_error(self.ytest, test_pred.numpy(), self.yscaler)  
-        #g = self.compute_error(self.yvalid, val_pred.numpy(), self.yscaler)
         #print(e * hartree2cm)
-        #print(g * hartree2cm)
-        return test_error_rmse, val_error_rmse
+        if return_model:
+            return test_error_rmse, val_error_rmse, model
+        else:
+            return test_error_rmse, val_error_rmse
 
     def hyperopt_model(self, params):
         """
@@ -390,8 +393,34 @@ class NeuralNetwork(Model):
             yscaler = None
         return X, y, Xscaler, yscaler
 
-    def save_model(self, params):
-        pass
+    def save_model(self, params, model):
+        print("Saving ML model data...") 
+        model_path = "model1_data"
+        while os.path.isdir(model_path):
+            new = int(re.findall("\d+", model_path)[0]) + 1
+            model_path = re.sub("\d+",str(new), model_path)
+        os.mkdir(model_path)
+        os.chdir(model_path)
+        torch.save(model, 'model.pt')
+        with open('hyperparameters', 'w') as f:
+            print(params, file=f)
+        
+        if self.sampler == 'user_supplied':
+            self.traindata.to_csv('train_set',sep=',',index=False,float_format='%12.12f')
+            self.testdata.to_csv('test_set', sep=',', index=False, float_format='%12.12f')
+        else:
+            self.dataset.iloc[self.train_indices].to_csv('train_set',sep=',',index=False,float_format='%12.12f')
+            self.dataset.iloc[self.test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
+    
+        self.dataset.to_csv('PES.dat', sep=',',index=False,float_format='%12.12f')
+        #write convenience function
+        #with open('compute_energy.py', 'w+') as f:
+        #    print(self.write_convenience_function(), file=f)
+        #print model performance
+        #sys.stdout = open('performance', 'w')  
+        #self.vet_model(self.model)
+        #sys.stdout = sys.__stdout__
+        os.chdir("../")
 
     def transform_new_X(self, newX, params, Xscaler=None):
         """
