@@ -45,6 +45,13 @@ if text == 'learn' or text == 'l':
         else:
             gp = peslearn.ml.GaussianProcess(input_obj.keywords["pes_name"], input_obj)
         gp.optimize_model()
+
+    if input_obj.keywords["ml_model"] == 'nn':
+        if input_obj.keywords['use_pips'] == 'true':
+            nn = peslearn.ml.NeuralNetwork(input_obj.keywords["pes_name"], input_obj, molecule_type=mol.molecule_type)
+        else:
+            nn = peslearn.ml.NeuralNetwork(input_obj.keywords["pes_name"], input_obj)
+        nn.optimize_model()
     
 stop = timeit.default_timer()
 print("Total run time: {} seconds".format(round(stop - start,2)))
