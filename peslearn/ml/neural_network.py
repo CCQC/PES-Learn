@@ -1,10 +1,12 @@
 import torch
 import torch.nn as nn
 import numpy as np
+import pandas as pd
 import os
 from collections import OrderedDict
 
 from .model import Model
+from .data_sampler import DataSampler 
 from ..constants import hartree2cm, package_directory
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
 from ..utils.printing_helper import hyperopt_complete
@@ -189,11 +191,28 @@ class NeuralNetwork(Model):
             self.ytr = self.y[self.train_indices]
             self.Xtmp = self.X[self.test_indices]
             self.ytmp = self.y[self.test_indices]
+            #if validation_size:
+            #    self.Xvalid, self.Xtest, self.yvalid, self.ytest =  train_test_split(self.Xtmp,
+            #                                                                         self.ytmp, 
+            #                                                       train_size = validation_size, 
+            #                                                                    random_state=42)
+
+            # temporary implementation: structure based validation set sample
             if validation_size:
-                self.Xvalid, self.Xtest, self.yvalid, self.ytest =  train_test_split(self.Xtmp,
-                                                                                     self.ytmp, 
-                                                                   train_size = validation_size, 
-                                                                                random_state=42)
+                data = np.hstack((self.Xtmp, self.ytmp))
+                col = [str(i) for i in range(data.shape[1])]
+                col[-1] = 'E'
+                df = pd.DataFrame(data, columns=col)
+                df.columns.values[-1] = 'E'
+                sample = DataSampler(df, validation_size)
+                sample.structure_based()
+                validation_indices, test_indices = sample.get_indices()
+                self.Xvalid = self.Xtmp[validation_indices]
+                self.yvalid = self.ytmp[validation_indices]
+                self.Xtest = self.Xtmp[test_indices]
+                self.ytest = self.ytmp[test_indices]
+            else:
+                raise Exception("Please specify a validation set size for Neural Network training.")
 
         # convert to Torch Tensors
         if precision == 32:
