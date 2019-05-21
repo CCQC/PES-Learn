@@ -103,17 +103,20 @@ class NeuralNetwork(Model):
         print(str(sorted(final.items())))
         self.optimal_hyperparameters  = dict(final)
         print("Optimizing learning rate...")
+        
+        if self.input_obj.keywords['nn_precision'] == 64:
+            precision = 64
         learning_rates = [1.0, 0.8, 0.6, 0.5, 0.4, 0.2]
         val_errors = []
         for i in learning_rates:
             self.optimal_hyperparameters['lr'] = i
-            test_error, val_error = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=10, es_patience=5, opt='lbfgs', tol=0.5,  decay=False, verbose=False)
+            test_error, val_error = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=10, es_patience=5, opt='lbfgs', tol=0.5,  decay=False, verbose=False, precision=precision)
             val_errors.append(val_error)
         best_lr = learning_rates[np.argsort(val_errors)[0]]
         self.optimal_hyperparameters['lr'] = best_lr
         print("Fine-tuning final model...")
-        test_error, val_error, model = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=30, opt='lbfgs', tol=0.1,  decay=False, verbose=True)
-        print("Saving final model...")
+        test_error, val_error, model = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=30, opt='lbfgs', tol=0.1,  decay=False, verbose=True,precision=precision,return_model=True)
+        print("Model optimization complete. Saving final model...")
         self.save_model(self.optimal_hyperparameters, model)
 
     def neural_architecture_search(self, trial_layers=None):
