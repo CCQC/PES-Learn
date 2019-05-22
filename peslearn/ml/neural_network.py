@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import os
 from collections import OrderedDict
+#TODO
+import copy
 
 from .model import Model
 from .data_sampler import DataSampler 
@@ -256,11 +258,11 @@ class NeuralNetwork(Model):
         Parameters
         ----------
         params : dict
-
+            Hyperparameter dictionary
         maxit : int
             Maximum number of epochs
         val_freq : int
-            Validation frequency: Comput error on validation set every 'val_freq' epochs 
+            Validation frequency: Compute error on validation set every 'val_freq' epochs 
         es_patience : int
             Early stopping patience. How many validations to do before giving up training this model according to tolerance 'tol'
         tol : float
@@ -268,7 +270,6 @@ class NeuralNetwork(Model):
             does not improve by this quantity after waiting for 'es_patience' validation cycles, halt training
         decay : bool
             If True, reduce the learning rate if validation error plateaus
-
         verbose : bool
             If true, print training progress after every validation  
         """
@@ -293,13 +294,11 @@ class NeuralNetwork(Model):
         structure = OrderedDict([('input', nn.Linear(inp_dim, l[0])),
                                  ('activ_in' , activ)])
         model = nn.Sequential(structure)
-
         for i in range(depth-1):
             model.add_module('layer' + str(i), nn.Linear(l[i], l[i+1]))
             model.add_module('activ' + str(i), activ)
         model.add_module('output', nn.Linear(l[depth-1], 1))
-
-        if precision == 64: # cast model proper precision
+        if precision == 64: # cast model to proper precision
             model = model.double() 
 
         metric = torch.nn.MSELoss()
@@ -311,8 +310,11 @@ class NeuralNetwork(Model):
         # Updated variables for early stopping 
         prev_loss = 1.0
         es_tracker = 0
+        failures = 0
         if decay:
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.8, threshold=0.05, threshold_mode='abs', min_lr=0.0001, cooldown=2, patience=10, verbose=verbose)
+            # absolute threshold: less than 0.1 wavenumber improvement over 10 epochs => decay learning rate
+            thresh = (0.1 / np.sqrt(loss_descaler)) / hartree2cm 
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, threshold=thresh, threshold_mode='abs', min_lr=0.05, cooldown=2, patience=20, verbose=verbose)
 
         for epoch in range(1,maxit):
             def closure():
@@ -343,16 +345,34 @@ class NeuralNetwork(Model):
                         else:
                             es_tracker = 0
 
-                    # Halt for exploding gradients 
+                    # Handle exploding gradients 
                     if epoch > 10:
                         if (val_error_rmse > prev_loss*10): # detect large increases in loss
-                            break
+                            if epoch > 50: # distinguish between exploding gradients at near converged models and early on exploding grads
+                                if verbose:
+                                    print("Exploding gradient detected. Resuming previous model state and decaying learning rate")
+                                model.load_state_dict(saved_model_state_dict)
+                                saved_optimizer_state_dict['param_groups'][0]['lr'] = lr*0.5
+                                optimizer.load_state_dict(saved_optimizer_state_dict)
+                                failures += 1   # if 
+                                if failures > 2: 
+                                    break
+                                else:
+                                    continue
+                            else:
+                                break
                         if val_error_rmse != val_error_rmse: # detect NaN 
                             break
                         if ((prev_loss < 1.0) and (precision == 32)):  # if 32 bit precision and model is giving very high accuracy, kill so the accuracy does not go beyond 32 bit precision
                             break
-                        
                     prev_loss = val_error_rmse * 1.0  # save previous loss to track improvement
+
+            # Periodically save model state so we can reset under instability 
+            if epoch % 50 == 0:
+                saved_model_state_dict = copy.deepcopy(model.state_dict())
+                saved_optimizer_state_dict = copy.deepcopy(optimizer.state_dict())
+            
+                        
 
         with torch.no_grad():
             test_pred = model(self.Xtest)
