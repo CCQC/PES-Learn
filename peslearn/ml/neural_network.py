@@ -110,6 +110,10 @@ class NeuralNetwork(Model):
         
         if self.input_obj.keywords['nn_precision'] == 64:
             precision = 64
+        elif self.input_obj.keywords['nn_precision'] == 32:
+            precision = 32
+        else: 
+            precision = 32
         learning_rates = [1.0, 0.8, 0.6, 0.5, 0.4, 0.2]
         val_errors = []
         for i in learning_rates:
