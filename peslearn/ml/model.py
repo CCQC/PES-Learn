@@ -118,10 +118,13 @@ class Model(ABC):
             try:
                 data = pd.read_csv(path)
             except:   
-                raise Exception("Could not read dataset. Check to be sure the path is correct, and it is properly",
-                                "formatted. Can either be 1. A csv-style file with the first line being a list of",
-                                "arbitrary geometry labels with last column labeled 'E', e.g.  r1,r2,r3,...,E or 2.",
-                                "A single energy value on its own line followed by a standard cartesian coordinate block.")
+                try:
+                    data = pd.read_csv(path, sep=None)
+                except:
+                    raise Exception("Could not read dataset. Check to be sure the path is correct, and it is properly",
+                                    "formatted. Can either be 1. A csv-style file with the first line being a list of",
+                                    "arbitrary geometry labels with last column labeled 'E', e.g.  r1,r2,r3,...,E or 2.",
+                                    "A single energy value on its own line followed by a standard cartesian coordinate block.")
         return data
 
     @abstractmethod
