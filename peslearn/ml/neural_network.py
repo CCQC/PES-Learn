@@ -352,7 +352,7 @@ class NeuralNetwork(Model):
                     # Handle exploding gradients 
                     if epoch > 10:
                         if (val_error_rmse > prev_loss*10): # detect large increases in loss
-                            if epoch > 50: # distinguish between exploding gradients at near converged models and early on exploding grads
+                            if epoch > 60: # distinguish between exploding gradients at near converged models and early on exploding grads
                                 if verbose:
                                     print("Exploding gradient detected. Resuming previous model state and decaying learning rate")
                                 model.load_state_dict(saved_model_state_dict)
