@@ -242,13 +242,8 @@ class NeuralNetwork(Model):
         else:
             raise Exception("Invalid option for 'precision'")
 
-    def get_optimizer(self, opt_type, mdata, lr=None): 
-        if lr:
-            rate = lr
-        elif opt_type == 'lbfgs':
-            rate = 0.5 #TODO 0.5
-        else: 
-            rate = 0.1
+    def get_optimizer(self, opt_type, mdata, lr=0.1): 
+        rate = lr
         if opt_type == 'lbfgs':
             #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-5, tolerance_change=1e-9, history_size=100) # Defaults
             #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=100, max_eval=None, tolerance_grad=1e-10, tolerance_change=1e-14, history_size=200)
@@ -307,9 +302,12 @@ class NeuralNetwork(Model):
 
         metric = torch.nn.MSELoss()
         # Define optimizer
-        lr = None 
         if 'lr' in params:
             lr = params['lr']
+        elif opt == 'lbfgs':
+            lr = 0.5
+        else:
+            lr = 0.1
         optimizer = self.get_optimizer(opt, model.parameters(), lr=lr)
         # Updated variables for early stopping 
         prev_loss = 1.0
