@@ -312,6 +312,7 @@ class NeuralNetwork(Model):
         # Define update variables for early stopping, decay, gradient explosion handling
         prev_loss = 1.0
         es_tracker = 0
+        best_val_error = None
         failures = 0
         decay_attempts = 0
         decay_start = False
@@ -330,6 +331,11 @@ class NeuralNetwork(Model):
                     tmp_pred = model(self.Xvalid) 
                     tmp_loss = metric(tmp_pred, self.yvalid)
                     val_error_rmse = np.sqrt(tmp_loss.item() * loss_descaler) * hartree2cm # loss_descaler converts MSE in scaled data domain to MSE in unscaled data domain
+                    if best_val_error:
+                        if val_error_rmse < best_val_error:
+                            best_val_error = val_error_rmse * 1.0 
+                    else:
+                        best_val_error = val_error_rmse * 1.0 
                     if verbose:
                         print("Epoch {} Validation RMSE (cm-1): {:5.2f}".format(epoch, val_error_rmse))
                     if decay_start:
@@ -338,8 +344,28 @@ class NeuralNetwork(Model):
                     # Early Stopping 
                     if epoch > 5:
                         # does validation error not improve by 'tol' cm^-1 inbetween epochs for 'es_patience' epochs in a row?
-                        if (prev_loss - val_error_rmse) < tol:
+                        """Requires significant progress, otherwise it kills. Stops plateaus"""
+                        #if (prev_loss - val_error_rmse) < tol:
+                        #if (best_val_error - val_error_rmse) < tol: #TODO experiment: cahnge early stopping criteria to track best 
+                        #if (val_error_rmse - best_val_error) > tol: #TODO experiment: cahnge early stopping criteria to track best 
+                        #if (val_error_rmse - best_val_error) > 0.0: #TODO experiment: cahnge early stopping criteria to track best 
+                        #if (val_error_rmse - best_val_error) > -tol: #TODO experiment: cahnge early stopping criteria to track best 
+                        #print(best_val_error - val_error_rmse) 
+                        # is current error worse than best error by tolerance? if so count this iteration as bad
+                        
+                        # val error and best are the same if its a new record. So the quantity is zero. If its slightly bigger than zero, the error got worse
+                        # if current - best is BELOW tol but NOT zero, then the model is stuck. Kill it!
+                        #if (val_error_rmse - best_val_error) > tol: #TODO experiment: cahnge early stopping criteria to track best 
+
+                        # if current validation error is not the best (current - best > 0) and is within tol, the model is stagnant. Bad epoch.
+                        if ((val_error_rmse - best_val_error) < tol) and ((val_error_rmse - best_val_error) > 0): 
                             es_tracker += 1
+"""
+                        # else if: current validation error is not the best (current - best > 0) and is greater than tol, the model is overfitting. Very bad epoch.
+                        elif ((val_error_rmse - best_val_error) > tol) and ((val_error_rmse - best_val_error) > 0): 
+                            es_tracker += 2
+"""
+                            #print(es_tracker, end=' ')
                             if es_tracker > es_patience:
                                 if decay:  # if decay is set to true, if early stopping criteria is triggered, begin LR scheduler and go back to previous model state and attempt LR decay.
                                     if decay_attempts < 1:
@@ -351,14 +377,14 @@ class NeuralNetwork(Model):
                                         thresh = (0.1 / np.sqrt(loss_descaler)) / hartree2cm 
                                         #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, threshold=thresh, threshold_mode='abs', min_lr=0.05, cooldown=2, patience=10, verbose=verbose)
                                         #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, threshold=thresh, threshold_mode='abs', min_lr=0.05, cooldown=2, patience=10, verbose=verbose)
-                                        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, min_lr=0.05, verbose=verbose)
+                                        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, min_lr=0.1, verbose=verbose)
                                         model.load_state_dict(saved_model_state_dict)
                                         saved_optimizer_state_dict['param_groups'][0]['lr'] = lr*0.9
                                         optimizer.load_state_dict(saved_optimizer_state_dict)
                                         # Since learning rate is decayed, override tolerance, patience, validation frequency for high-precision
-                                        tol = 0.05
-                                        es_patience = 100
-                                        val_freq = 1
+                                        #tol = 0.05
+                                        #es_patience = 100
+                                        #val_freq = 1
                                         continue
                                     else:
                                         prev_loss = val_error_rmse * 1.0
@@ -367,6 +393,7 @@ class NeuralNetwork(Model):
                                 else:
                                     prev_loss = val_error_rmse * 1.0
                                     break
+
                         else:
                             es_tracker = 0
 
