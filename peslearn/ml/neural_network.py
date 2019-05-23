@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import os
 from collections import OrderedDict
-#TODO
+import re
 import copy
 
 from .model import Model
@@ -123,7 +123,7 @@ class NeuralNetwork(Model):
         best_lr = learning_rates[np.argsort(val_errors)[0]]
         self.optimal_hyperparameters['lr'] = best_lr
         print("Fine-tuning final model...")
-        test_error, val_error, model = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=30, opt='lbfgs', tol=0.1,  decay=False, verbose=True,precision=precision,return_model=True)
+        test_error, val_error, model = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=50, opt='lbfgs', tol=0.1,  decay=False, verbose=True,precision=precision,return_model=True)
         print("Model optimization complete. Saving final model...")
         self.save_model(self.optimal_hyperparameters, model)
 
@@ -309,15 +309,13 @@ class NeuralNetwork(Model):
         else:
             lr = 0.1
         optimizer = self.get_optimizer(opt, model.parameters(), lr=lr)
-        # Updated variables for early stopping 
+        # Define update variables for early stopping, decay, gradient explosion handling
         prev_loss = 1.0
         es_tracker = 0
         failures = 0
-        if decay:
-            # absolute threshold: less than 0.1 wavenumber improvement over 10 epochs => decay learning rate
-            thresh = (0.1 / np.sqrt(loss_descaler)) / hartree2cm 
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, threshold=thresh, threshold_mode='abs', min_lr=0.05, cooldown=2, patience=20, verbose=verbose)
-
+        decay_attempts = 0
+        decay_start = False
+    
         for epoch in range(1,maxit):
             def closure():
                 optimizer.zero_grad()
@@ -334,16 +332,41 @@ class NeuralNetwork(Model):
                     val_error_rmse = np.sqrt(tmp_loss.item() * loss_descaler) * hartree2cm # loss_descaler converts MSE in scaled data domain to MSE in unscaled data domain
                     if verbose:
                         print("Epoch {} Validation RMSE (cm-1): {:5.2f}".format(epoch, val_error_rmse))
-                    if decay:
+                    if decay_start:
                         scheduler.step(val_error_rmse)
+
                     # Early Stopping 
                     if epoch > 5:
-                        # does validation error not improve by 'tol' cm^-1 for 'es_patience' epochs in a row?
+                        # does validation error not improve by 'tol' cm^-1 inbetween epochs for 'es_patience' epochs in a row?
                         if (prev_loss - val_error_rmse) < tol:
                             es_tracker += 1
                             if es_tracker > es_patience:
-                                prev_loss = val_error_rmse * 1.0
-                                break
+                                if decay:  # if decay is set to true, if early stopping criteria is triggered, begin LR scheduler and go back to previous model state and attempt LR decay.
+                                    if decay_attempts < 1:
+                                        decay_attempts += 1
+                                        es_tracker = 0
+                                        if verbose:
+                                            print("Performance plateau detected. Reverting model state and decaying learning rate.")
+                                        decay_start = True
+                                        thresh = (0.1 / np.sqrt(loss_descaler)) / hartree2cm 
+                                        #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, threshold=thresh, threshold_mode='abs', min_lr=0.05, cooldown=2, patience=10, verbose=verbose)
+                                        #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, threshold=thresh, threshold_mode='abs', min_lr=0.05, cooldown=2, patience=10, verbose=verbose)
+                                        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, min_lr=0.05, verbose=verbose)
+                                        model.load_state_dict(saved_model_state_dict)
+                                        saved_optimizer_state_dict['param_groups'][0]['lr'] = lr*0.9
+                                        optimizer.load_state_dict(saved_optimizer_state_dict)
+                                        # Since learning rate is decayed, override tolerance, patience, validation frequency for high-precision
+                                        tol = 0.05
+                                        es_patience = 100
+                                        val_freq = 1
+                                        continue
+                                    else:
+                                        prev_loss = val_error_rmse * 1.0
+                                        print('early stopping termination')
+                                        break
+                                else:
+                                    prev_loss = val_error_rmse * 1.0
+                                    break
                         else:
                             es_tracker = 0
 
