@@ -175,7 +175,7 @@ class GaussianProcess(Model):
         print("Fine-tuning final model architecture...")
         self.build_model(self.optimal_hyperparameters, nrestarts=10, maxit=1000)
         print("Final model performance (cm-1):")
-        self.vet_model(self.model)
+        self.test_error = self.vet_model(self.model)
         self.save_model(self.optimal_hyperparameters)
 
     def save_model(self, params):
