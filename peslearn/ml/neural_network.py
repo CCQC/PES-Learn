@@ -123,7 +123,7 @@ class NeuralNetwork(Model):
         best_lr = learning_rates[np.argsort(val_errors)[0]]
         self.optimal_hyperparameters['lr'] = best_lr
         print("Fine-tuning final model...")
-        test_error, val_error, model = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=50, opt='lbfgs', tol=0.1,  decay=False, verbose=True,precision=precision,return_model=True)
+        test_error, val_error, model = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=100, opt='lbfgs', tol=0.1,  decay=True, verbose=True,precision=precision,return_model=True)
         print("Model optimization complete. Saving final model...")
         self.save_model(self.optimal_hyperparameters, model)
 
@@ -343,59 +343,45 @@ class NeuralNetwork(Model):
 
                     # Early Stopping 
                     if epoch > 5:
-                        # does validation error not improve by 'tol' cm^-1 inbetween epochs for 'es_patience' epochs in a row?
-                        """Requires significant progress, otherwise it kills. Stops plateaus"""
-                        #if (prev_loss - val_error_rmse) < tol:
-                        #if (best_val_error - val_error_rmse) < tol: #TODO experiment: cahnge early stopping criteria to track best 
-                        #if (val_error_rmse - best_val_error) > tol: #TODO experiment: cahnge early stopping criteria to track best 
-                        #if (val_error_rmse - best_val_error) > 0.0: #TODO experiment: cahnge early stopping criteria to track best 
-                        #if (val_error_rmse - best_val_error) > -tol: #TODO experiment: cahnge early stopping criteria to track best 
-                        #print(best_val_error - val_error_rmse) 
-                        # is current error worse than best error by tolerance? if so count this iteration as bad
-                        
-                        # val error and best are the same if its a new record. So the quantity is zero. If its slightly bigger than zero, the error got worse
-                        # if current - best is BELOW tol but NOT zero, then the model is stuck. Kill it!
-                        #if (val_error_rmse - best_val_error) > tol: #TODO experiment: cahnge early stopping criteria to track best 
-
-                        # if current validation error is not the best (current - best > 0) and is within tol, the model is stagnant. Bad epoch.
-                        if ((val_error_rmse - best_val_error) < tol) and ((val_error_rmse - best_val_error) > 0): 
+                        # if current validation error is not the best (current - best > 0) and is within tol of previous error, the model is stagnant. 
+                        if ((val_error_rmse - prev_loss) < tol) and ((val_error_rmse - best_val_error) > 0): 
                             es_tracker += 1
-"""
-                        # else if: current validation error is not the best (current - best > 0) and is greater than tol, the model is overfitting. Very bad epoch.
+                        # else if: current validation error is not the best (current - best > 0) and is greater than the best by tol, the model is overfitting. Bad epoch.
                         elif ((val_error_rmse - best_val_error) > tol) and ((val_error_rmse - best_val_error) > 0): 
-                            es_tracker += 2
-"""
-                            #print(es_tracker, end=' ')
-                            if es_tracker > es_patience:
-                                if decay:  # if decay is set to true, if early stopping criteria is triggered, begin LR scheduler and go back to previous model state and attempt LR decay.
-                                    if decay_attempts < 1:
-                                        decay_attempts += 1
-                                        es_tracker = 0
-                                        if verbose:
-                                            print("Performance plateau detected. Reverting model state and decaying learning rate.")
-                                        decay_start = True
-                                        thresh = (0.1 / np.sqrt(loss_descaler)) / hartree2cm 
-                                        #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, threshold=thresh, threshold_mode='abs', min_lr=0.05, cooldown=2, patience=10, verbose=verbose)
-                                        #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, threshold=thresh, threshold_mode='abs', min_lr=0.05, cooldown=2, patience=10, verbose=verbose)
-                                        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, min_lr=0.1, verbose=verbose)
-                                        model.load_state_dict(saved_model_state_dict)
-                                        saved_optimizer_state_dict['param_groups'][0]['lr'] = lr*0.9
-                                        optimizer.load_state_dict(saved_optimizer_state_dict)
-                                        # Since learning rate is decayed, override tolerance, patience, validation frequency for high-precision
-                                        #tol = 0.05
-                                        #es_patience = 100
-                                        #val_freq = 1
-                                        continue
-                                    else:
-                                        prev_loss = val_error_rmse * 1.0
-                                        print('early stopping termination')
-                                        break
-                                else:
-                                    prev_loss = val_error_rmse * 1.0
-                                    break
-
+                            es_tracker += 1
+                        # else: model set a new record validation error. Reset early stopping tracker
                         else:
                             es_tracker = 0
+                        #TODO this framework does not detect oscillatory behavior about 'tol', though this has not been observed to occur in any case 
+                        # Check status of early stopping tracker. First try decaying to see if stagnation can be resolved, if not then terminate training
+                        if es_tracker > es_patience:
+                            if decay:  # if decay is set to true, if early stopping criteria is triggered, begin LR scheduler and go back to previous model state and attempt LR decay.
+                                if decay_attempts < 1:
+                                    decay_attempts += 1
+                                    es_tracker = 0
+                                    if verbose:
+                                        print("Performance plateau detected. Reverting model state and decaying learning rate.")
+                                    decay_start = True
+                                    thresh = (0.1 / np.sqrt(loss_descaler)) / hartree2cm  # threshold is 0.1 wavenumbers
+                                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, threshold=thresh, threshold_mode='abs', min_lr=0.05, cooldown=2, patience=10, verbose=verbose)
+                                    model.load_state_dict(saved_model_state_dict)
+                                    saved_optimizer_state_dict['param_groups'][0]['lr'] = lr*0.9
+                                    optimizer.load_state_dict(saved_optimizer_state_dict)
+                                    # Since learning rate is decayed, override tolerance, patience, validation frequency for high-precision
+                                    #tol = 0.05
+                                    #es_patience = 100
+                                    #val_freq = 1
+                                    continue
+                                else:
+                                    prev_loss = val_error_rmse * 1.0
+                                    if verbose:
+                                        print('Early stopping termination')
+                                    break
+                            else:
+                                prev_loss = val_error_rmse * 1.0
+                                if verbose:
+                                    print('Early stopping termination')
+                                break
 
                     # Handle exploding gradients 
                     if epoch > 10:
@@ -419,13 +405,11 @@ class NeuralNetwork(Model):
                             break
                     prev_loss = val_error_rmse * 1.0  # save previous loss to track improvement
 
-            # Periodically save model state so we can reset under instability 
+            # Periodically save model state so we can reset under instability/overfitting/performance plateau
             if epoch % 50 == 0:
                 saved_model_state_dict = copy.deepcopy(model.state_dict())
                 saved_optimizer_state_dict = copy.deepcopy(optimizer.state_dict())
             
-                        
-
         with torch.no_grad():
             test_pred = model(self.Xtest)
             test_loss = metric(test_pred, self.ytest)
@@ -437,9 +421,6 @@ class NeuralNetwork(Model):
             full_loss = metric(full_pred, self.y)
             full_error_rmse = np.sqrt(full_loss.item() * loss_descaler) * hartree2cm
         print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f} Full dataset RMSE (cm-1): {:5.2f}".format(test_error_rmse, val_error_rmse, full_error_rmse))
-        # these numbers can disagree if float precision is 32 (sklearn-backed compute_error function is float64)
-        #e = self.compute_error(self.ytest, test_pred.numpy(), self.yscaler)  
-        #print(e * hartree2cm)
         if return_model:
             return test_error_rmse, val_error_rmse, model
         else:
@@ -507,7 +488,7 @@ class NeuralNetwork(Model):
             self.dataset.iloc[self.test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
     
         self.dataset.to_csv('PES.dat', sep=',',index=False,float_format='%12.12f')
-        #write convenience function
+        #TODO write convenience function
         #with open('compute_energy.py', 'w+') as f:
         #    print(self.write_convenience_function(), file=f)
         #print model performance
