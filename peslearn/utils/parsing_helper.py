@@ -60,7 +60,7 @@ def parse(input_obj, mol):
         data['G'] = ''
 
     # parse output files 
-    os.chdir("./PES_data")
+    os.chdir("./" + input_obj.keywords['pes_dir_name'])
     dirs = [i for i in os.listdir(".") if os.path.isdir(i) ]
     dirs = sorted(dirs, key=lambda x: int(x))
     for d in dirs: 

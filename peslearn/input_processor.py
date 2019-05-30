@@ -47,6 +47,7 @@ class InputProcessor(object):
                            'ml_model': 'gp',                 # 'gp', 'nn'
                            'mode': None,                     # 'generate', 'parse', 'learn', or shorthand: 'g', 'p', 'l'
                            'pes_name': 'PES.dat',            # any name
+                           'pes_dir_name': 'PES_data',       # any name
                            'pes_redundancy': 'false',        # 'true'
                            'pes_format': 'interatomics',     # 'zmat'
                            'remove_redundancy': 'true',      # 'false'

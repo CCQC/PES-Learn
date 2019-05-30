@@ -226,9 +226,10 @@ class ConfigurationSpace(object):
         elif self.input_obj.keywords['remove_redundancy'].lower().strip() == 'false':
             df = self.all_geometries
           
-        if not os.path.exists("./PES_data"):
-            os.mkdir("./PES_data")
-        os.chdir("./PES_data")
+        pes_dir_name = self.input_obj.keywords['pes_dir_name']
+        if not os.path.exists("./" +  pes_dir_name):
+            os.mkdir("./" +  pes_dir_name)
+        os.chdir("./" +  pes_dir_name)
 
         for i, cart_array in enumerate(df['cartesians'], start=1):
             # build xyz input file and put in directory
@@ -259,7 +260,7 @@ class ConfigurationSpace(object):
                 f.write(xyz)
 
         os.chdir("../")
-        print("Your PES inputs are now generated. Run the jobs in the PES_data directory and then parse.")
+        print("Your PES inputs are now generated. Run the jobs in the {} directory and then parse.".format(pes_dir_name))
         
 
     def old_remove_redundancies(self):
