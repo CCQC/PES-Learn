@@ -86,5 +86,5 @@ def parse(input_obj, mol):
 
     if input_obj.keywords['sort_pes'] == 'true': 
         data = data.sort_values("E")
-    data.to_csv("PES.dat", sep=',', index=False, float_format='%12.12f')
-    print("Parsed data has been written to PES.dat")
+    data.to_csv(input_obj.keywords['pes_name'], sep=',', index=False, float_format='%12.12f')
+    print("Parsed data has been written to {}".format(input_obj.keywords['pes_name'])
