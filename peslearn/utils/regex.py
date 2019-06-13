@@ -2,18 +2,6 @@
 Contains variables and functions for simplifying regex code
 """
 
-# save some common regex features as human readable variables
-letter           = r'[a-zA-Z]'
-double           = r'-?\d+\.\d+'
-integer          = r'\d+'
-whitespace       = r'\s'
-endline          = r'\n'
-# zero or more whitespace (ws) followed by the regex feature 
-ws_double  = r'[ \t]*' + double 
-ws_endline = r'[ \t]*' + endline 
-ws_int     = r'[ \t]*' + integer 
-
-
 def maybe(string):
     """
     A regex wrapper for an arbitrary string.
@@ -35,6 +23,17 @@ def two_or_more(string):
     """
     return r'(?:{:s}){{2,}}'.format(string)
 
+# save some common regex features as human readable variables
+letter           = r'[a-zA-Z]'
+# floating point number with optional scientific notation
+double           = r'-?\d+\.\d+' + maybe('[E,e]' + '-?\d+')
+integer          = r'\d+'
+whitespace       = r'\s'
+endline          = r'\n'
+# zero or more whitespace (ws) followed by the regex feature 
+ws_double  = r'[ \t]*' + double 
+ws_endline = r'[ \t]*' + endline 
+ws_int     = r'[ \t]*' + integer 
 
 # a regex identifier for an xyz style geometry line, atom_label  x_coord   y_coord  z_coord
 xyz_line_regex = r'[ \t]*' + letter + maybe(letter) + 3 * ws_double + ws_endline
