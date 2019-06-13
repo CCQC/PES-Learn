@@ -7,7 +7,7 @@ import pandas as pd
 import re
 import os
 from itertools import combinations
-from .regex import xyz_block_regex
+from .regex import xyz_block_regex,maybe
 import collections
 
 def unit_vector(coords1, coords2):
@@ -68,16 +68,18 @@ def load_cartesian_dataset(xyz_path):
     Reorganizes atoms into standard order (most common elements first, alphabetical tiebreaker)
     """
     xyz_re = xyz_block_regex
-
     with open(xyz_path) as f:
         data = f.read()
-    # extract energies
-    energies = re.findall("\n\s*(-?\d+\.\d+)\s*\n", data)
-
-    # extract geometries and clean up format
-    geoms = re.findall(xyz_re, data)
-    for i in range(len(geoms)):
-        geoms[i] = list(filter(None, geoms[i].split('\n')))
+    # extract energy,geometry pairs
+    data_regex = "\s*-?\d+\.\d+\s*\n" + xyz_re
+    datablock = re.findall(data_regex, data)
+    for i in range(len(datablock)):
+        datablock[i] = list(filter(None, datablock[i].split('\n')))
+    energies = [] 
+    for datapoint in datablock:
+        e = datapoint.pop(0)
+        energies.append(e)
+    geoms = datablock
     # find atom labels
     sample = geoms[0]
     atom_labels = [re.findall('\w+', s)[0] for s in sample]
