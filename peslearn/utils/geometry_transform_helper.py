@@ -67,17 +67,29 @@ def load_cartesian_dataset(xyz_path):
     Loads a cartesian dataset with energies on their own line and with standard cartesian coordinates.
     Reorganizes atoms into standard order (most common elements first, alphabetical tiebreaker)
     """
+    print("Loading Cartesian dataset: {}".format(xyz_path))
     xyz_re = xyz_block_regex
     with open(xyz_path) as f:
-        data = f.read()
+        data = ''
+        # remove trailing whitespace
+        for line in f:
+            line = line.rstrip()
+            data += line + '\n'
     # extract energy,geometry pairs
-    data_regex = "\s*-?\d+\.\d+\s*\n" + xyz_re
+    #data_regex = "\s*-?\d+\.\d+\s*\n" + xyz_re
+    #data_regex = maybe("\d\d?\n") + "\s*-?\d+\.\d+\s*\n" + xyz_re
+    data_regex = maybe("\d+\n") + "\s*-?\d+\.\d+\s*\n" + xyz_re
     datablock = re.findall(data_regex, data)
     for i in range(len(datablock)):
         datablock[i] = list(filter(None, datablock[i].split('\n')))
     energies = [] 
     for datapoint in datablock:
-        e = datapoint.pop(0)
+        # check if atom numbers are used, energy line
+        if datapoint[0].isdigit():
+            a = datapoint.pop(0)
+            e = datapoint.pop(0)
+        else:
+            e = datapoint.pop(0)
         energies.append(e)
     geoms = datablock
     # find atom labels
