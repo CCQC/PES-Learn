@@ -65,13 +65,3 @@ def cart1d_to_distances1d(vec):
     distance_vector = distance_matrix[np.tril_indices(len(distance_matrix),-1)]
     return distance_vector
 
-
-#geom_vecs = [[1.559, 0.9375, 0.9375], [1.48753, 0.9375, 0.9375]]
-#result = pes(geom_vecs, cartesian=False)
-#print(result)
-#
-#cart_vecs = [[0.0000000000,0.0000000000,0.9375000000, 0.0000000000, 0.8661370617, -0.3587657178, 0.0000000000, 0.0000000000, 0.0000000000],
-#             [0.0000000000,0.0000000000, 0.9375000000, 0.0000000000, 0.9055554621, -0.2426428548, 0.0000000000, 0.0000000000, 0.0000000000]]
-#result = pes(cart_vecs, cartesian=True)
-#print(result)
-
