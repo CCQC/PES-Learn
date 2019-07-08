@@ -22,6 +22,9 @@ class DataSampler(object):
             self.ntrain = ntrain
             self.dataset = self.full_dataset
             
+        # ensure dataset is float
+        self.dataset = self.dataset.astype('float64')
+        
         self.dataset_size = self.dataset.shape[0]
         # currently needs to be pandas dataframe 
         #if "E" in dataset.columns:
