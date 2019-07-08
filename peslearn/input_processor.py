@@ -34,7 +34,7 @@ class InputProcessor(object):
         """
         # keywords which have values that are strings, not other datatypes
         regex_keywords = {'energy_regex': None, 'gradient_header': None, 'gradient_footer': None, 
-                          'gradient_line': None, 'input_name': 'input.dat'}
+                          'gradient_line': None, 'input_name': 'input.dat', 'pes_dir_name': 'PES_data', 'pes_name': 'PES.dat'}
         string_keywords = {'energy': None,                   # parse energies with 'cclib', 'regex'
                            'energy_regex': None,             # a regular expression string, surround by '' or ""
                            'energy_cclib': None,             # a cclib energy option. 'scfenergies', 'mpenergies', 'ccenergies'
@@ -59,7 +59,7 @@ class InputProcessor(object):
                            'sampling': 'structure_based',    # 'structure_based','sobol', 'smart_random', 'random', 'energy_ordered'
                            'n_low_energy_train': 0,          # any int
                            'training_points': 50,            # any int
-                           'validation_points': 10,          # any int
+                           'validation_points': None,          # any int
                            'hp_maxit': 20,                   # any int
                            'rseed': None,                    # any int
                            'gp_ard': 'true',                 # 'true', 'false'. 'opt' treats as hyperparameter

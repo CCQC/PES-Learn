@@ -9,7 +9,7 @@ import copy
 
 from .model import Model
 from .data_sampler import DataSampler 
-from ..constants import hartree2cm, package_directory
+from ..constants import hartree2cm, package_directory, nn_convenience_function
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
 from ..utils.printing_helper import hyperopt_complete
 from sklearn.model_selection import train_test_split   
@@ -30,6 +30,10 @@ class NeuralNetwork(Model):
         
         if self.input_obj.keywords['validation_points']:
             self.nvalid = self.input_obj.keywords['validation_points']
+            if (self.nvalid + self.ntrain + 1) > self.n_datapoints:
+                raise Exception("Error: User-specified training set size and validation set size exceeds the size of the dataset.")
+        else:
+            self.nvalid = round((self.ntrain - self.n_datapoints / 2))
         
         if self.pip:
             if molecule_type:
@@ -79,7 +83,9 @@ class NeuralNetwork(Model):
             self.set_hyperparameter('pip', hp.choice('pip', [{'pip': False}]))
 
     def optimize_model(self):
-        print("Training with {} points (Full dataset contains {} points).".format(self.ntrain, self.n_datapoints))
+        if not self.input_obj.keywords['validation_points']:
+            print("Number of validation points not specified. Splitting test set in half --> 50% test, 50% validation")
+        print("Training with {} points. Validating with {} points. Full dataset contains {} points.".format(self.ntrain, self.nvalid, self.n_datapoints))
         print("Using {} training set point sampling.".format(self.sampler))
         print("Errors are root-mean-square error in wavenumbers (cm-1)")
         print("\nPerforming neural architecture search...\n")
@@ -123,9 +129,10 @@ class NeuralNetwork(Model):
         best_lr = learning_rates[np.argsort(val_errors)[0]]
         self.optimal_hyperparameters['lr'] = best_lr
         print("Fine-tuning final model...")
-        test_error, val_error, model = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=100, opt='lbfgs', tol=0.1,  decay=True, verbose=True,precision=precision,return_model=True)
+        model, test_error, val_error, full_error = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=100, opt='lbfgs', tol=0.1,  decay=True, verbose=True,precision=precision,return_model=True)
+        performance = [test_error, val_error, full_error]
         print("Model optimization complete. Saving final model...")
-        self.save_model(self.optimal_hyperparameters, model)
+        self.save_model(self.optimal_hyperparameters, model, performance)
 
     def neural_architecture_search(self, trial_layers=None):
         """
@@ -422,7 +429,7 @@ class NeuralNetwork(Model):
             full_error_rmse = np.sqrt(full_loss.item() * loss_descaler) * hartree2cm
         print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f} Full dataset RMSE (cm-1): {:5.2f}".format(test_error_rmse, val_error_rmse, full_error_rmse))
         if return_model:
-            return test_error_rmse, val_error_rmse, model
+            return model, test_error_rmse, val_error_rmse, full_error_rmse 
         else:
             return test_error_rmse, val_error_rmse
 
@@ -468,7 +475,7 @@ class NeuralNetwork(Model):
             yscaler = None
         return X, y, Xscaler, yscaler
 
-    def save_model(self, params, model):
+    def save_model(self, params, model, performance):
         print("Saving ML model data...") 
         model_path = "model1_data"
         while os.path.isdir(model_path):
@@ -477,8 +484,13 @@ class NeuralNetwork(Model):
         os.mkdir(model_path)
         os.chdir(model_path)
         torch.save(model, 'model.pt')
+        
         with open('hyperparameters', 'w') as f:
             print(params, file=f)
+
+        test, valid, full = performance
+        with open('performance', 'w') as f:
+            print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f} Full dataset RMSE (cm-1): {:5.2f}".format(test, valid, full), file=f)
         
         if self.sampler == 'user_supplied':
             self.traindata.to_csv('train_set',sep=',',index=False,float_format='%12.12f')
@@ -488,13 +500,8 @@ class NeuralNetwork(Model):
             self.dataset.iloc[self.test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
     
         self.dataset.to_csv('PES.dat', sep=',',index=False,float_format='%12.12f')
-        #TODO write convenience function
-        #with open('compute_energy.py', 'w+') as f:
-        #    print(self.write_convenience_function(), file=f)
-        #print model performance
-        #sys.stdout = open('performance', 'w')  
-        #self.vet_model(self.model)
-        #sys.stdout = sys.__stdout__
+        with open('compute_energy.py', 'w+') as f:
+            print(self.write_convenience_function(), file=f)
         os.chdir("../")
 
     def transform_new_X(self, newX, params, Xscaler=None):
@@ -529,6 +536,19 @@ class NeuralNetwork(Model):
             newy = yscaler.inverse_transform(newy)
         return newy
 
+    def write_convenience_function(self):
+        string = "from peslearn.ml import NeuralNetwork\nfrom peslearn import InputProcessor\nimport torch\nimport numpy as np\nfrom itertools import combinations\n\n"
+        if self.pip:
+            string += "nn = NeuralNetwork('PES.dat', InputProcessor(''), molecule_type='{}')\n".format(self.molecule_type)
+        else:
+            string += "nn = NeuralNetwork('PES.dat', InputProcessor(''))\n"
+        with open('hyperparameters', 'r') as f:
+            hyperparameters = f.read()
+        string += "params = {}\n".format(hyperparameters)
+        string += "X, y, Xscaler, yscaler =  nn.preprocess(params, nn.raw_X, nn.raw_y)\n"
+        string += "model = torch.load('model.pt')\n"
+        string += nn_convenience_function
+        return string
 
 
 
