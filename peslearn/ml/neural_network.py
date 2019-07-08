@@ -202,13 +202,21 @@ class NeuralNetwork(Model):
         else:
             self.Xtr = self.X[self.train_indices]
             self.ytr = self.y[self.train_indices]
-            self.Xtmp = self.X[self.test_indices]
-            self.ytmp = self.y[self.test_indices]
+            #TODO: this is splitting validation data in the same way at every model build, not necessary.
+            self.valid_indices, self.new_test_indices = train_test_split(self.test_indices, train_size = validation_size, random_state=42)
             if validation_size:
-                self.Xvalid, self.Xtest, self.yvalid, self.ytest =  train_test_split(self.Xtmp,
-                                                                                     self.ytmp, 
-                                                                   train_size = validation_size, 
-                                                                                random_state=42)
+                self.Xvalid = self.X[self.valid_indices]             
+                self.yvalid = self.y[self.valid_indices]
+                self.Xtest = self.X[self.new_test_indices]
+                self.ytest = self.y[self.new_test_indices]
+
+            #self.Xtmp = self.X[self.test_indices]
+            #self.ytmp = self.y[self.test_indices]
+            #if validation_size:
+            #    self.Xvalid, self.Xtest, self.yvalid, self.ytest =  train_test_split(self.Xtmp,
+            #                                                                         self.ytmp, 
+            #                                                       train_size = validation_size, 
+            #                                                                    random_state=42)
 
             ## temporary implementation: structure based validation set sample
             #if validation_size:
@@ -494,10 +502,12 @@ class NeuralNetwork(Model):
         
         if self.sampler == 'user_supplied':
             self.traindata.to_csv('train_set',sep=',',index=False,float_format='%12.12f')
+            self.validdata.to_csv('validation_set',sep=',',index=False,float_format='%12.12f')
             self.testdata.to_csv('test_set', sep=',', index=False, float_format='%12.12f')
         else:
             self.dataset.iloc[self.train_indices].to_csv('train_set',sep=',',index=False,float_format='%12.12f')
-            self.dataset.iloc[self.test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
+            self.dataset.iloc[self.valid_indices].to_csv('validation_set', sep=',', index=False, float_format='%12.12f')
+            self.dataset.iloc[self.new_test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
     
         self.dataset.to_csv('PES.dat', sep=',',index=False,float_format='%12.12f')
         with open('compute_energy.py', 'w+') as f:
