@@ -1,0 +1,24 @@
+O 
+H 1 r1
+H 1 r2 2 a2 
+
+r1 = [0.85,1.20, 8]
+r2 = [0.85,1.20, 8]
+a2 = [90.0,120.0, 8]
+
+energy = 'regex'
+use_pips = true
+energy_regex = 'Total Energy\s+=\s+(-\d+\.\d+)'
+hp_maxit = 15
+training_points = 50
+grid_reduction = 100
+sampling = smart_random
+#ml_model = gp
+
+# If you want to use neural network:
+# ml_model = nn
+# validation_points = 15  
+
+# Manually specify NN architecture search hidden layer structures (give at least 3), rather than use defaults:
+# nas_trial_layers =   [[32], [16], [32, 32]]
+

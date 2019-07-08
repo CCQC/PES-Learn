@@ -13,8 +13,8 @@ input_string = ("""
                use_pips = true
                energy_regex = 'Total Energy\s+=\s+(-\d+\.\d+)'
                hp_maxit = 15
-               training_points = 40
-               sampling = smart_random
+               training_points = 50
+               sampling = structure_based
                """)
 
 input_obj = peslearn.InputProcessor(input_string)
@@ -34,7 +34,6 @@ for d in dirs:
         os.system("psi4 input.dat")
     os.chdir("../")
 os.chdir("../")
-
 
 print('\nParsing ab initio data...')
 peslearn.utils.parsing_helper.parse(input_obj, mol)

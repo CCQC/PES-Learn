@@ -1,0 +1,1 @@
+{'layers': (16,), 'morse_transform': {'morse': False}, 'pip': {'degree_reduction': True, 'pip': True}, 'scale_X': {'activation': 'tanh', 'scale_X': 'mm11'}, 'scale_y': 'mm11', 'lr': 0.5}

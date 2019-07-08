@@ -1,0 +1,1 @@
+{'morse_transform': {'morse': True, 'morse_alpha': 1.6}, 'pip': {'degree_reduction': False, 'pip': True}, 'scale_X': 'mm01', 'scale_y': 'std'}
