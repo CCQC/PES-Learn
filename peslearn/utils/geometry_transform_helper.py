@@ -105,11 +105,11 @@ def load_cartesian_dataset(xyz_path):
             sorted_atom_labels.append(tup[0])
     # find the permutation vector which maps unsorted atom labels to standard order atom labels
     p = []
-    for i,j in enumerate(atom_labels):
-        for k,l in enumerate(sorted_atom_labels):
+    for i,j in enumerate(sorted_atom_labels):
+        for k,l in enumerate(atom_labels):
             if j == l:
                 p.append(k)
-                sorted_atom_labels[k] = 'done'
+                atom_labels[k] = 'done'
                 continue
     # permute all xyz geometries to standard order 
     for g in range(len(geoms)):
