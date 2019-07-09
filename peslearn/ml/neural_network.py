@@ -33,7 +33,7 @@ class NeuralNetwork(Model):
             if (self.nvalid + self.ntrain + 1) > self.n_datapoints:
                 raise Exception("Error: User-specified training set size and validation set size exceeds the size of the dataset.")
         else:
-            self.nvalid = round((self.ntrain - self.n_datapoints / 2))
+            self.nvalid = round((self.n_datapoints - self.ntrain)  / 2)
         
         if self.pip:
             if molecule_type:
