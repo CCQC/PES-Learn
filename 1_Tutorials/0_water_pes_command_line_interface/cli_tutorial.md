@@ -994,7 +994,7 @@ The neural networks can be used in the exact same way as the GP models outlined 
 
 
 ### 3.5 Analyzing model performance using Python
-One can use Python to further analyze the performance of a PES-Learn ML model.  Here's a simple example of how to evaluate the error of a PES-Learn ML model as a function of energy relative to the global minimum. 
+One can use Python to further analyze the performance of a PES-Learn ML model.  Here's a simple example of how to evaluate the error of a PES-Learn ML model as a function of energy relative to the global minimum.  The following python file `analyze.py` must be in the same directory as the auto-generated `compute_energy.py` file, the dataset file `PES.dat`, and the saved ML model file `model.json` or `model.pt` depending on if it is a GP or NN model. 
 
 ```python
 from compute_energy import pes
