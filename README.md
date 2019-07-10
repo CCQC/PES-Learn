@@ -4,7 +4,7 @@
 
 PES-Learn is a Python library designed to fit system-specific Born-Oppenheimer potential energy surfaces using modern machine learning models. PES-Learn assists in generating datasets, and features Gaussian process and neural network model optimization routines. The goal is to provide high-performance models for a given dataset without requiring user expertise in machine learning.
 
-This project is young and under active development. It is recommended to take a look at the [Tutorial](1_Tutorials) and [FAQ](2_FAQ) pages before using PES-Learn for research purposes. More documentation will be added periodically. Questions and comments are encouraged; please consider submitting an issue. 
+This project is young and under active development. It is recommended to take a look at the [Tutorials](1_Tutorials), the [FAQ page](2_FAQ) page, and the list of [keyword options](3_Keywords) before using PES-Learn for research purposes. More documentation will be added periodically. Questions and comments are encouraged; please consider submitting an issue. 
 
 ## Features
 
@@ -30,7 +30,8 @@ This project is young and under active development. It is recommended to take a 
 
 
 ## Installation Instructions 
-PES-Learn has been tested and developed on Linux, Mac, and Windows 10 through the Windows Subsystem for Linux. To install using `pip`:  Clone the repository:  
+PES-Learn has been tested and developed on Linux, Mac, and Windows 10 through the Windows Subsystem for Linux. To install using `pip`:   
+Clone the repository:    
 `git clone https://github.com/adabbott/PES-Learn.git`  
 Change into top-level directory:  
 `cd PES-Learn`  
@@ -46,10 +47,12 @@ After installing [Anaconda for Python3](https://www.anaconda.com/distribution/),
 The required dependencies can be installed in one line:  
 ```conda install -c conda-forge -c pytorch -c omnia gpy pytorch scikit-learn pandas hyperopt cclib```   
 Then install the PES-Learn package:  
-`git clone https://github.com/adabbott/PES-Learn.git` 
-`python setup.py install`  
+`git clone https://github.com/adabbott/PES-Learn.git`   
+`python setup.py install`   
+`pip install -e .`  
 
-To update PES-Learn later on, run `git pull` while in the top-level directory `PES-Learn`.
+
+To update PES-Learn in the future, run `git pull` while in the top-level directory `PES-Learn`.
 
 To run the test suite, you need pytest: `pip install pytest-cov` 
 To run tests, in the top-level directory called `PES-Learn`, run: `py.test -v tests/`
