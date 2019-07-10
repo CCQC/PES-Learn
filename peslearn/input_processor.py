@@ -34,7 +34,7 @@ class InputProcessor(object):
         """
         # keywords which have values that are strings, not other datatypes
         regex_keywords = {'energy_regex': None, 'gradient_header': None, 'gradient_footer': None, 
-                          'gradient_line': None, 'input_name': 'input.dat', 'pes_dir_name': 'PES_data', 'pes_name': 'PES.dat'}
+                          'gradient_line': None, 'input_name': 'input.dat', 'output_name': 'output.dat', 'pes_dir_name': 'PES_data', 'pes_name': 'PES.dat'}
         string_keywords = {'energy': None,                   # parse energies with 'cclib', 'regex'
                            'energy_regex': None,             # a regular expression string, surround by '' or ""
                            'energy_cclib': None,             # a cclib energy option. 'scfenergies', 'mpenergies', 'ccenergies'
