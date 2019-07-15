@@ -69,7 +69,26 @@ class ConfigurationSpace(object):
         print("{} internal coordinate displacements generated in {} seconds".format(grid.shape[0], round((timeit.default_timer() - start),5)))
         return disps
 
+
     def generate_geometries(self):
+        start = timeit.default_timer()
+        print("Total displacements: {}".format(self.n_init_disps))
+        print("Number of interatomic distances: {}".format(self.n_interatomics))
+        #TODO handle failed geoms
+        #df = pd.DataFrame(index=np.arange(0, len(self.disps)), columns=self.bond_columns)
+        df = pd.DataFrame(index=np.arange(0, len(self.disps)), columns=['cartesians','internals'])
+        disps = np.array([list(i.values()) for i in self.disps])
+        cartesians = gth.vectorized_zmat2xyz(disps, self.mol.zmat_indices, self.mol.std_order_permutation_vector)
+        #TODO REMOVE
+        #print(np.isnan(cartesians))
+        #cartesians = cartesians[~np.isnan(cartesians).any(axis=(1,2))]
+        self.new_cartesians = cartesians
+        #df['cartesians'] = [cartesians[i,:,:] for i in range(cartesians.shape[0])]
+        #df['internals'] = self.disps 
+         
+        print("Geometry grid generated in {} seconds".format(round((timeit.default_timer() - start),2)))
+
+    def old_generate_geometries(self):
         start = timeit.default_timer()
         print("Total displacements: {}".format(self.n_init_disps))
         print("Number of interatomic distances: {}".format(self.n_interatomics))
@@ -101,6 +120,9 @@ class ConfigurationSpace(object):
         df['internals'] = internals 
         self.all_geometries = df
         print("Geometry grid generated in {} seconds".format(round((timeit.default_timer() - start),2)))
+        #TODO REMOVE
+        self.old_cartesians = np.array(cartesians)
+
 
     def remove_redundancies(self):
         """

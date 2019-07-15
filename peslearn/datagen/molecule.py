@@ -88,6 +88,9 @@ class Molecule(object):
         zmat_array = [line.split() for line in zmat_string.splitlines() if line]
         self.n_atoms = len(zmat_array)
 
+        tmp = list(np.concatenate([i[1::2] for i in zmat_array]))
+        self.zmat_indices = np.array([int(i) for i in tmp])
+
         # find geometry parameter labels 
         # atom labels will always be at index 0, 1, 3, 6, 6++4... 
         # and geometry parameters are all other matches
@@ -136,6 +139,18 @@ class Molecule(object):
 
         self.std_order_atom_labels = [atom.label for atom in self.std_order_atoms]
 
+        # Find permutation vector to permute given atom order to standard order
+        std_order_permutation_vector = []
+        tmp_atom_labels = self.real_atom_labels.copy()
+        for i,j in enumerate(self.std_order_atom_labels):
+            for k,l in enumerate(tmp_atom_labels):
+                if j == l:
+                    std_order_permutation_vector.append(k)
+                    tmp_atom_labels[k] = 'done'
+                    continue
+        self.std_order_permutation_vector = np.array(std_order_permutation_vector)
+
+
         l = len(self.std_order_atom_labels)
         tmp = np.empty((l,l),dtype=object)
         for i in range(l):
@@ -144,10 +159,9 @@ class Molecule(object):
         tmp2 =  tmp[np.tril_indices(len(tmp), -1)]
         self.std_order_bond_types = list(tmp2)
         self.alpha_bond_types = np.sort(tmp2)
-        # allows to resort bond distances in dataframe to bond type sorting w/fancy indexing
+        # allows to re-sort bond distances in dataframe to bond type sorting w/fancy indexing
         self.alpha_bond_types_indices = np.argsort(tmp2) 
         
-    
         self.alpha_bond_types_first_occur_indices = [0]
         previous = None
         for i,l in enumerate(self.alpha_bond_types):
