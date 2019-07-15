@@ -38,8 +38,8 @@ def vectorized_unit_cross_product(uvec1, uvec2):
     """
     Returns all cross products between every pair of unit vectors in uvec1 and uvec2
     """
-    products = np.cross(uvec1, uvec2)
-    #products = np.cross(np.round(uvec1,12), np.round(uvec2,12))
+    #products = np.cross(uvec1, uvec2)
+    products = np.cross(np.round(uvec1,12), np.round(uvec2,12))
     # If cross product is zero, it is due to co-linear atoms
     #print(np.all(np.isclose(products, np.zeros_like(products)), axis=1))
     #colinear_atoms_bool = np.all(np.isclose(products, np.zeros_like(products)), axis=1)
@@ -105,7 +105,7 @@ def vectorized_zmat2xyz(intcos, zmat_indices, permutation_vector):
     # Assign Cartesian coordinates of first three atoms: Atom0: origin. Atom1:x=0,y=0,z=r1. Atom2:x=0, y=r2*sin(a1), z=complicated
     cart[:,1,2] = intcos[:,0]
     cart[:,2,1] = intcos[:,1]*np.sin(intcos[:,2])
-    cart[:,2,2] = cart[:,zmat_indices[0],2] + (1 - 2 * float(zmat_indices[0]==1))*intcos[:,1]*np.cos(intcos[:,2])
+    cart[:,2,2] = cart[:,zmat_indices[1],2] + (1 - 2 * float(zmat_indices[1]==1))*intcos[:,1]*np.cos(intcos[:,2])
 
     # Assign Cartesian coordinates of all additional atoms
     j = 3
