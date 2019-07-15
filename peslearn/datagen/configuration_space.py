@@ -74,14 +74,16 @@ class ConfigurationSpace(object):
         start = timeit.default_timer()
         print("Total displacements: {}".format(self.n_init_disps))
         print("Number of interatomic distances: {}".format(self.n_interatomics))
-        #TODO handle failed geoms
+        # TODO fix, add interatomics
         #df = pd.DataFrame(index=np.arange(0, len(self.disps)), columns=self.bond_columns)
         df = pd.DataFrame(index=np.arange(0, len(self.disps)), columns=['cartesians','internals'])
         disps = np.array([list(i.values()) for i in self.disps])
         cartesians = gth.vectorized_zmat2xyz(disps, self.mol.zmat_indices, self.mol.std_order_permutation_vector)
-        #TODO REMOVE
-        #print(np.isnan(cartesians))
-        #cartesians = cartesians[~np.isnan(cartesians).any(axis=(1,2))]
+        colinear_atoms_bool = np.isnan(cartesians).any(axis=(1,2))
+        n_colinear = np.where(colinear_atoms_bool)[0].shape[0]
+        if n_colinear > 0:
+            print("Warning: {} configurations had invalid Z-Matrices with 3 co-linear atoms, tossing them out! Use a dummy atom to prevent.".format(n_colinear))
+        cartesians = cartesians[~np.isnan(cartesians).any(axis=(1,2))]
         self.new_cartesians = cartesians
         #df['cartesians'] = [cartesians[i,:,:] for i in range(cartesians.shape[0])]
         #df['internals'] = self.disps 
