@@ -76,9 +76,21 @@ class ConfigurationSpace(object):
         print("Number of interatomic distances: {}".format(self.n_interatomics))
         # TODO build DataFrame
         df = pd.DataFrame(index=np.arange(0, len(self.disps)), columns=['cartesians','internals'])
-        # Make NumPy array of internal coordinates (values only)
-        disps = np.array([list(i.values()) for i in self.disps])
-        # Modify internal coordinates if they contain coupled parameters
+        # Make NumPy array of complete internal coordinates, including dummy atoms (values only)
+        disps = np.array([[disp_dict[j] for j in self.mol.geom_parameters] for disp_dict in self.disps])
+
+        #print(self.disps)
+        #test = [[disp_dict[j] for j in self.mol.geom_parameters] for disp_dict in self.disps]
+        #print(test)
+        #disps = np.array([disp_dict[j] for j in self.mol.geom_parameters] for disp_dict in self.disps])
+        #for d in self.disps:
+        #    [d[i] for i in self.mol.geom_parameters]
+        #tmp0 = [self.disps[i] for i in self.mol.geom_param
+        #disps = np.array([self.disps[i] for i in self.mol.geom_parameters])
+        #disps = np.array([list(i.values()) for i in self.disps])
+        #print(disps)
+        # Modify internal coordinates if they contain coupled/duplicated parameters so that only complete Z-matrices are passed to zmat2xyz
+        
         # Make NumPy array of cartesian coordinates  
         cartesians = gth.vectorized_zmat2xyz(disps, self.mol.zmat_indices, self.mol.std_order_permutation_vector, self.mol.n_atoms)
         # Find invalid Cartesian coordinates which were constructed with invalid Z-Matrices (3 Co-linear atoms)
