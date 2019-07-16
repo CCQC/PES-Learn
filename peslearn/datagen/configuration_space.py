@@ -31,14 +31,17 @@ class ConfigurationSpace(object):
     def __init__(self, molecule_obj, input_obj):
         self.mol = molecule_obj
         self.input_obj = input_obj
-        self.disps = self.generate_displacements() 
+        self.intcos = self.generate_displacements() 
         # if equilbrium geom given, put it at beginning of self.disps
         eq = self.input_obj.keywords['eq_geom']
         if eq:
-            eq_geom = OrderedDict(zip(self.mol.geom_parameters, eq))
-            self.disps.insert(0, eq_geom)
-        self.n_init_disps = len(self.disps)
-        self.n_disps = len(self.disps)  # updated if redundancies are removed
+            self.intcos = np.vstack((np.array(eq), self.intcos))
+            #eq_geom = OrderedDict(zip(self.mol.geom_parameters, eq))
+            #self.disps.insert(0, eq_geom)
+        #self.n_init_disps = len(self.disps)
+        self.n_init_disps = self.intcos.shape[0]
+        #self.n_disps = len(self.disps)  # updated if redundancies are removed
+        self.n_disps = self.intcos.shape[0] # updated if redundancies are removed
         self.n_atoms = self.mol.n_atoms - self.mol.n_dummy
         self.n_interatomics =  int(0.5 * (self.n_atoms * self.n_atoms - self.n_atoms))
         self.bond_columns = []
@@ -61,13 +64,9 @@ class ConfigurationSpace(object):
                 raise Exception("Internal coordinate range improperly specified")
         grid = np.meshgrid(*d.values())
         # 2d array (ngridpoints x ndim) each row is one datapoint
-        self.grid = np.vstack(map(np.ravel, grid)).T
-        disps = []
-        for gridpoint in self.grid:
-            disp = OrderedDict([(self.mol.unique_geom_parameters[i], gridpoint[i])  for i in range(self.grid.shape[1])])
-            disps.append(disp)
-        print("{} internal coordinate displacements generated in {} seconds".format(self.grid.shape[0], round((timeit.default_timer() - start),3)))
-        return disps
+        intcos = np.vstack(map(np.ravel, grid)).T
+        print("{} internal coordinate displacements generated in {} seconds".format(intcos.shape[0], round((timeit.default_timer() - start),3)))
+        return intcos
 
 
     def generate_geometries(self):
@@ -75,7 +74,7 @@ class ConfigurationSpace(object):
         # Make NumPy array of complete internal coordinates, including dummy atoms (values only). 
         # If internal coordinates have duplicate entries, a different, slightly slower method is needed
         if self.mol.unique_geom_parameters == self.mol.geom_parameters:
-            intcos = self.grid
+            intcos = self.intcos
         else:
             intcos = np.array([[disp_dict[j] for j in self.mol.geom_parameters] for disp_dict in self.disps])
 
@@ -107,19 +106,16 @@ class ConfigurationSpace(object):
                 idx1, idx2 = x, x + atom
             interatomics[:, idx1:idx2] = norms 
         print("Interatomic distances generated in {} seconds".format(round((timeit.default_timer() - t2), 3)))
-
-        df = pd.DataFrame(index=np.arange(0, len(self.disps) - n_colinear), columns=self.bond_columns)
+        # Remove corresponding bad geometries from internal coordinates
+        intcos = intcos[~colinear_atoms_bool]
+        # Build DataFrame
+        df = pd.DataFrame(index=np.arange(0, cartesians.shape[0]), columns=self.bond_columns)
         df[self.bond_columns] = interatomics
         df['cartesians'] = [cartesians[i,:,:] for i in range(cartesians.shape[0])]
-        # TODO experiment with internals using np array like cartesians
-        self.grid = self.grid[~colinear_atoms_bool]
-        df['internals'] = [self.grid[i,:] for i in range(self.grid.shape[0])]
-        
-# [self.grid[i,:,:] for i in range(self.grid.shape[0])]  
-        #df['internals'] = np.array(self.disps)[~colinear_atoms_bool]
+        df['internals'] = [intcos[i,:] for i in range(intcos.shape[0])]
         self.all_geometries = df
-        #print(df.memory_usage(deep=True))
         print("Geometry grid generated in {} seconds".format(round((timeit.default_timer() - t1),3)))
+        #print(df.memory_usage(deep=True))
 
 
     def old_generate_geometries(self):
@@ -297,14 +293,15 @@ class ConfigurationSpace(object):
 
             # tag with internal coordinates, include duplicates if requested
             with open("{}/geom".format(str(i)), 'w') as f:
-                # TODO new internals format, check
                 tmp_dict = OrderedDict(zip(self.mol.geom_parameters, list(df.iloc[i-1]['internals'])))
                 f.write(json.dumps([tmp_dict]))
                 #f.write(json.dumps([df.iloc[i-1]['internals']])) 
                 if 'duplicate_internals' in df:
                     for j in range(len(df.iloc[i-1]['duplicate_internals'])):
                         f.write("\n")
-                        f.write(json.dumps([df.iloc[i-1]['duplicate_internals'][j]])) 
+                        tmp_dict = OrderedDict(zip(self.mol.geom_parameters, df.iloc[i-1]['duplicate_internals'][j]))
+                        f.write(json.dumps([tmp_dict]))
+                        #f.write(json.dumps([df.iloc[i-1]['duplicate_internals'][j]])) 
             # tag with interatomic distance coordinates, include duplicates if requested
             with open("{}/interatomics".format(str(i)), 'w') as f:
                 f.write(json.dumps([OrderedDict(df.iloc[i-1][self.bond_columns])]))
