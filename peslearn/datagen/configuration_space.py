@@ -61,38 +61,28 @@ class ConfigurationSpace(object):
                 raise Exception("Internal coordinate range improperly specified")
         grid = np.meshgrid(*d.values())
         # 2d array (ngridpoints x ndim) each row is one datapoint
-        grid = np.vstack(map(np.ravel, grid)).T
+        self.grid = np.vstack(map(np.ravel, grid)).T
         disps = []
-        for gridpoint in grid:
-            disp = OrderedDict([(self.mol.unique_geom_parameters[i], gridpoint[i])  for i in range(grid.shape[1])])
+        for gridpoint in self.grid:
+            disp = OrderedDict([(self.mol.unique_geom_parameters[i], gridpoint[i])  for i in range(self.grid.shape[1])])
             disps.append(disp)
-        print("{} internal coordinate displacements generated in {} seconds".format(grid.shape[0], round((timeit.default_timer() - start),5)))
+        print("{} internal coordinate displacements generated in {} seconds".format(self.grid.shape[0], round((timeit.default_timer() - start),3)))
         return disps
 
 
     def generate_geometries(self):
-        start = timeit.default_timer()
-        print("Total displacements: {}".format(self.n_init_disps))
-        print("Number of interatomic distances: {}".format(self.n_interatomics))
-        # TODO build DataFrame
-        df = pd.DataFrame(index=np.arange(0, len(self.disps)), columns=['cartesians','internals'])
-        # Make NumPy array of complete internal coordinates, including dummy atoms (values only)
-        disps = np.array([[disp_dict[j] for j in self.mol.geom_parameters] for disp_dict in self.disps])
+        t1 = timeit.default_timer()
+        # Make NumPy array of complete internal coordinates, including dummy atoms (values only). 
+        # If internal coordinates have duplicate entries, a different, slightly slower method is needed
+        if self.mol.unique_geom_parameters == self.mol.geom_parameters:
+            intcos = self.grid
+        else:
+            intcos = np.array([[disp_dict[j] for j in self.mol.geom_parameters] for disp_dict in self.disps])
 
-        #print(self.disps)
-        #test = [[disp_dict[j] for j in self.mol.geom_parameters] for disp_dict in self.disps]
-        #print(test)
-        #disps = np.array([disp_dict[j] for j in self.mol.geom_parameters] for disp_dict in self.disps])
-        #for d in self.disps:
-        #    [d[i] for i in self.mol.geom_parameters]
-        #tmp0 = [self.disps[i] for i in self.mol.geom_param
-        #disps = np.array([self.disps[i] for i in self.mol.geom_parameters])
-        #disps = np.array([list(i.values()) for i in self.disps])
-        #print(disps)
-        # Modify internal coordinates if they contain coupled/duplicated parameters so that only complete Z-matrices are passed to zmat2xyz
-        
         # Make NumPy array of cartesian coordinates  
-        cartesians = gth.vectorized_zmat2xyz(disps, self.mol.zmat_indices, self.mol.std_order_permutation_vector, self.mol.n_atoms)
+        cartesians = gth.vectorized_zmat2xyz(intcos, self.mol.zmat_indices, self.mol.std_order_permutation_vector, self.mol.n_atoms)
+        print("Cartesian coordinates generated in {} seconds".format(round((timeit.default_timer() - t1), 3)))
+        t2 = timeit.default_timer()
         # Find invalid Cartesian coordinates which were constructed with invalid Z-Matrices (3 Co-linear atoms)
         colinear_atoms_bool = np.isnan(cartesians).any(axis=(1,2))
         n_colinear = np.where(colinear_atoms_bool)[0].shape[0]
@@ -116,17 +106,21 @@ class ConfigurationSpace(object):
                 x = int((atom**2 - atom) / 2)
                 idx1, idx2 = x, x + atom
             interatomics[:, idx1:idx2] = norms 
+        print("Interatomic distances generated in {} seconds".format(round((timeit.default_timer() - t2), 3)))
 
-        # TODO build DataFrame
-        #df = pd.DataFrame(index=np.arange(0, len(self.disps) - n_colinear), columns=self.bond_columns)
-        #df[self.bond_columns] = interatomics
-        #df['cartesians'] = [cartesians[i,:,:] for i in range(cartesians.shape[0])]
-        #df['internals'] = self.disps 
+        df = pd.DataFrame(index=np.arange(0, len(self.disps) - n_colinear), columns=self.bond_columns)
+        df[self.bond_columns] = interatomics
+        df['cartesians'] = [cartesians[i,:,:] for i in range(cartesians.shape[0])]
+        # TODO experiment with internals using np array like cartesians
+        self.grid = self.grid[~colinear_atoms_bool]
+        df['internals'] = [self.grid[i,:] for i in range(self.grid.shape[0])]
+        
+# [self.grid[i,:,:] for i in range(self.grid.shape[0])]  
+        #df['internals'] = np.array(self.disps)[~colinear_atoms_bool]
+        self.all_geometries = df
+        #print(df.memory_usage(deep=True))
+        print("Geometry grid generated in {} seconds".format(round((timeit.default_timer() - t1),3)))
 
-        #TODO REMOVE AFTER DEBUG
-        self.new_cartesians = cartesians
-        self.new_interatomics = interatomics 
-        print("Geometry grid generated in {} seconds".format(round((timeit.default_timer() - start),2)))
 
     def old_generate_geometries(self):
         start = timeit.default_timer()
@@ -160,9 +154,6 @@ class ConfigurationSpace(object):
         df['internals'] = internals 
         self.all_geometries = df
         print("Geometry grid generated in {} seconds".format(round((timeit.default_timer() - start),2)))
-        #TODO REMOVE
-        self.old_cartesians = np.array(cartesians)
-        self.old_interatomics = np.array(interatomics)
 
 
     def remove_redundancies(self):
@@ -278,7 +269,7 @@ class ConfigurationSpace(object):
         if self.input_obj.keywords['remove_redundancy'].lower().strip() == 'true':
             print("Removing symmetry-redundant geometries...", end='  ')
             self.remove_redundancies()
-            # for debugging suspicious redundancy removal:
+            # for debugging suspicious redundancy removal, uncomment:
             #self.old_remove_redundancies()
 
             if self.input_obj.keywords['grid_reduction']:
@@ -306,7 +297,10 @@ class ConfigurationSpace(object):
 
             # tag with internal coordinates, include duplicates if requested
             with open("{}/geom".format(str(i)), 'w') as f:
-                f.write(json.dumps([df.iloc[i-1]['internals']])) 
+                # TODO new internals format, check
+                tmp_dict = OrderedDict(zip(self.mol.geom_parameters, list(df.iloc[i-1]['internals'])))
+                f.write(json.dumps([tmp_dict]))
+                #f.write(json.dumps([df.iloc[i-1]['internals']])) 
                 if 'duplicate_internals' in df:
                     for j in range(len(df.iloc[i-1]['duplicate_internals'])):
                         f.write("\n")
