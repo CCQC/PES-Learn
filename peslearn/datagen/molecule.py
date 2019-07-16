@@ -141,7 +141,8 @@ class Molecule(object):
 
         # Find permutation vector to permute given atom order to standard order
         std_order_permutation_vector = []
-        tmp_atom_labels = self.real_atom_labels.copy()
+        #tmp_atom_labels = self.real_atom_labels.copy()
+        tmp_atom_labels = self.atom_labels.copy()
         for i,j in enumerate(self.std_order_atom_labels):
             for k,l in enumerate(tmp_atom_labels):
                 if j == l:

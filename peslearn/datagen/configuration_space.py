@@ -78,8 +78,9 @@ class ConfigurationSpace(object):
         df = pd.DataFrame(index=np.arange(0, len(self.disps)), columns=['cartesians','internals'])
         # Make NumPy array of internal coordinates (values only)
         disps = np.array([list(i.values()) for i in self.disps])
+        # Modify internal coordinates if they contain coupled parameters
         # Make NumPy array of cartesian coordinates  
-        cartesians = gth.vectorized_zmat2xyz(disps, self.mol.zmat_indices, self.mol.std_order_permutation_vector)
+        cartesians = gth.vectorized_zmat2xyz(disps, self.mol.zmat_indices, self.mol.std_order_permutation_vector, self.mol.n_atoms)
         # Find invalid Cartesian coordinates which were constructed with invalid Z-Matrices (3 Co-linear atoms)
         colinear_atoms_bool = np.isnan(cartesians).any(axis=(1,2))
         n_colinear = np.where(colinear_atoms_bool)[0].shape[0]

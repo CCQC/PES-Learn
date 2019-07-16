@@ -75,7 +75,7 @@ def vectorized_local_axes(three_atoms_coords):
     local_axes = np.transpose(np.array([x, y, z]), (1,0,2))
     return local_axes
 
-def vectorized_zmat2xyz(intcos, zmat_indices, permutation_vector):
+def vectorized_zmat2xyz(intcos, zmat_indices, permutation_vector, natoms):
     """
     Takes array of internal coordinates, creates 3d cartesian coordinate block of all Cartesian coordinates
 
@@ -87,6 +87,8 @@ def vectorized_zmat2xyz(intcos, zmat_indices, permutation_vector):
         A NumPy array of shape (n_internal_coords) containing a series of ZMAT connectivity indices (not zero indexed.)
     permutation_vector : arr
         A NumPy array of shape (n_atoms) describing how to permute atom order to standard order 
+    natoms : int
+        The number of atoms (including dummy atoms)
 
     Returns 
     ---------
@@ -96,7 +98,6 @@ def vectorized_zmat2xyz(intcos, zmat_indices, permutation_vector):
         Cartesian coordinates are then permuted such that the element order is most common atom to least common, alphabetical tiebreaker. 
     """
     zmat_indices = zmat_indices - 1
-    natoms = int((intcos.shape[1] + 6) / 3)
     # Convert all angular coordinates (which are in degrees) into radians 
     angular_coord_indices = [i for i in range(2,intcos.shape[1], 3)] + [i for i in range(4,intcos.shape[1] ,3)]
     intcos[:,angular_coord_indices] *= deg2rad
