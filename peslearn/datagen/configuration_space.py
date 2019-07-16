@@ -74,20 +74,45 @@ class ConfigurationSpace(object):
         start = timeit.default_timer()
         print("Total displacements: {}".format(self.n_init_disps))
         print("Number of interatomic distances: {}".format(self.n_interatomics))
-        # TODO fix, add interatomics
-        #df = pd.DataFrame(index=np.arange(0, len(self.disps)), columns=self.bond_columns)
+        # TODO build DataFrame
         df = pd.DataFrame(index=np.arange(0, len(self.disps)), columns=['cartesians','internals'])
+        # Make NumPy array of internal coordinates (values only)
         disps = np.array([list(i.values()) for i in self.disps])
+        # Make NumPy array of cartesian coordinates  
         cartesians = gth.vectorized_zmat2xyz(disps, self.mol.zmat_indices, self.mol.std_order_permutation_vector)
+        # Find invalid Cartesian coordinates which were constructed with invalid Z-Matrices (3 Co-linear atoms)
         colinear_atoms_bool = np.isnan(cartesians).any(axis=(1,2))
         n_colinear = np.where(colinear_atoms_bool)[0].shape[0]
         if n_colinear > 0:
             print("Warning: {} configurations had invalid Z-Matrices with 3 co-linear atoms, tossing them out! Use a dummy atom to prevent.".format(n_colinear))
-        cartesians = cartesians[~np.isnan(cartesians).any(axis=(1,2))]
-        self.new_cartesians = cartesians
+        # Remove bad Z-Matrix geometries
+        cartesians = cartesians[~colinear_atoms_bool]
+        # Pre-allocate memory for interatomic distances array
+        interatomics = np.zeros((cartesians.shape[0], self.n_interatomics))
+        for atom in range(1, self.n_atoms):
+            # Create an array of duplicated cartesian coordinates of this particular atom, for every geometry, which is the same shape as 'cartesians'
+            tmp1 = np.broadcast_to(cartesians[:,atom,:], (cartesians.shape[0], 3))
+            tmp2 = np.tile(tmp1, (self.n_atoms,1,1)).transpose(1,0,2)
+            # Take the non-redundant norms of this atom to all atoms after it in cartesian array
+            diff = tmp2[:, 0:atom,:] - cartesians[:, 0:atom,:]
+            norms = np.sqrt(np.einsum('...ij,...ij->...i', diff , diff))
+            # Fill in the norms into interatomic distances 2d array , n_interatomic_distances)
+            if atom == 1:
+                idx1, idx2 = 0, 1
+            if atom > 1:
+                x = int((atom**2 - atom) / 2)
+                idx1, idx2 = x, x + atom
+            interatomics[:, idx1:idx2] = norms 
+
+        # TODO build DataFrame
+        #df = pd.DataFrame(index=np.arange(0, len(self.disps) - n_colinear), columns=self.bond_columns)
+        #df[self.bond_columns] = interatomics
         #df['cartesians'] = [cartesians[i,:,:] for i in range(cartesians.shape[0])]
         #df['internals'] = self.disps 
-         
+
+        #TODO REMOVE AFTER DEBUG
+        self.new_cartesians = cartesians
+        self.new_interatomics = interatomics 
         print("Geometry grid generated in {} seconds".format(round((timeit.default_timer() - start),2)))
 
     def old_generate_geometries(self):
@@ -124,6 +149,7 @@ class ConfigurationSpace(object):
         print("Geometry grid generated in {} seconds".format(round((timeit.default_timer() - start),2)))
         #TODO REMOVE
         self.old_cartesians = np.array(cartesians)
+        self.old_interatomics = np.array(interatomics)
 
 
     def remove_redundancies(self):
