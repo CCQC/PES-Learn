@@ -30,7 +30,8 @@ def vectorized_unit_vector(coord_pairs):
     # compute unit vectors between points 
     #einsum may be faster than linalg?? https://stackoverflow.com/questions/7741878/how-to-apply-numpy-linalg-norm-to-each-row-of-a-matrix
     tmp = b - a
-    norms = np.linalg.norm(tmp, axis=1).reshape(-1,1)
+    #norms = np.linalg.norm(tmp, axis=1).reshape(-1,1)
+    norms = np.sqrt(np.einsum('ij,ij->i', tmp, tmp)).reshape(-1,1)
     unit_vecs = tmp[:] / norms
     return unit_vecs
 
@@ -45,7 +46,8 @@ def vectorized_unit_cross_product(uvec1, uvec2):
     #colinear_atoms_bool = np.all(np.isclose(products, np.zeros_like(products)), axis=1)
     #if np.any(np.all(np.isclose(products, np.zeros_like(products)), axis=1)):
     #    print('co-linear atoms detected')
-    norms = np.linalg.norm(products, axis=1).reshape(-1,1)
+    #norms = np.linalg.norm(products, axis=1).reshape(-1,1)
+    norms = np.sqrt(np.einsum('ij,ij->i', products, products)).reshape(-1,1)
     unit_vecs = products[:] / norms
     return unit_vecs
 
@@ -84,7 +86,7 @@ def vectorized_zmat2xyz(intcos, zmat_indices, permutation_vector, natoms):
     intcos : arr
         A NumPy array of shape (n_geoms, n_internal_coords) containing a series of internal coordinate definitions
     zmat_indices : arr
-        A NumPy array of shape (n_internal_coords) containing a series of ZMAT connectivity indices (not zero indexed.)
+        A NumPy array of shape (n_internal_coords) containing a series of ZMAT connectivity indices (NOT zero-indexed.)
     permutation_vector : arr
         A NumPy array of shape (n_atoms) describing how to permute atom order to standard order 
     natoms : int
@@ -95,7 +97,10 @@ def vectorized_zmat2xyz(intcos, zmat_indices, permutation_vector, natoms):
     cart : arr
         A NumPy array of all Cartesian coordinates corresponding to internal coordinates. 
         Has shape (n_geoms, n_atoms, 3), i.e., it is a list of 2d Cartesian coordinate blocks.
-        Cartesian coordinates are then permuted such that the element order is most common atom to least common, alphabetical tiebreaker. 
+        Cartesian coordinates of atoms are then permuted according to the permutation_vector.
+        In PES-Learn, this is done such that the element order is most common atom to least common, 
+        with an alphabetical tiebreaker. 
+        Example: C C H H H O O would be transformed to --> H H H C C O O
     """
     zmat_indices = zmat_indices - 1
     # Convert all angular coordinates (which are in degrees) into radians 
