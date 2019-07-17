@@ -1,7 +1,7 @@
 # PES-Learn Keyword Options 
 
 ### How to assign PES-Learn keywords...
-  * Using command line interface:
+* Using command line interface:
     *  In your PES-Learn input file, `input.dat`, all keywords are assigned the same way:  
       
         ```
@@ -10,21 +10,19 @@
         ```
     
 
-  * Using Python API:
+* Using Python API:
     * In your Python code, after importing PES-Learn, you may freely dump keywords into a multi-line string and assign them just as you would when using the command line interface, and then create an InputProcessor object, which holds all of the keyword options and is passed to most other objects in PES-Learn:
     
-        ```python
-         import peslearn
+```python
+import peslearn
      
-         input_string =  """
-                         keyword1 = option1
-                         keyword2 = option2
-                         """
-        
-     input_obj = peslearn.InputProcessor(input_string)
-     ```
-
-    * Once an `InputProcessor` object is created, new keywords can be set with the `set_keyword` method:
+input_string =  """
+                keyword1 = option1
+                keyword2 = option2
+                """
+input_obj = peslearn.InputProcessor(input_string)
+```
+   * Once an `InputProcessor` object is created, new keywords can be set with the `set_keyword` method:
     
         ```python
         inp_obj = peslearn.InputProcessor("")

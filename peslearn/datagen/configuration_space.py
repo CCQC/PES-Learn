@@ -6,6 +6,7 @@ from ..utils import permutation_helper as ph
 from ..ml.data_sampler import DataSampler 
 
 from collections import OrderedDict
+import gc
 import os
 import json
 import timeit
@@ -31,14 +32,6 @@ class ConfigurationSpace(object):
     def __init__(self, molecule_obj, input_obj):
         self.mol = molecule_obj
         self.input_obj = input_obj
-        self.disps = self.generate_displacements() 
-        # if equilbrium geom given, put it at beginning of self.disps
-        eq = self.input_obj.keywords['eq_geom']
-        if eq:
-            eq_geom = OrderedDict(zip(self.mol.geom_parameters, eq))
-            self.disps.insert(0, eq_geom)
-        self.n_init_disps = len(self.disps)
-        self.n_disps = len(self.disps)  # updated if redundancies are removed
         self.n_atoms = self.mol.n_atoms - self.mol.n_dummy
         self.n_interatomics =  int(0.5 * (self.n_atoms * self.n_atoms - self.n_atoms))
         self.bond_columns = []
@@ -61,51 +54,81 @@ class ConfigurationSpace(object):
                 raise Exception("Internal coordinate range improperly specified")
         grid = np.meshgrid(*d.values())
         # 2d array (ngridpoints x ndim) each row is one datapoint
-        grid = np.vstack(map(np.ravel, grid)).T
-        disps = []
-        for gridpoint in grid:
-            disp = OrderedDict([(self.mol.unique_geom_parameters[i], gridpoint[i])  for i in range(grid.shape[1])])
-            disps.append(disp)
-        print("{} internal coordinate displacements generated in {} seconds".format(grid.shape[0], round((timeit.default_timer() - start),5)))
-        return disps
+        intcos = np.vstack(map(np.ravel, grid)).T
+        print("{} internal coordinate displacements generated in {} seconds".format(intcos.shape[0], round((timeit.default_timer() - start),3)))
+        return intcos
 
     def generate_geometries(self):
-        start = timeit.default_timer()
-        print("Total displacements: {}".format(self.n_init_disps))
-        print("Number of interatomic distances: {}".format(self.n_interatomics))
-        # grab cartesians, internals, interatomics representations of geometry
-        cartesians = []
-        internals = []
-        interatomics = []
-        failed = 0 # keep track of failed 3 co-linear atom configurations
-        # this loop of geometry transformations/saving is pretty slow, but scales linearly at least
-        for i, disp in enumerate(self.disps):
-            self.mol.update_intcoords(disp)
-            try:
-                cart = self.mol.zmat2xyz()
-            except:
-                failed += 1
-                continue
-            cartesians.append(cart)
-            internals.append(disp)
-            idm = gth.get_interatom_distances(cart)
-            # remove float noise for duplicate detection
-            idm = np.round(idm[np.tril_indices(len(idm),-1)],10)
-            interatomics.append(idm)
-        # preallocate dataframe space 
-        if failed > 0:
-            print("Warning: {} configurations had invalid Z-Matrices with 3 co-linear atoms, tossing them out! Use a dummy atom to prevent.".format(failed))
-        df = pd.DataFrame(index=np.arange(0, len(self.disps)-failed), columns=self.bond_columns)
-        df[self.bond_columns] = interatomics
-        df['cartesians'] = cartesians
-        df['internals'] = internals 
-        self.all_geometries = df
-        print("Geometry grid generated in {} seconds".format(round((timeit.default_timer() - start),2)))
+        """
+        Generates internal coordinates, converts them to Cartesians, and converts them to interatomic distances.
+        Stores them into a Pandas DataFrame with columns ['r0', 'r1', 'r2', 'r3', ..., 'rn', 'cartesians', 'internals']
+        Where each row of 'cartesians' contain 2d NumPy arrays and 'internals' contain 1d NumPy arrays.
+        """
+        t1 = timeit.default_timer()
+        intcos = self.generate_displacements()
+        eq = self.input_obj.keywords['eq_geom']
+        if eq:
+            intcos = np.vstack((np.array(eq), intcos))
+        self.n_disps = intcos.shape[0]
+        # Make NumPy array of complete internal coordinates, including dummy atoms (values only). 
+        # If internal coordinates have duplicate entries, a different, slightly slower method is needed; the internal coordinates
+        # must be expanded to their redundant full definition before Cartesian coordinate conversion
+        if self.mol.unique_geom_parameters != self.mol.geom_parameters:
+            indices = []
+            for p1 in self.mol.geom_parameters:
+                for i, p2 in enumerate(self.mol.unique_geom_parameters):
+                    if p1==p2:
+                        indices.append(i)
+            intcos = intcos[:, np.array(indices)]
+
+        # Make NumPy array of cartesian coordinates 
+        cartesians = gth.vectorized_zmat2xyz(intcos, self.mol.zmat_indices, self.mol.std_order_permutation_vector, self.mol.n_atoms)
+        print("Cartesian coordinates generated in {} seconds".format(round((timeit.default_timer() - t1), 3)))
+        t2 = timeit.default_timer()
+        # Find invalid Cartesian coordinates which were constructed with invalid Z-Matrices (3 Co-linear atoms)
+        colinear_atoms_bool = np.isnan(cartesians).any(axis=(1,2))
+        n_colinear = np.where(colinear_atoms_bool)[0].shape[0]
+        if n_colinear > 0:
+            print("Warning: {} configurations had invalid Z-Matrices with 3 co-linear atoms, tossing them out! Use a dummy atom to prevent.".format(n_colinear))
+        # Remove bad Z-Matrix geometries
+        cartesians = cartesians[~colinear_atoms_bool]
+        intcos = intcos[~colinear_atoms_bool]
+        # Pre-allocate memory for interatomic distances array
+        interatomics = np.zeros((cartesians.shape[0], self.n_interatomics))
+        for atom in range(1, self.n_atoms):
+            # Create an array of duplicated cartesian coordinates of this particular atom, for every geometry, which is the same shape as 'cartesians'
+            tmp1 = np.broadcast_to(cartesians[:,atom,:], (cartesians.shape[0], 3))
+            tmp2 = np.tile(tmp1, (self.n_atoms,1,1)).transpose(1,0,2)
+            # Take the non-redundant norms of this atom to all atoms after it in cartesian array
+            diff = tmp2[:, 0:atom,:] - cartesians[:, 0:atom,:]
+            norms = np.sqrt(np.einsum('...ij,...ij->...i', diff , diff))
+            # Fill in the norms into interatomic distances 2d array , n_interatomic_distances)
+            if atom == 1:
+                idx1, idx2 = 0, 1
+            if atom > 1:
+                x = int((atom**2 - atom) / 2)
+                idx1, idx2 = x, x + atom
+            interatomics[:, idx1:idx2] = norms 
+        print("Interatomic distances generated in {} seconds".format(round((timeit.default_timer() - t2), 3)))
+        # Round all coordinates for nicer printing and redundancy removal.
+        intcos.round(10)
+        interatomics.round(10)
+        cartesians.round(10)
+        self.n_disps = cartesians.shape[0]
+        # Build DataFrame of all geometries 
+        self.all_geometries = pd.DataFrame(index=np.arange(0, cartesians.shape[0]), columns=self.bond_columns)
+        self.all_geometries[self.bond_columns] = interatomics
+        self.all_geometries['cartesians'] = [cartesians[i,:,:] for i in range(self.n_disps)]
+        self.all_geometries['internals'] = [intcos[i,:] for i in range(self.n_disps)]
+        print("Geometry grid generated in {} seconds".format(round((timeit.default_timer() - t1),3)))
+        return self.all_geometries
+        # Memory is expensive to evaluate
+        #print("Peak memory usage estimate (GB): ", 3*(self.all_geometries.memory_usage(deep=True).sum() + cartesians.nbytes + interatomics.nbytes + intcos.nbytes)* (1/1e9))
 
     def remove_redundancies(self):
         """
         Very fast algorithm for removing redundant geometries from a configuration space
-        Has been confirmed to work for C3H2, H2CO, H2O, CH4
+        Has been confirmed to work for C3H2, H2CO, H2O, CH4, C2H2 
         Not proven.
         """
         start = timeit.default_timer()
@@ -131,14 +154,11 @@ class ConfigurationSpace(object):
                 mask = df_cols[cut]
                 df.loc[:,mask] = np.sort(df.loc[:,mask].values, axis=1)
             else:
-                # THIS WORKED FOR H2CO but not H2O:
-                #mask = df_cols[i+1:self.n_interatomics]
-                # This works for H2O and H2CO
                 mask = df_cols[i:self.n_interatomics]
                 df.loc[:,mask] = np.sort(df.loc[:,mask].values, axis=1)
 
         # Remove duplicates
-        # take opposite of duplicate boolean Series (which marks dupes as True)
+        # take opposite of duplicate boolean Series (which marks duplicates as True)
         mask = -df.duplicated(subset=self.bond_columns)
         self.unique_geometries = self.all_geometries.loc[mask] 
         self.n_disps = len(self.unique_geometries.index)
@@ -171,6 +191,7 @@ class ConfigurationSpace(object):
 
     def add_redundancies_back(self):
         """
+        #TODO currently does not account for simulataneous permutations
         Takes self.unique_geometries (which contains [bond_columns], cartesians, internals)
         and adds a last column, called duplicates, which contains internal coordinate dictionaries of duplicate geometries
         """
@@ -215,8 +236,6 @@ class ConfigurationSpace(object):
         if self.input_obj.keywords['remove_redundancy'].lower().strip() == 'true':
             print("Removing symmetry-redundant geometries...", end='  ')
             self.remove_redundancies()
-            # for debugging suspicious redundancy removal:
-            #self.old_remove_redundancies()
 
             if self.input_obj.keywords['grid_reduction']:
                 self.filter_configurations()
@@ -243,11 +262,15 @@ class ConfigurationSpace(object):
 
             # tag with internal coordinates, include duplicates if requested
             with open("{}/geom".format(str(i)), 'w') as f:
-                f.write(json.dumps([df.iloc[i-1]['internals']])) 
+                tmp_dict = OrderedDict(zip(self.mol.geom_parameters, list(df.iloc[i-1]['internals'])))
+                f.write(json.dumps([tmp_dict]))
+                #f.write(json.dumps([df.iloc[i-1]['internals']])) 
                 if 'duplicate_internals' in df:
                     for j in range(len(df.iloc[i-1]['duplicate_internals'])):
                         f.write("\n")
-                        f.write(json.dumps([df.iloc[i-1]['duplicate_internals'][j]])) 
+                        tmp_dict = OrderedDict(zip(self.mol.geom_parameters, df.iloc[i-1]['duplicate_internals'][j]))
+                        f.write(json.dumps([tmp_dict]))
+                        #f.write(json.dumps([df.iloc[i-1]['duplicate_internals'][j]])) 
             # tag with interatomic distance coordinates, include duplicates if requested
             with open("{}/interatomics".format(str(i)), 'w') as f:
                 f.write(json.dumps([OrderedDict(df.iloc[i-1][self.bond_columns])]))
@@ -265,7 +288,9 @@ class ConfigurationSpace(object):
 
     def old_remove_redundancies(self):
         """
-        Deprecated. Theoretically rigorous, but slow.
+        Deprecated. Currently a bug: does not consider combined permutation operations,
+        just one at a time. 
+        Theoretically rigorous, but slow.
         Handles the removal of redundant geometries arising from 
         angular scans and like-atom position permutations
         """
@@ -273,6 +298,7 @@ class ConfigurationSpace(object):
         nrows_before = len(self.all_geometries.index)
         # first remove straightforward duplicates using interatomic distances
         # (e.g., angular, dihedral equivalencies)
+        self.all_geometries[self.bond_columns] = self.all_geometries[self.bond_columns].round(decimals=10)
         self.unique_geometries = self.all_geometries.drop_duplicates(subset=self.bond_columns)
         print("Removed {} angular-redundant geometries. Now removing permutation-redundant geometries.".format(len(self.all_geometries) - len(self.unique_geometries)))
         # remove like-atom permutation duplicates
@@ -300,3 +326,43 @@ class ConfigurationSpace(object):
         print("Redundancy removal complete {} seconds".format(round((timeit.default_timer() - start),2)))
         print("Removed {} redundant geometries from a set of {} geometries".format(nrows_before-nrows_after, nrows_before))
 
+
+    def old_generate_geometries(self):
+        """
+        Deprecated. Generates geometries in serial, converting Z-Matrices to cartesians to interatomics one at a time.
+        Current implementation converts these to array operations, converting all geometries coordinates simultaneously.
+        """
+        start = timeit.default_timer()
+        intcos = self.generate_displacements() 
+        self.disps = []
+        for gridpoint in intcos:
+            tmp = OrderedDict([(self.mol.unique_geom_parameters[i], gridpoint[i])  for i in range(intcos.shape[1])])
+            self.disps.append(tmp)
+        # grab cartesians, internals, interatomics representations of geometry
+        cartesians = []
+        internals = []
+        interatomics = []
+        failed = 0 # keep track of failed 3 co-linear atom configurations
+        # this loop of geometry transformations/saving is pretty slow, but scales linearly at least
+        for i, disp in enumerate(self.disps):
+            self.mol.update_intcoords(disp)
+            try:
+                cart = self.mol.zmat2xyz()
+            except:
+                failed += 1
+                continue
+            cartesians.append(cart)
+            internals.append(disp)
+            idm = gth.get_interatom_distances(cart)
+            # remove float noise for duplicate detection
+            idm = np.round(idm[np.tril_indices(len(idm),-1)],10)
+            interatomics.append(idm)
+        # preallocate dataframe space 
+        if failed > 0:
+            print("Warning: {} configurations had invalid Z-Matrices with 3 co-linear atoms, tossing them out! Use a dummy atom to prevent.".format(failed))
+        df = pd.DataFrame(index=np.arange(0, len(self.disps)-failed), columns=self.bond_columns)
+        df[self.bond_columns] = interatomics
+        df['cartesians'] = cartesians
+        df['internals'] = internals 
+        self.all_geometries = df
+        print("Geometry grid generated in {} seconds".format(round((timeit.default_timer() - start),2)))
