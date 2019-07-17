@@ -210,7 +210,6 @@ class Molecule(object):
             coords2 = self.atoms[atom.a_idx].coords
             coords3 = self.atoms[atom.d_idx].coords
             self.atoms[i].local_axes = gth.get_local_axes(coords1, coords2, coords3)
-            #here
             bond_vector = gth.get_bond_vector(atom.rval, atom.aval * constants.deg2rad, atom.dval * constants.deg2rad)
             disp_vector = np.array(np.dot(bond_vector, self.atoms[i].local_axes))
             for p in range(3):
