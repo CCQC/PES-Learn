@@ -72,11 +72,17 @@ class ConfigurationSpace(object):
     def generate_geometries(self):
         t1 = timeit.default_timer()
         # Make NumPy array of complete internal coordinates, including dummy atoms (values only). 
-        # If internal coordinates have duplicate entries, a different, slightly slower method is needed
+        # If internal coordinates have duplicate entries, a different, slightly slower method is needed; the internal coordinates
+        # must be expanded to their redundant full definition before Cartesian coordinate conversion
         if self.mol.unique_geom_parameters == self.mol.geom_parameters:
             intcos = self.intcos
         else:
-            intcos = np.array([[disp_dict[j] for j in self.mol.geom_parameters] for disp_dict in self.disps])
+            indices = []
+            for p1 in self.mol.geom_parameters:  
+                for i, p2 in enumerate(self.mol.unique_geom_parameters):
+                    if p1==p2:
+                        indices.append(i)
+            intcos = self.intcos[:, np.array(indices)]
 
         # Make NumPy array of cartesian coordinates  
         cartesians = gth.vectorized_zmat2xyz(intcos, self.mol.zmat_indices, self.mol.std_order_permutation_vector, self.mol.n_atoms)
@@ -108,7 +114,7 @@ class ConfigurationSpace(object):
         print("Interatomic distances generated in {} seconds".format(round((timeit.default_timer() - t2), 3)))
         # Remove corresponding bad geometries from internal coordinates
         intcos = intcos[~colinear_atoms_bool]
-        # Build DataFrame
+        # Build DataFrame of all geometries 
         df = pd.DataFrame(index=np.arange(0, cartesians.shape[0]), columns=self.bond_columns)
         df[self.bond_columns] = interatomics
         df['cartesians'] = [cartesians[i,:,:] for i in range(cartesians.shape[0])]
@@ -120,6 +126,10 @@ class ConfigurationSpace(object):
 
     def old_generate_geometries(self):
         start = timeit.default_timer()
+        self.disps = []
+        for gridpoint in self.intcos:
+            tmp = OrderedDict([(self.mol.unique_geom_parameters[i], gridpoint[i])  for i in range(self.intcos.shape[1])])
+            self.disps.append(tmp)
         print("Total displacements: {}".format(self.n_init_disps))
         print("Number of interatomic distances: {}".format(self.n_interatomics))
         # grab cartesians, internals, interatomics representations of geometry

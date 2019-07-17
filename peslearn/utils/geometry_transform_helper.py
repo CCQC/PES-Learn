@@ -8,7 +8,7 @@ import re
 import os
 from itertools import combinations
 from .regex import xyz_block_regex,maybe
-from ..constants import deg2rad
+from ..constants import deg2rad, rad2deg
 import collections
 
 def get_interatom_distances(cart):
@@ -123,6 +123,7 @@ def vectorized_zmat2xyz(intcos, zmat_indices, permutation_vector, natoms):
         newcart = cart[:, zmat_indices[j], :] + disp_vectors
         cart[:,i,:] = newcart
         j += 3
+    intcos[:,angular_coord_indices] *= rad2deg
     # Permute to standard order (most common elements first, alphabetical tiebreaker)
     p = permutation_vector
     return cart[:,p,:]
