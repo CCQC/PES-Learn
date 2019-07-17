@@ -52,6 +52,26 @@ class Molecule(object):
     """
     The Molecule class holds geometry information about all the atoms in the molecule
     Requires initialization with a file string containing internal coordinates
+
+    Parameters
+    ----------
+    zmat_string : str
+        A standard Z-Matrix defining internal coordinates. Defining within a multiline string as one would 
+        when using an electronic structure package is recommended. Example:
+        '''
+        O
+        H 1 r1
+        H 1 r2 2 a1
+        '''
+
+        Dummy atoms can be specified with 'X', and one can force coordinates to be identical:
+        '''
+        C
+        X 1 RDUM
+        H 1 R 2 A
+        H 1 R 2 A 3 D120
+        H 1 R 2 A 4 D120
+        '''
     """
     def __init__(self, zmat_string):
         self.zmat_string = zmat_string
@@ -63,30 +83,38 @@ class Molecule(object):
         This should maybe just be in the init method.
         Take the string which contains an isolated Z matrix definition block,
         and extract information and save the following attributes:
-        self.n_atoms                - the number of atoms in the molecule (including dummy)
-        self.n_dummy                - the number of dummy atoms
-        self.atom_labels            - a list of element labels 'H', 'O', etc.
-        self.geom_parameters        - a list of geometry labels in the order they appear 
-                                      in the supplied Z matrix 'R3', 'A2', etc.
-        self.unique_geom_parameters - a list of unique geometry labels in the order they appear
-                                      in the supplied Z matrix
-        self.atoms                  - a list of Atom objects containing complete Z matrix information for each Atom
-        self.atomtype_dict          - a dictionary of atom labels and the number of that atom, sorted by number of occurances  
-        self.sorted_atom_counts     - a list of tuples, ('atom_label', number of occurances) sorted by highest number of occurances 
-        self.atom_count_vector      - a list of the number of each atom. Length is number of unique atoms, each value is the number of a particular atom,
-                                      sorted in the same way as self.sorted_atom_counts
-        self.std_order_atoms        - a list of Atom objects in the order according to sorted_atom_counts
-        self.std_order_atom_labels  - a list of atom element labels in standard order
-        self.std_order_bond_types   - a list of bond types (HC, OH, etc) in standard order of interatomic distances
-        self.alpha_bond_types       - a list of bond types in alphabetical order
-        self.alpha_bond_types_indices - a list of the indices that would make the std_order_bond_types alphabetical
-        self.alpha_bond_types_first_occur_indices - the index of the first occurance of each new bond type in the alphabetical bond types lists. Used for subset sorting within bond types.
-        self.interatomic_labels     - a list of interatomic distance labels
-        self.molecule_type          - a string with a generic molecule type label, A2BC, A2B6, etc.
+        self.n_atoms                      - the number of atoms in the molecule (including dummy)
+        self.n_dummy                      - the number of dummy atoms
+        self.zmat_indices                 - connectivity indices in Z-Matrix in the order they appear
+        self.atom_labels                  - a list of element labels 'H', 'O', etc., including dummy atoms
+        self.real_atom_labels             - a list of element labels exluding dummy atoms
+        self.geom_parameters              - a list of geometry labels in the order they appear 
+                                            in the supplied Z matrix 'R3', 'A2', etc.
+        self.unique_geom_parameters       - a list of unique geometry labels in the order they appear
+                                            in the supplied Z matrix
+        self.atoms                        - a list of Atom objects containing complete Z matrix information for each Atom
+        self.atomtype_dict                - a dictionary of atom labels and the number of that atom, sorted by number of occurances  
+        self.sorted_atom_counts           - a list of tuples, ('atom_label', number of occurances) sorted by highest number of occurances 
+        self.atom_count_vector            - a list of the number of each atom. Length is number of unique atoms, each value is the number 
+                                            of a particular atom, sorted in the same way as self.sorted_atom_counts
+        self.std_order_atoms              - a list of Atom objects in the order according to sorted_atom_counts
+        self.std_order_atom_labels        - a list of atom element labels in standard order
+        self.std_order_permutation_vector - a list of indices required to permute given atom order to standard order 
+                                            (most common elements first, alphabetical tiebreaker), AND omit dummy atoms
+        self.std_order_bond_types         - a list of bond types (HC, OH, etc) in standard order of interatomic distances
+        self.alpha_bond_types             - a list of bond types in alphabetical order
+        self.alpha_bond_types_indices     - a list of the indices that would make the std_order_bond_types alphabetical
+        self.alpha_bond_types_first_occur_indices - the index of the first occurance of each new bond type in the alphabetical bond types lists. 
+                                                    Used for subset sorting within bond types.
+        self.interatomic_labels           - a list of interatomic distance labels
+        self.molecule_type                - a string with a generic molecule type label, A2BC, A2B6, etc.
         """
         # grab array-like representation of zmatrix and count the number of atoms 
         zmat_array = [line.split() for line in zmat_string.splitlines() if line]
         self.n_atoms = len(zmat_array)
+
+        tmp = list(np.concatenate([i[1::2] for i in zmat_array]))
+        self.zmat_indices = np.array([int(i) for i in tmp])
 
         # find geometry parameter labels 
         # atom labels will always be at index 0, 1, 3, 6, 6++4... 
@@ -136,6 +164,19 @@ class Molecule(object):
 
         self.std_order_atom_labels = [atom.label for atom in self.std_order_atoms]
 
+        # Find permutation vector to permute given atom order to standard order (most common elements first, 
+        # alphabetical tiebreaker), and omit dummy atoms
+        std_order_permutation_vector = []
+        tmp_atom_labels = self.atom_labels.copy()
+        for i,j in enumerate(self.std_order_atom_labels):
+            for k,l in enumerate(tmp_atom_labels):
+                if j == l:
+                    std_order_permutation_vector.append(k)
+                    tmp_atom_labels[k] = 'done'
+                    continue
+        self.std_order_permutation_vector = np.array(std_order_permutation_vector)
+
+
         l = len(self.std_order_atom_labels)
         tmp = np.empty((l,l),dtype=object)
         for i in range(l):
@@ -144,10 +185,9 @@ class Molecule(object):
         tmp2 =  tmp[np.tril_indices(len(tmp), -1)]
         self.std_order_bond_types = list(tmp2)
         self.alpha_bond_types = np.sort(tmp2)
-        # allows to resort bond distances in dataframe to bond type sorting w/fancy indexing
+        # allows to re-sort bond distances in dataframe to bond type sorting w/fancy indexing
         self.alpha_bond_types_indices = np.argsort(tmp2) 
         
-    
         self.alpha_bond_types_first_occur_indices = [0]
         previous = None
         for i,l in enumerate(self.alpha_bond_types):
@@ -171,9 +211,6 @@ class Molecule(object):
             if a > 1:
                 self.molecule_type += str(a)
 
-
-        
-    
     def update_intcoords(self, disp):
         """
         Disp is a dictionary of geometry parameters and their new values, in angstrom and degrees
@@ -189,6 +226,8 @@ class Molecule(object):
 
     def zmat2xyz(self):
         """
+        Deprecated in favor of utils.geometry_transform_helper.vectorized_zmat2xyz()
+
         Converts Z-matrix representation to cartesian coordinates
         Changes element ordering to be the most common atom to least common atom
         Assumes Z-matrix is using degrees
