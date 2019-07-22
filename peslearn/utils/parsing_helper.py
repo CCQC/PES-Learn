@@ -57,7 +57,10 @@ def parse(input_obj, mol):
     if input_obj.keywords['energy']: 
         data['E'] = ''
     if input_obj.keywords['gradient']: 
-        data['G'] = ''
+        ngrad = 3*(mol.n_atoms - mol.n_dummy) 
+        grad_cols = ["g%d" % (i) for i in range(ngrad)]
+        for i in grad_cols:
+            data[i] = ''
 
     # parse output files 
     os.chdir("./" + input_obj.keywords['pes_dir_name'])
@@ -66,17 +69,21 @@ def parse(input_obj, mol):
     for d in dirs: 
         #path = d + "/" + "output.dat" 
         path = d + "/" + input_obj.keywords['output_name']
-        #output_obj = MLChem.outputfile.OutputFile(path)
         output_obj = OutputFile(path)
         if input_obj.keywords['energy']:
             E = extract_energy(input_obj, output_obj)
         if input_obj.keywords['gradient']:
             G = extract_gradient(output_obj)
+            ngrad = 3*(mol.n_atoms - mol.n_dummy) 
+            grad_cols = ["g%d" % (i) for i in range(ngrad)]
         with open(d + geom_path) as f:
             for line in f:
                 tmp = json.loads(line, object_pairs_hook=OrderedDict)
                 df = pd.DataFrame(data=tmp, index=None, columns=tmp[0].keys())
                 df['E'] = E
+                if input_obj.keywords['gradient']:
+                    df2 = pd.DataFrame(data=[G.flatten().tolist()],index=None, columns=grad_cols)
+                    df = pd.concat([df, df2], axis=1)
                 data = data.append(df)
                 if input_obj.keywords['pes_redundancy'] == 'true':
                     continue
