@@ -58,7 +58,7 @@ class InputProcessor(object):
                            'sort_pes': 'true',               #'false'
                            'sampling': 'structure_based',    # 'structure_based','sobol', 'smart_random', 'random', 'energy_ordered'
                            'n_low_energy_train': 0,          # any int
-                           'training_points': 50,            # any int
+                           'training_points': None,            # any int
                            'validation_points': None,          # any int
                            'hp_maxit': 20,                   # any int
                            'rseed': None,                    # any int
