@@ -134,6 +134,7 @@ class ConfigurationSpace(object):
         start = timeit.default_timer()
         nrows_before = len(self.all_geometries.index)
         df = self.all_geometries.copy()
+        df = df.round(10)
         og_cols = df.columns.tolist()
         # sort interatomic distance columns according to alphabetized bond types
         # e.g. OH HH CH --> CH HH OH
