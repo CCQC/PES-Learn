@@ -330,6 +330,7 @@ class NeuralNetwork(Model):
         best_val_error = None
         failures = 0
         decay_attempts = 0
+        prev_best = None
         decay_start = False
     
         for epoch in range(1,maxit):
@@ -353,6 +354,7 @@ class NeuralNetwork(Model):
                     else:
                         record = True
                         best_val_error = val_error_rmse * 1.0 
+                        prev_best = best_val_error
                     if verbose:
                         print("Epoch {} Validation RMSE (cm-1): {:5.3f}".format(epoch, val_error_rmse))
                     if decay_start:
