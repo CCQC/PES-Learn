@@ -348,21 +348,26 @@ class NeuralNetwork(Model):
                     val_error_rmse = np.sqrt(tmp_loss.item() * loss_descaler) * hartree2cm # loss_descaler converts MSE in scaled data domain to MSE in unscaled data domain
                     if best_val_error:
                         if val_error_rmse < best_val_error:
+                            prev_best = best_val_error * 1.0
                             best_val_error = val_error_rmse * 1.0 
                     else:
+                        record = True
                         best_val_error = val_error_rmse * 1.0 
                     if verbose:
-                        print("Epoch {} Validation RMSE (cm-1): {:5.2f}".format(epoch, val_error_rmse))
+                        print("Epoch {} Validation RMSE (cm-1): {:5.3f}".format(epoch, val_error_rmse))
                     if decay_start:
                         scheduler.step(val_error_rmse)
 
                     # Early Stopping 
                     if epoch > 5:
                         # if current validation error is not the best (current - best > 0) and is within tol of previous error, the model is stagnant. 
-                        if ((val_error_rmse - prev_loss) < tol) and ((val_error_rmse - best_val_error) > 0): 
+                        if ((val_error_rmse - prev_loss) < tol) and (val_error_rmse - best_val_error) > 0.0: 
                             es_tracker += 1
                         # else if: current validation error is not the best (current - best > 0) and is greater than the best by tol, the model is overfitting. Bad epoch.
-                        elif ((val_error_rmse - best_val_error) > tol) and ((val_error_rmse - best_val_error) > 0): 
+                        elif ((val_error_rmse - best_val_error) > tol) and (val_error_rmse - best_val_error) > 0.0: 
+                            es_tracker += 1
+                        # else if: if the current validation error is a new record, but not significant, the model is stagnant
+                        elif (prev_best - best_val_error) < 0.001:
                             es_tracker += 1
                         # else: model set a new record validation error. Reset early stopping tracker
                         else:
