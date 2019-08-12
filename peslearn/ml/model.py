@@ -74,7 +74,10 @@ class Model(ABC):
                 print("Using permutation invariant polynomial transformation for molecule type ", self.molecule_type)
             
         # keyword control
-        self.ntrain = self.input_obj.keywords['training_points']
+        if self.input_obj.keywords['training_points']:
+            self.ntrain = self.input_obj.keywords['training_points']
+        else: 
+            self.ntrain = int(0.8*self.dataset.shape[0])
         if train_path:
             self.ntrain = self.traindata.shape[0]
         if self.ntrain > self.dataset.shape[0]:
