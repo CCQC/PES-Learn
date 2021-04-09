@@ -131,6 +131,7 @@ class NeuralNetwork(Model):
         print("Fine-tuning final model...")
         model, test_error, val_error, full_error = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=100, opt='lbfgs', tol=0.1,  decay=True, verbose=True,precision=precision,return_model=True)
         performance = [test_error, val_error, full_error]
+        self.test_error = test_error
         print("Model optimization complete. Saving final model...")
         self.save_model(self.optimal_hyperparameters, model, performance)
 
@@ -210,28 +211,6 @@ class NeuralNetwork(Model):
                 self.Xtest = self.X[self.new_test_indices]
                 self.ytest = self.y[self.new_test_indices]
 
-            #self.Xtmp = self.X[self.test_indices]
-            #self.ytmp = self.y[self.test_indices]
-            #if validation_size:
-            #    self.Xvalid, self.Xtest, self.yvalid, self.ytest =  train_test_split(self.Xtmp,
-            #                                                                         self.ytmp, 
-            #                                                       train_size = validation_size, 
-            #                                                                    random_state=42)
-
-            ## temporary implementation: structure based validation set sample
-            #if validation_size:
-            #    data = np.hstack((self.Xtmp, self.ytmp))
-            #    col = [str(i) for i in range(data.shape[1])]
-            #    col[-1] = 'E'
-            #    df = pd.DataFrame(data, columns=col)
-            #    df.columns.values[-1] = 'E'
-            #    sample = DataSampler(df, validation_size)
-            #    sample.structure_based()
-            #    validation_indices, test_indices = sample.get_indices()
-            #    self.Xvalid = self.Xtmp[validation_indices]
-            #    self.yvalid = self.ytmp[validation_indices]
-            #    self.Xtest = self.Xtmp[test_indices]
-            #    self.ytest = self.ytmp[test_indices]
             else:
                 raise Exception("Please specify a validation set size for Neural Network training.")
 
@@ -261,7 +240,6 @@ class NeuralNetwork(Model):
         rate = lr
         if opt_type == 'lbfgs':
             #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-5, tolerance_change=1e-9, history_size=100) # Defaults
-            #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=100, max_eval=None, tolerance_grad=1e-10, tolerance_change=1e-14, history_size=200)
             optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-8, tolerance_change=1e-12, history_size=100)
         if opt_type == 'adam':
             optimizer = torch.optim.Adam(mdata, lr=rate)
