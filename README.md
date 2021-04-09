@@ -1,5 +1,5 @@
 # PES-Learn
-[![Build Status](https://travis-ci.org/CCQC/PES-Learn.svg?branch=master)](https://travis-ci.org/CCQC/PES-Learn)
+![Continuous Integration](https://github.com/CCQC/PES-Learn/actions/workflows/continuous_integration.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 PES-Learn is a Python library designed to fit system-specific Born-Oppenheimer potential energy surfaces using modern machine learning models. PES-Learn assists in generating datasets, and features Gaussian process and neural network model optimization routines. The goal is to provide high-performance models for a given dataset without requiring user expertise in machine learning.
@@ -62,11 +62,20 @@ To run tests, in the top-level directory called `PES-Learn`, run: `py.test -v te
 
 Bibtex:
 ```
+@article{Abbott2019,
+  title={PES-Learn: An open-source software package for the automated generation of machine learning models of molecular potential energy surfaces},
+  author={Abbott, Adam S and Turney, Justin M and Zhang, Boyi and Smith, Daniel GA and Altarawy, Doaa and Schaefer III, Henry F},
+  journal={Journal of chemical theory and computation},
+  volume={15},
+  number={8},
+  pages={4386--4398},
+  year={2019},
+  publisher={ACS Publications}
+}
 ```
-
-
 
 
 ## Funding 
 This project is a collaboration with the [Molecular Sciences Software Institute](http://molssi.org).
 The author gratefully acknowledges MolSSI for funding the development of this software.
+
