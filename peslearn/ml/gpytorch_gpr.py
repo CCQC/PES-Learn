@@ -6,19 +6,30 @@ import re
 import sys
 import gc
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
-from GPy.models import GPRegression
-from GPy.kern import RBF
-
+import torch
+import gpytorch
 from .model import Model
 from ..constants import hartree2cm, package_directory, gp_convenience_function
 from ..utils.printing_helper import hyperopt_complete
 from ..lib.path import fi_dir
 from .data_sampler import DataSampler 
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
+import time
+
+class GPR(gpytorch.models.ExactGP):
+    def __init__(self, train_x, train_y, likelihood):
+        super(GPR, self).__init__(train_x, train_y, likelihood)
+        self.mean = gpytorch.means.ConstantMean()
+        self.kernel = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel(ard_num_dims = train_x.size()[1])) # + self.white_noise_module(train_x)) #This assume Xdata is Kij with Xdim len(j)
+
+    def forward(self, x):
+        mean_x = self.mean(x)
+        kernel_x = self.kernel(x)
+        return gpytorch.distributions.MultivariateNormal(mean_x, kernel_x)
 
 class GaussianProcess(Model):
     """
-    Constructs a Gaussian Process Model using GPy
+    Constructs a Gaussian Process Model using GPFlow
     """
     def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None):
         super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path)
@@ -29,7 +40,7 @@ class GaussianProcess(Model):
         Set default hyperparameter space. If none is provided, default is used.
         """
         self.hyperparameter_space = {
-                                    #'scale_X': hp.choice('scale_X', ['std', 'mm01', 'mm11', None]),
+                                    'scale_X': hp.choice('scale_X', ['std', 'mm01', 'mm11', None]),
                                     'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11', None]),
                                     }
 
@@ -45,9 +56,9 @@ class GaussianProcess(Model):
 
         if self.input_obj.keywords['gp_ard'] == 'opt': # auto relevancy determination (independant length scales for each feature)
             self.set_hyperparameter('ARD', hp.choice('ARD', [True,False]))
-         #TODO add optional space inclusions, something like: if option: self.hyperparameter_space['newoption'] = hp.choice(..)
+         # TODO add optional space inclusions, something like: if option: self.hyperparameter_space['newoption'] = hp.choice(..)
 
-    def split_train_test(self, params):
+    def split_train_test(self, params, precision=64):
         """
         Take raw dataset and apply hyperparameters/input keywords/preprocessing
         and train/test (tr,test) splitting.
@@ -74,25 +85,62 @@ class GaussianProcess(Model):
             self.Xtest = self.X[self.test_indices]
             self.ytest = self.y[self.test_indices]
 
-    def build_model(self, params, nrestarts=10, maxit=1000, seed=0):
+        # convert to Torch Tensors
+        if precision == 32:
+            self.Xtr    = torch.tensor(self.Xtr,   dtype=torch.float32)
+            self.ytr    = torch.tensor(self.ytr,   dtype=torch.float32)
+            self.Xtest  = torch.tensor(self.Xtest, dtype=torch.float32)
+            self.ytest  = torch.tensor(self.ytest, dtype=torch.float32)
+            self.X = torch.tensor(self.X,dtype=torch.float32)
+            self.y = torch.tensor(self.y,dtype=torch.float32)
+        elif precision == 64:
+            self.Xtr    = torch.tensor(self.Xtr,   dtype=torch.float64)
+            self.ytr    = torch.tensor(self.ytr,   dtype=torch.float64)
+            self.Xtest  = torch.tensor(self.Xtest, dtype=torch.float64)
+            self.ytest  = torch.tensor(self.ytest, dtype=torch.float64)
+            self.X = torch.tensor(self.X,dtype=torch.float64)
+            self.y = torch.tensor(self.y,dtype=torch.float64)
+        else:
+            raise Exception("Invalid option for 'precision'")
+        #momba = 100
+        #self.Xtr *= momba
+        #self.ytr *= momba
+        #self.Xtest *= momba
+        #self.ytest *= momba
+        #self.ytr = self.ytr.squeeze()
+        #self.ytest = self.ytest.squeeze()
+        #self.y = self.y.squeeze()
+    def build_model(self, params, nrestarts=10, maxiter=500, seed=0):
+        """
+        Optimizes model (with specified hyperparameters) using L-BFGS-B algorithm. Does this 'nrestarts' times and returns model with
+        greatest marginal log likelihood.
+        """
+        # TODO Give user control over 'nrestarts', 'maxiter', optimization method, and kernel hyperparameter initiation.
         params['scale_X'] = 'std'
-        print("Hyperparameters: ", params)
+        print("********************************************\n\nHyperparameters: ", params)
         self.split_train_test(params)
         np.random.seed(seed)     # make GPy deterministic for a given hyperparameter config
-        dim = self.X.shape[1]
-        if self.input_obj.keywords['gp_ard'] == 'opt':
-            ard_val = params['ARD']
-        elif self.input_obj.keywords['gp_ard'] == 'true':
-            ard_val = True
-        else:
-            ard_val = False
-        kernel = RBF(dim, ARD=ard_val)  # TODO add HP control of kernel
-        self.model = GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
-        #self.model.optimize_restarts(nrestarts, optimizer="lbfgsb", robust=True, verbose=False, max_iters=maxit, messages=False)
-        self.model.optimize(optimizer="lbfgsb", max_iters=maxit, messages=False)
-        #TODO
-        err = self.vet_model(self.model)
-        #TODO
+        self.likelihood = gpytorch.likelihoods.GaussianLikelihood()
+        self.model = GPR(self.Xtr, self.ytr.squeeze(), self.likelihood)
+        self.likelihood.train()
+        self.model.train()
+
+        self.opt = torch.optim.Adam(self.model.parameters(), lr=0.1)
+        #self.opt = torch.optim.LBFGS(self.model.parameters(), max_iter=20)
+        mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.likelihood, self.model)
+        for i in range(maxiter):
+            def closure():
+                self.opt.zero_grad()
+                out = self.model(self.Xtr)
+                loss = -mll(out, torch.squeeze(self.ytr))
+                #print(f'Iter {i + 1}/{maxiter} - Loss: {loss.item()}   lengthscale: {self.model.kernel.base_kernel.lengthscale.detach().numpy()}, variance: {self.model.kernel.outputscale.item()},   noise: {self.model.likelihood.noise.item()}')
+                loss.backward()
+                #print(f'Iter {i + 1}/{maxiter} - Loss: {loss.item()}   lengthscale: {self.model.kernel.base_kernel.lengthscale.detach().numpy()}, variance: {self.model.kernel.outputscale.item()},   noise: {self.model.likelihood.noise.item()}')
+                return loss
+            self.opt.step(closure)
+        
+        self.model.eval()
+        self.likelihood.eval()
         gc.collect(2) #fixes some memory leak issues with certain BLAS configs
 
     def hyperopt_model(self, params):
@@ -109,25 +157,47 @@ class GaussianProcess(Model):
         return {'loss': error_test, 'status': STATUS_OK, 'memo': params}
 
     def predict(self, model, data_in):
-        prediction, v1 = model.predict(data_in, full_cov=False)
-        return prediction 
+        xpred_dataloader = torch.utils.data.DataLoader(data_in, batch_size = 1024, shuffle = False)
+        prediction = torch.tensor([0.])
+        with torch.no_grad(), gpytorch.settings.fast_pred_var():
+            for x_batch in xpred_dataloader:
+                pred = model(x_batch).mean.unsqueeze(1)
+                prediction = torch.cat([prediction, pred.squeeze(-1)])
+        return prediction[1:].unsqueeze(1)
+        #with torch.no_grad(), gpytorch.settings.fast_pred_var():
+        #    prediction = model(data_in).mean.unsqueeze(1)
+        #return prediction 
 
     def vet_model(self, model):
-        """Convenience method for getting model errors of test and full datasets"""
-        pred_test = self.predict(model, self.Xtest)
+        #pred_test = self.predict(model, self.model_l, self.Xtest)
         pred_full = self.predict(model, self.X)
-        error_test = self.compute_error(self.ytest, pred_test, self.yscaler)
-        error_full, median_error, max_errors = self.compute_error(self.y, pred_full, yscaler=self.yscaler, max_errors=5)
-        print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='  ')
+        #error_test = self.compute_error(self.ytest.squeeze(), pred_test, self.yscaler)
+        error_full, median_error, max_errors = self.compute_error(self.y.squeeze(0), pred_full, yscaler=self.yscaler, max_errors=5)
+        #print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='  ')
         print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='     ')
-        print("Median error: {}".format(np.round(median_error[0],2)), end='  ')
+        print("Median error: {}".format(np.round(median_error,2)), end='  ')
         print("Max 5 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))),'\n')
-        return error_test
+        print("-"*128)
+        return error_full # was test
+        #"""Convenience method for getting model errors of test and full datasets"""
+        #pred_test = self.predict(model, self.Xtest)
+        #pred_full = self.predict(model, self.X)
+        #error_test = self.compute_error(self.ytest, pred_test, self.yscaler)
+        #error_full, median_error, max_errors = self.compute_error(self.y, pred_full, yscaler=self.yscaler, max_errors=5)
+        #print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='  ')
+        #print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='     ')
+        #print("Median error: {}".format(np.round(median_error[0],2)), end='  ')
+        #print("Max 5 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))),'\n')
+        #return error_test
      
     def preprocess(self, params, raw_X, raw_y):
         """
         Preprocess raw data according to hyperparameters
         """
+        # Add artificial noise in data to prevent numerical instabilities.
+        #bunkbed = raw_y.shape
+        #raw_y = raw_y + np.random.rand(bunkbed[0], bunkbed[1])*1e-6
+
         # TODO make more flexible. If keys don't exist, ignore them. smth like "if key: if param['key']: do transform"
         if params['morse_transform']['morse']:
             raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])  # Transform to morse variables (exp(-r/alpha))
@@ -139,6 +209,7 @@ class GaussianProcess(Model):
             raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
+        
         if params['scale_X']:
             X, Xscaler = general_scaler(params['scale_X'], raw_X)
         else:
@@ -159,7 +230,7 @@ class GaussianProcess(Model):
         print("Errors are root-mean-square error in wavenumbers (cm-1)")
         self.hyperopt_trials = Trials()
         self.itercount = 1  # keep track of hyperopt iterations 
-        if self.input_obj.keywords['rseed']:
+        if self.input_obj.keywords['rseed'] != None:
             rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
         else:
             rstate = None
@@ -177,14 +248,13 @@ class GaussianProcess(Model):
         self.optimal_hyperparameters  = dict(final)
         # obtain final model from best hyperparameters
         print("Fine-tuning final model architecture...")
-        self.build_model(self.optimal_hyperparameters, nrestarts=10, maxit=1000)
+        self.build_model(self.optimal_hyperparameters, nrestarts=10)
         print("Final model performance (cm-1):")
         self.test_error = self.vet_model(self.model)
         self.save_model(self.optimal_hyperparameters)
 
     def save_model(self, params):
-        # Save model. Currently GPy requires saving training data in model for some reason. 
-        model_dict = self.model.to_dict(save_data=True)
+        # Save model.
         print("Saving ML model data...") 
         model_path = "model1_data"
         while os.path.isdir(model_path):
@@ -192,8 +262,9 @@ class GaussianProcess(Model):
             model_path = re.sub("\d+",str(new), model_path)
         os.mkdir(model_path)
         os.chdir(model_path)
-        with open('model.json', 'w') as f:
-            json.dump(model_dict, f)
+        
+        torch.save(self.model.state_dict(), 'model_state.pth')
+
         with open('hyperparameters', 'w') as f:
             print(params, file=f)
         
@@ -248,7 +319,8 @@ class GaussianProcess(Model):
         return newy
 
     def write_convenience_function(self):
-        string = "from peslearn.ml import GaussianProcess\nfrom peslearn import InputProcessor\nfrom GPy.core.model import Model\nimport numpy as np\nimport json\nfrom itertools import combinations\n\n"
+        # TODO
+        string = "from peslearn.ml import GaussianProcess\nfrom peslearn import InputProcessor\nimport tensorflow as tf\nimport gpflow\nimport numpy as np\nimport json\nfrom itertools import combinations\n\n"
         if self.pip:
             string += "gp = GaussianProcess('PES.dat', InputProcessor(''), molecule_type='{}')\n".format(self.molecule_type)
         else:
@@ -257,11 +329,7 @@ class GaussianProcess(Model):
             hyperparameters = f.read()
         string += "params = {}\n".format(hyperparameters)
         string += "X, y, Xscaler, yscaler =  gp.preprocess(params, gp.raw_X, gp.raw_y)\n"
-        string += "model = Model('mymodel')\n"
-        string += "with open('model.json', 'r') as f:\n"
-        string += "    model_dict = json.load(f)\n"
-        string += "final = model.from_dict(model_dict)\n\n"
+        string += "model = tf.saved_model.load('./')\n"
         string += gp_convenience_function
         return string
-
 
