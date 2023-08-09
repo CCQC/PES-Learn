@@ -29,7 +29,7 @@ class GPR(gpytorch.models.ExactGP):
 
 class GaussianProcess(Model):
     """
-    Constructs a Gaussian Process Model using GPFlow
+    Constructs a Gaussian Process Model using GPyTorch
     """
     def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None):
         super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path)
@@ -110,7 +110,7 @@ class GaussianProcess(Model):
         #self.ytr = self.ytr.squeeze()
         #self.ytest = self.ytest.squeeze()
         #self.y = self.y.squeeze()
-    def build_model(self, params, nrestarts=10, maxiter=500, seed=0):
+    def build_model(self, params, nrestarts=10, maxiter=1000, seed=0):
         """
         Optimizes model (with specified hyperparameters) using L-BFGS-B algorithm. Does this 'nrestarts' times and returns model with
         greatest marginal log likelihood.
@@ -119,7 +119,7 @@ class GaussianProcess(Model):
         params['scale_X'] = 'std'
         print("********************************************\n\nHyperparameters: ", params)
         self.split_train_test(params)
-        np.random.seed(seed)     # make GPy deterministic for a given hyperparameter config
+        #np.random.seed(seed)     # make GPy deterministic for a given hyperparameter config
         self.likelihood = gpytorch.likelihoods.GaussianLikelihood()
         self.model = GPR(self.Xtr, self.ytr.squeeze(), self.likelihood)
         self.likelihood.train()
@@ -231,7 +231,8 @@ class GaussianProcess(Model):
         self.hyperopt_trials = Trials()
         self.itercount = 1  # keep track of hyperopt iterations 
         if self.input_obj.keywords['rseed'] != None:
-            rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
+            rstate = np.random.default_rng(self.input_obj.keywords['rseed'])
+            #rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
         else:
             rstate = None
         best = fmin(self.hyperopt_model,

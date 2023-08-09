@@ -18,3 +18,4 @@ from .mfgp import MFGP
 from .mfmodel import MFModel
 from .gpytorch_gpr import GaussianProcess as GpyGPR
 from .mfgp_nsp import MFGP_NSP
+#from .mfnn.dual import DualNN

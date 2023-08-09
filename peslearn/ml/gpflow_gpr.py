@@ -171,7 +171,8 @@ class GaussianProcess(Model):
         self.hyperopt_trials = Trials()
         self.itercount = 1  # keep track of hyperopt iterations 
         if self.input_obj.keywords['rseed'] != None:
-            rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
+            rstate = np.random.default_rng(self.input_obj.keywords['rseed'])
+            #rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
         else:
             rstate = None
         best = fmin(self.hyperopt_model,

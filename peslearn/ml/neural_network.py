@@ -15,7 +15,7 @@ from ..utils.printing_helper import hyperopt_complete
 from sklearn.model_selection import train_test_split   
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
 from .preprocessing_helper import sort_architectures
-
+from copy import deepcopy
 
 torch.set_printoptions(precision=15)
 
@@ -97,7 +97,8 @@ class NeuralNetwork(Model):
         self.hyperopt_trials = Trials()
         self.itercount = 1
         if self.input_obj.keywords['rseed']:
-            rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
+            rstate = np.random.default_rng(self.input_obj.keywords['rseed'])
+            #rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
         else:
             rstate = None
         best = fmin(self.hyperopt_model,
@@ -188,6 +189,7 @@ class NeuralNetwork(Model):
         self.Xvalid : validation input data, transformed
         self.yvalid : validation output data, transformed
         """
+        old_raw_X = deepcopy(self.raw_X)
         self.X, self.y, self.Xscaler, self.yscaler = self.preprocess(params, self.raw_X, self.raw_y)
         if self.sampler == 'user_supplied':
             self.Xtr = self.transform_new_X(self.raw_Xtr, params, self.Xscaler)
@@ -332,12 +334,13 @@ class NeuralNetwork(Model):
         decay_attempts = 0
         prev_best = None
         decay_start = False
-    
+        #labmda = 1e-4
         for epoch in range(1,maxit):
             def closure():
                 optimizer.zero_grad()
                 y_pred = model(self.Xtr)
-                loss = torch.sqrt(metric(y_pred, self.ytr)) # passing RMSE instead of MSE improves precision IMMENSELY
+                #l2_norm = sum(p.pow(2.0).sum() for p in model.parameters())
+                loss = torch.sqrt(metric(y_pred, self.ytr)) #+ labmda*l2_norm # passing RMSE instead of MSE improves precision IMMENSELY
                 loss.backward()
                 return loss
             optimizer.step(closure)

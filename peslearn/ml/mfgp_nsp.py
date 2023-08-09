@@ -21,11 +21,23 @@ class SVI(gpytorch.models.ApproximateGP):
         #np.savetxt('/home/smg13363/GPR_PES/gpytorch_test_space/spgp/benchmarks/array.dat', covar_x.detach().numpy())
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
 
+class LFGP(gpytorch.models.ExactGP):
+    def __init__(self, train_x, train_y, likelihood):
+        super(LFGP, self).__init__(train_x, train_y, likelihood)
+        self.mean_module = gpytorch.means.ConstantMean()
+        self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
+    
+    def forward(self, x):
+        mean_x = self.mean_module(x)
+        covar_x = self.covar_module(x)
+        return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
+
 class GP(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood):
         super(GP, self).__init__(train_x, train_y, likelihood)
         self.mean = gpytorch.means.ConstantMean()
-        self.covar = ScaleKernel(RBFKernel(ard_num_dims=1, active_dims=(1))) * ScaleKernel(RBFKernel(ard_num_dims=train_x.size()[1])) + ScaleKernel(RBFKernel(ard_num_dims=train_x.size()[1]))
+        self.covar = ScaleKernel(RBFKernel(active_dims=(1))) * ScaleKernel(RBFKernel() + ScaleKernel(RBFKernel()))
+        #self.covar = ScaleKernel(RBFKernel(ard_num_dims=1, active_dims=(1))) * ScaleKernel(RBFKernel(ard_num_dims=train_x.size()[1])) + ScaleKernel(RBFKernel(ard_num_dims=train_x.size()[1]))
 
     def forward(self, x):
         mean_x = self.mean(x)
@@ -127,7 +139,7 @@ class MFGP_NSP(GaussianProcess):
 
     def build_model(self, params, nrestarts=10, maxiter=1000, seed=0):
         self.split_train_test(params)
-        np.random.seed(seed)     # make GPy deterministic for a given hyperparameter config
+        #np.random.seed(seed)     # make GPy deterministic for a given hyperparameter config
         print("\n")
         print("-"*128)
         print(f"\nParams: \n{params}") # LF Training
@@ -135,7 +147,7 @@ class MFGP_NSP(GaussianProcess):
         #train_l_ds = torch.utils.data.TensorDataset(self.Xtr_l, self.ytr_l)
         #train_l_loader = torch.utils.data.DataLoader(train_l_ds, batch_size = self.batchsize, shuffle=True)
         self.likelihood_l = gpytorch.likelihoods.GaussianLikelihood()
-        self.model_l = GP(self.Xtr_l, self.ytr_l.squeeze(), self.likelihood_l)
+        self.model_l = LFGP(self.Xtr_l, self.ytr_l.squeeze(), self.likelihood_l)
         self.model_l.train()
         self.likelihood_l.train()
         opt_l = torch.optim.Adam(self.model_l.parameters(), lr=0.1)

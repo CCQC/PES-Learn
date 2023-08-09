@@ -8,7 +8,7 @@ import pandas as pd
 import warnings
 import numpy as np
 import sklearn.metrics
-# GPy (TODO: GPy is gone)  and sklearn output a bunch of annoying warnings
+# GPy and sklearn output a bunch of annoying warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
 
@@ -58,11 +58,11 @@ class Model(ABC):
 
         self.dataset = data.sort_values("E")
         self.n_datapoints = self.dataset.shape[0]
-        idx = 0
+        idx = 0 # My code I think...
         for i in self.dataset:
             if 'E' in i:
                 idx += 1
-        if idx > 1:
+        if idx > 1 and False:
             self.raw_X = self.dataset.values[:,:-idx]
             self.raw_y = self.dataset.values[:,-idx].reshape(-1,1)
             self.raw_y_l = self.dataset.values[:,-1].reshape(-1,1)

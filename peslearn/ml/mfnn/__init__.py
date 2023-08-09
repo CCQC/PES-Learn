@@ -1,4 +1,9 @@
-from . import boring
+from . import dual
+from . import delta
+from . import weight_transfer
+from . import mknn
 
-from ..mfmodel import MFModel
-from .boring import Boring
+from .dual import DualNN
+from .delta import DeltaNN
+from .weight_transfer import WTNN
+from .mknn import MKNN

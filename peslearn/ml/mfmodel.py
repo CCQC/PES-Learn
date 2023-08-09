@@ -20,7 +20,11 @@ from .preprocessing_helper import sort_architectures
 torch.set_printoptions(precision=15)
 
 class MFModel(Model):
+    """
+    A class that handles data processing and other convenience functions for multifidelity models
+    """
     def __init__(self, dataset_paths, input_objs, molecule_type=None, molecule=None, train_paths=(None, None), test_paths=(None, None), valid_paths=(None, None)): #All input objs are tuples ordered high to low fidelity. Only works with 2 for now
+        print("Big BEEBUS")
         self.m_high = Model(dataset_paths[0], input_objs[0], molecule_type, molecule, train_paths[0], test_paths[0], valid_paths[0])
         self.m_low  = Model(dataset_paths[1], input_objs[1], molecule_type, molecule, train_paths[1], test_paths[1], valid_paths[1])
         self.molecule_type = molecule_type
@@ -97,7 +101,8 @@ class MFModel(Model):
         self.hyperopt_trials = Trials()
         self.itercount = 1
         if self.m_high.input_obj.keywords['rseed']:
-            rstate = np.random.RandomState(self.m_high.input_obj.keywords['rseed'])
+            rstate = np.random.default_rng(self.m_high.input_obj.keywords['rseed'])
+            #rstate = np.random.RandomState(self.m_high.input_obj.keywords['rseed'])
         else:
             rstate = None
         best = fmin(self.hyperopt_model,
