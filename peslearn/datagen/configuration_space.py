@@ -313,30 +313,21 @@ class ConfigurationSpace(object):
         os.chdir("./" +  pes_dir_name)    
 
         for i, cart_array in enumerate(df['cartesians'], start=1):
-            schema_inp = {}
-            symbols = []
-            geom = []
             xyz = ''
-            if self.input_obj.keywords['schema_method'] == None:
-                raise Exception("'schema_method' cannot be blank, please enter a method.")
-            if self.input_obj.keywords['schema_basis'] == None:
-                raise Exception("'schema_basis' cannot be blank, please enter a basis.")
-            method = self.input_obj.keywords['schema_method']
-            basis = self.input_obj.keywords['schema_basis']
-
-            for j in range(len(self.mol.std_order_atoms)):
-                symbols += self.mol.std_order_atom_labels[j]
-                geom += [cart_array[j][0], cart_array[j][1], cart_array[j][2]]
-            schema_inp['symbols'] = symbols
-            schema_inp['geometry'] = geom
-            
-            if self.input_obj.keywords['schema_keywords'] != None:
-                keywords = self.input_obj.keywords['schema_keywords']
-
+            # check the contents of the input string for keywords necessary for schema generation
             driver = self.input_obj.keywords['schema_driver']
             if driver not in ['energy','hessian','gradient','properties']:
-                raise Exception("{} is not a valid option for 'schema_driver', entry must be 'energy', 'hessian', 'gradient', 'properties'".format(driver))
-            
+                raise Exception("{} is not a valid option for 'schema_driver', entry must be 'energy', 'hessian', 'gradient', 'properties'".format(driver))            
+            method = self.input_obj.keywords['schema_method']
+            if method == None:
+                raise Exception("'schema_method' cannot be blank, please enter a method.")
+            basis = self.input_obj.keywords['schema_basis']
+            if basis == None:
+                raise Exception("'schema_basis' cannot be blank, please enter a basis.")
+            if self.input_obj.keywords['schema_keywords'] == None:
+                keywords = '{}'
+            else:
+                keywords = self.input_obj.keywords['schema_keywords']
             prog = self.input_obj.keywords['schema_prog']
             if prog == None:
                 raise Exception("'schema_prog' must be defined, please enter a program.")
@@ -345,6 +336,7 @@ class ConfigurationSpace(object):
                 os.mkdir(str(i))
             os.chdir(str(i))
 
+            # write the input files to run with qcengine
             with open('input.dat', 'w') as f:
                 f.write("import qcengine as qcng\nimport qcelemental as qcel\n\n")
                 f.write('molecule = qcel.models.Molecule.from_data("""\n')

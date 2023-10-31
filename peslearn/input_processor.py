@@ -69,11 +69,11 @@ class InputProcessor(object):
                            'hp_opt': 'true',                 # 'false'
                            'schema_generate':'false',        # 'true'
                            'units':'bohr',                   # 'angstrom'
-                           'schema_method' : None,
-                           'schema_basis' : None,
-                           'schema_driver' : 'energy',
-                           'schema_keywords' : None,
-                           'schema_prog' : None
+                           'schema_method' : None,           # any method interpretable by QC software of choice
+                           'schema_basis' : None,            # any basis interperetable by QC software of choice
+                           'schema_driver' : 'energy',       # 'hessian', 'gradient', 'properties'
+                           'schema_keywords' : None,         # any keywords interperetable by QC software of choice, python dictionary in quotes
+                           'schema_prog' : None              # any program supported by QCEngine
                             }
 
         for k in string_keywords:
