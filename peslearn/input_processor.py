@@ -59,14 +59,22 @@ class InputProcessor(object):
                            'sort_pes': 'true',               #'false'
                            'sampling': 'structure_based',    # 'structure_based','sobol', 'smart_random', 'random', 'energy_ordered'
                            'n_low_energy_train': 0,          # any int
-                           'training_points': None,            # any int
-                           'validation_points': None,          # any int
+                           'training_points': None,          # any int
+                           'validation_points': None,        # any int
                            'hp_maxit': 20,                   # any int
                            'rseed': None,                    # any int
                            'gp_ard': 'true',                 # 'true', 'false'. 'opt' treats as hyperparameter
-                           'nas_trial_layers': None,          # List of lists e.g. [[10,], [10,10,10], [50,50]]
+                           'nas_trial_layers': None,         # List of lists e.g. [[10,], [10,10,10], [50,50]]
                            'nn_precision': 32,               # neural network floating point precision 32 or 64
-                           'hp_opt': 'true'}                 # 'false'
+                           'hp_opt': 'true',                 # 'false'
+                           'schema_generate':'false',        # 'true'
+                           'units':'bohr',                   # 'angstrom'
+                           'schema_method' : None,
+                           'schema_basis' : None,
+                           'schema_driver' : 'energy',
+                           'schema_keywords' : None,
+                           'schema_prog' : None
+                            }
 
         for k in string_keywords:
             match = re.search(k+"\s*=\s*(.+)", self.full_string)
