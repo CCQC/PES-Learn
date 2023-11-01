@@ -337,8 +337,8 @@ class ConfigurationSpace(object):
             os.chdir(str(i))
 
             # write the input files to run with qcengine
-            with open('input.dat', 'w') as f:
-                f.write("import qcengine as qcng\nimport qcelemental as qcel\n\n")
+            with open('input.py', 'w') as f:
+                f.write("import qcengine as qcng\nimport qcelemental as qcel\nimport pprint\n\n")
                 f.write('molecule = qcel.models.Molecule.from_data("""\n')
                 for j in range(len(self.mol.std_order_atoms)):
                     xyz += "%s %10.10f %10.10f %10.10f\n" % (self.mol.std_order_atom_labels[j], cart_array[j][0], cart_array[j][1], cart_array[j][2])
@@ -347,8 +347,7 @@ class ConfigurationSpace(object):
                 f.write("driver = '%s'\nmodel = {'method':'%s', 'basis':'%s'}\nkeywords = %s\nprog = '%s'\n\n" % (driver, method, basis, keywords, prog))
                 f.write("atomic_inp = qcel.models.AtomicInput(molecule=molecule, driver=driver, model=model, keywords=keywords)\n\n")
                 f.write("atomic_res = qcng.compute(atomic_inp, prog)\n\n")
-                f.write("with open('output.dat','w') as f:\n\tf.write('{\\n')\n\tfor key, value in atomic_res.dict():\n\t\tf.write('{%s:%s}\\n', (key, value))\n\tf.write('}')")
-
+                f.write("with open('output.dat','w') as f:\n\tpprint.pprint(atomic_res.dict(), f)")
             os.chdir("../")
 
         print("Your PES inputs are now generated. Run the jobs in the {} directory and then parse.".format(pes_dir_name))
