@@ -132,12 +132,54 @@ If this keyword is not used, the software will ask what you want to do.
     
 
 * `sort_pes`  
-  **Description:** When parsing to produce a dataset, sort the energies in increasing order  
+  **Description:** When parsing to produce a dataset, sort the energies in increasing order.  
     * **Type**: bool
     * **Default**: true
     * **Possible values**: true, false
 
+* `schema_generate`  
+  **Description:** Generate input files that will run with QCEngine to produce QCSchema outputs.  
+    * **Type**: bool
+    * **Default**: false
+    * **Possible values**: true, false
+
+* `schema_units`  
+  **Description:** The units of the provided Z-Matrix input. QCEngine expects input units of Angstroms so Bohr will be converted. 
+    * **Type**: string
+    * **Default**: angstrom
+    * **Possible values**: bohr, angstrom
+
+* `schema_method`  
+  **Description:** Any method that can be interpreted by the quantum chemical software of choice. 
+    * **Type**: string
+    * **Default**: None
+    * **Possible values**: any string, e.g. 'hf', 'ccsd', etc.
+
+* `schema_basis`  
+  **Description:** Any basis that can be interpreted by the quantum chemical software of choice. 
+    * **Type**: string
+    * **Default**: None
+    * **Possible values**: any string, e.g. 'sto-3g', 'cc-pvdz', etc.
+
+* `schema_driver`  
+  **Description:** The type of computation for QCEngine to run.
+    * **Type**: string
+    * **Default**: 'energy'
+    * **Possible values**: 'energy', 'hessian', 'gradient', 'properties'
+
+* `schema_keywords`  
+  **Description:** A python dictionary surrounded by quotes containing keywords to be used by the quantum chemical software of choice.
+    * **Type**: dict, surrounted by quotes
+    * **Default**: None
+    * **Possible values**: any dict surrounded by quotes e.g. "{e_convergence': '1e-4', 'maxiter': '30'}"
+
+* `schema_prog`  
+  **Description:** The quantum chemical program to run the desired computation, must be a program supported by QCEngine. 
+    * **Type**: string
+    * **Default**: None
+    * **Possible values**: any string e.g. 'psi4'
     
+
 ## Machine Learning Keywords
 
 * `ml_model`  
