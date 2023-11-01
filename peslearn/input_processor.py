@@ -67,8 +67,8 @@ class InputProcessor(object):
                            'nas_trial_layers': None,         # List of lists e.g. [[10,], [10,10,10], [50,50]]
                            'nn_precision': 32,               # neural network floating point precision 32 or 64
                            'hp_opt': 'true',                 # 'false'
-                           'schema_generate':'false',        # 'true'
-                           'units':'bohr',                   # 'angstrom'
+                           'schema_generate' : 'false',      # 'true'
+                           'schema_units' : 'bohr',          # 'angstrom'
                            'schema_method' : None,           # any method interpretable by QC software of choice
                            'schema_basis' : None,            # any basis interperetable by QC software of choice
                            'schema_driver' : 'energy',       # 'hessian', 'gradient', 'properties'

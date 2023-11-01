@@ -331,7 +331,10 @@ class ConfigurationSpace(object):
             prog = self.input_obj.keywords['schema_prog']
             if prog == None:
                 raise Exception("'schema_prog' must be defined, please enter a program.")
-            
+            units = self.input_obj.keywords['schema_units']
+            if units == 'bohr':
+                from .. import constants
+    
             if not os.path.exists(str(i)):
                 os.mkdir(str(i))
             os.chdir(str(i))
@@ -341,9 +344,14 @@ class ConfigurationSpace(object):
                 f.write("import qcengine as qcng\nimport qcelemental as qcel\nimport pprint\n\n")
                 f.write('molecule = qcel.models.Molecule.from_data("""\n')
                 for j in range(len(self.mol.std_order_atoms)):
-                    xyz += "%s %10.10f %10.10f %10.10f\n" % (self.mol.std_order_atom_labels[j], cart_array[j][0], cart_array[j][1], cart_array[j][2])
+                    if units == 'bohr':
+                        xyz += "%s %10.10f %10.10f %10.10f\n" % (self.mol.std_order_atom_labels[j], cart_array[j][0] * constants.bohr2angstroms, cart_array[j][1] * constants.bohr2angstroms, cart_array[j][2] * constants.bohr2angstroms)
+                    elif units == 'angstrom':
+                        xyz += "%s %10.10f %10.10f %10.10f\n" % (self.mol.std_order_atom_labels[j], cart_array[j][0], cart_array[j][1], cart_array[j][2])
                 f.write(xyz)
-                f.write('""")\n\n')
+                f.write('""",\nfix_com=True,\nfix_orientation=True)\n')
+                if units == 'bohr':
+                    f.write('# The above geometry is in Angstroms for QCEngine input purposes.\n\n')
                 f.write("driver = '%s'\nmodel = {'method':'%s', 'basis':'%s'}\nkeywords = %s\nprog = '%s'\n\n" % (driver, method, basis, keywords, prog))
                 f.write("atomic_inp = qcel.models.AtomicInput(molecule=molecule, driver=driver, model=model, keywords=keywords)\n\n")
                 f.write("atomic_res = qcng.compute(atomic_inp, prog)\n\n")
