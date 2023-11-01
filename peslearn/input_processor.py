@@ -68,7 +68,7 @@ class InputProcessor(object):
                            'nn_precision': 32,               # neural network floating point precision 32 or 64
                            'hp_opt': 'true',                 # 'false'
                            'schema_generate' : 'false',      # 'true'
-                           'schema_units' : 'bohr',          # 'angstrom'
+                           'schema_units' : 'angstrom',      # 'bohr'
                            'schema_method' : None,           # any method interpretable by QC software of choice
                            'schema_basis' : None,            # any basis interperetable by QC software of choice
                            'schema_driver' : 'energy',       # 'hessian', 'gradient', 'properties'
