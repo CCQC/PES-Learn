@@ -337,6 +337,26 @@ class ConfigurationSpace(object):
     
             if not os.path.exists(str(i)):
                 os.mkdir(str(i))
+
+            # tag with internal coordinates, include duplicates if requested
+            with open("{}/geom".format(str(i)), 'w') as f:
+                tmp_dict = OrderedDict(zip(self.mol.geom_parameters, list(df.iloc[i-1]['internals'])))
+                f.write(json.dumps([tmp_dict]))
+                #f.write(json.dumps([df.iloc[i-1]['internals']])) 
+                if 'duplicate_internals' in df:
+                    for j in range(len(df.iloc[i-1]['duplicate_internals'])):
+                        f.write("\n")
+                        tmp_dict = OrderedDict(zip(self.mol.geom_parameters, df.iloc[i-1]['duplicate_internals'][j]))
+                        f.write(json.dumps([tmp_dict]))
+                        #f.write(json.dumps([df.iloc[i-1]['duplicate_internals'][j]])) 
+            # tag with interatomic distance coordinates, include duplicates if requested
+            with open("{}/interatomics".format(str(i)), 'w') as f:
+                f.write(json.dumps([OrderedDict(df.iloc[i-1][self.bond_columns])]))
+                if 'duplicate_interatomics' in df:
+                    for j in range(len(df.iloc[i-1]['duplicate_interatomics'])):
+                        f.write("\n") 
+                        f.write(json.dumps([df.iloc[i-1]['duplicate_interatomics'][j]])) 
+
             os.chdir(str(i))
 
             # write the input files to run with qcengine
@@ -355,7 +375,7 @@ class ConfigurationSpace(object):
                 f.write("driver = '%s'\nmodel = {'method':'%s', 'basis':'%s'}\nkeywords = %s\nprog = '%s'\n\n" % (driver, method, basis, keywords, prog))
                 f.write("atomic_inp = qcel.models.AtomicInput(molecule=molecule, driver=driver, model=model, keywords=keywords)\n\n")
                 f.write("atomic_res = qcng.compute(atomic_inp, prog)\n\n")
-                f.write("with open('output.dat','w') as f:\n\tpprint.pprint(atomic_res.dict(), f)")
+                f.write("with open('%s','w') as f:\n\tpprint.pprint(atomic_res.dict(), f)" % (self.input_obj.keywords['output_name']))
             os.chdir("../")
 
         print("Your PES inputs are now generated. Run the jobs in the {} directory and then parse.".format(pes_dir_name))
