@@ -23,6 +23,11 @@ def parse(input_obj, mol):
                 return energy
         else:
             raise Exception("\n energy_regex value not assigned in input. Please add a regular expression which captures the energy value, e.g. energy_regex = 'RHF Final Energy: \s+(-\d+\.\d+)'")
+        
+    elif input_obj.keywords['energy'] == 'schema':
+        def extract_energy(input_obj, output_obj):
+            energy = output_obj.extract_energy_from_schema()
+            return energy
     
     # define gradient extraction routine based on user keywords
     if input_obj.keywords['gradient'] == 'cclib':
@@ -43,6 +48,14 @@ def parse(input_obj, mol):
                 return gradient
         else:
             raise Exception("For regular expression gradient extraction, gradient_header, gradient_footer, and gradient_line string identifiers are required to isolate the cartesian gradient block. See documentation for details")   
+
+    elif input_obj.keywords['gradient'] == 'schema':
+        # add function to find gradient from schema
+        return None 
+    
+    #add function to parse hessian from schema
+
+    #add function to parse properties from schema
 
     # parse original internals or interatomics?
     if input_obj.keywords['pes_format'] == 'zmat':
@@ -84,7 +97,7 @@ def parse(input_obj, mol):
                 if input_obj.keywords['gradient']:
                     df2 = pd.DataFrame(data=[G.flatten().tolist()],index=None, columns=grad_cols)
                     df = pd.concat([df, df2], axis=1)
-                data = data.append(df)
+                data = pd.concat([data, df])
                 if input_obj.keywords['pes_redundancy'] == 'true':
                     continue
                 else:
