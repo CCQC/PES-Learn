@@ -105,6 +105,42 @@ class OutputFile(object):
             e /= constants.hartree2ev
         return e 
     
+    def extract_from_schema(self, driver):
+        """
+        Attempts to extract result from standard QCSchema output
+
+        Parameters
+        ---------
+        None
+
+        Returns
+        ---------
+        energy : float
+            The energy result from the 'return_result' item in the standard QCSchema output
+        gradient : np.array
+            A numpy array of floats representing the cartesian gradient from the 'return_result' item in the standard QCSchema output
+        """
+        if driver == "energy":
+            energy = None
+            energy = re.findall("\s\'return_result\'\:\s+(-\d+\.\d+)", self.output_str)
+            #add some statment for a failed computation
+            return energy
+
+        if driver == "hessian":
+            hessian = None
+
+            return hessian
+
+        if driver == "gradient":
+            gradient = None
+
+            return gradient
+        
+        if driver == "properties":
+            properties = None
+
+            return properties
+
     def extract_cartesian_gradient_with_regex(self, header, footer, grad_line_regex):
         """
         Extracts cartesian gradients according to user supplied regular expressions.

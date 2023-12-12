@@ -26,7 +26,7 @@ def parse(input_obj, mol):
         
     elif input_obj.keywords['energy'] == 'schema':
         def extract_energy(input_obj, output_obj):
-            energy = output_obj.extract_energy_from_schema()
+            energy = output_obj.extract_from_schema(input_obj.keywords['schema_driver'])
             return energy
     
     # define gradient extraction routine based on user keywords
