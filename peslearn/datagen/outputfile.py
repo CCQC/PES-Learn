@@ -111,30 +111,51 @@ class OutputFile(object):
 
         Parameters
         ---------
-        None
+        driver : str
+            The 'highest-order' result to parse from QCSchema output: 'energy', 'gradient', 'hessian' or 'properties'
 
         Returns
         ---------
-        energy : float
+        energy : str
             The energy result from the 'return_result' item in the standard QCSchema output
         gradient : np.array
             A numpy array of floats representing the cartesian gradient from the 'return_result' item in the standard QCSchema output
+        hessian : np.array
+
         """
         if driver == "energy":
-            energy = None
-            energy = re.findall("\s\'return_result\'\:\s+(-\d+\.\d+)", self.output_str)
+            energy = re.findall("\s\'return_energy\'\:\s+(-\d+\.\d+)", self.output_str)
             #add some statment for a failed computation
             return energy
 
-        if driver == "hessian":
-            hessian = None
-
-            return hessian
-
         if driver == "gradient":
-            gradient = None
+            gradient = re.findall("\s\'return_gradient\'\:\s+array\(([\s\S]*?)\)\,", self.output_str)
+            if gradient:
+                import ast
+                gradient = re.sub(r'\s+', "", str(gradient))
+                gradient = re.sub(r'\\n','',gradient)
+                gradient = re.sub(r'\[\'','',gradient)
+                gradient = re.sub(r'\'\]','',gradient)
+                gradient = np.asarray(ast.literal_eval(gradient)).astype(np.float64)
+                return gradient
+            else:
+                return None
+            #add failed computaiton
 
-            return gradient
+        if driver == "hessian":
+            hessian = re.findall("\s\'return_hessian\'\:\s+array\(([\s\S]*?)\)\,", self.output_str)
+            if hessian:
+                import ast
+                hessian = re.sub(r'\s+', "", str(hessian))
+                hessian = re.sub(r'\\n','',hessian)
+                hessian = re.sub(r'\[\'','',hessian)
+                hessian = re.sub(r'\'\]','',hessian)
+                hessian = np.asarray(ast.literal_eval(hessian)).astype(np.float64)
+                return hessian
+            else:
+                return None
+
+            #add failed computation error
         
         if driver == "properties":
             properties = None
@@ -188,7 +209,7 @@ class OutputFile(object):
         #TODO add catch for when only some lines of the gradient are parsed but not all, check against number of atoms or something
         if gradient:
             # this gradient is a list of tuples, each tuple is an x, y, z for one atom
-            gradient = np.asarray(gradient).astype(np.float)
+            gradient = np.asarray(gradient).astype(np.float64)
             return gradient        
         else:
             return None
