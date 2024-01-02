@@ -42,6 +42,7 @@ class InputProcessor(object):
                            'gradient_header': None,          # gradient header regular expression string
                            'gradient_footer': None,          # gradient footer regular expression string
                            'gradient_line': None,            # regular expression string for one line of the cartesian gradient
+                           'hessian':None,                   # parse hessian with 'schema'
                            'input_name': 'input.dat',        # what to call new input files generated from template, can be any name
                            'output_name': 'output.dat',      # the name of electronic structure theory output files corresponding to input_name
                            'ml_model': 'gp',                 # 'gp', 'nn'
