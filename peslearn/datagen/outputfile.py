@@ -112,21 +112,32 @@ class OutputFile(object):
         Parameters
         ---------
         driver : str
-            The 'highest-order' result to parse from QCSchema output: 'energy', 'gradient', 'hessian' or 'properties'
+            The result to parse from QCSchema output: 'energy', 'gradient', 'hessian' or 'properties'
 
         Returns
         ---------
         energy : str
             The energy result from the 'return_result' item in the standard QCSchema output
         gradient : np.array
-            A numpy array of floats representing the cartesian gradient from the 'return_result' item in the standard QCSchema output
+            A numpy array of floats representing the cartesian gradient from the 'retun_gradient' item in the standard QCSchema output
         hessian : np.array
+            A numpy array of floats representing the hessian from the 'return_hessian' item in the standard QCSchema output
 
         """
         if driver == "energy":
+            energy = []
             energy = re.findall("\s\'return_energy\'\:\s+(-\d+\.\d+)", self.output_str)
-            #add some statment for a failed computation
-            return energy
+            if energy:
+                return energy
+            else:
+                success = re.findall("\s\'success\'\:\s+(\S+)\}", self.output_str)
+                if success[0] == 'False':
+                    energy = 'False'
+                    return energy
+                else:
+                    # if success is 'True' but energy was not found
+                    energy = 'False'
+                    return energy
 
         if driver == "gradient":
             gradient = re.findall("\s\'return_gradient\'\:\s+array\(([\s\S]*?)\)\,", self.output_str)
@@ -139,8 +150,14 @@ class OutputFile(object):
                 gradient = np.asarray(ast.literal_eval(gradient)).astype(np.float64)
                 return gradient
             else:
-                return None
-            #add failed computaiton
+                success = re.findall("\s\'success\'\:\s+(\S+)\}", self.output_str)
+                if success[0] == 'False':
+                    gradient = 'False'
+                    return gradient
+                else:
+                    gradient = 'False'
+                    return gradient
+
 
         if driver == "hessian":
             hessian = re.findall("\s\'return_hessian\'\:\s+array\(([\s\S]*?)\)\,", self.output_str)
@@ -153,10 +170,15 @@ class OutputFile(object):
                 hessian = np.asarray(ast.literal_eval(hessian)).astype(np.float64)
                 return hessian
             else:
-                return None
-
-            #add failed computation error
+                success = re.findall("\s\'success\'\:\s+(\S+)\}", self.output_str)
+                if success[0] == 'False':
+                    hessian = 'False'
+                    return hessian
+                else:
+                    hessian = 'False'
+                    return hessian
         
+        #TODO add support for properties from QCSchema outuput
         if driver == "properties":
             properties = None
 

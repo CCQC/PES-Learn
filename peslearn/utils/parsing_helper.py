@@ -24,39 +24,10 @@ def parse(input_obj, mol):
         else:
             raise Exception("\n energy_regex value not assigned in input. Please add a regular expression which captures the energy value, e.g. energy_regex = 'RHF Final Energy: \s+(-\d+\.\d+)'")
         
-
     if input_obj.keywords['energy'] == 'schema':
         def extract_energy(input_obj, output_obj):
             energy = output_obj.extract_from_schema(driver='energy')
             return energy
-
-    # define extractions from schema based on user keywords
-    # if input_obj.keywords['energy'] == 'schema' or input_obj.keywords['gradient'] == 'schema' or input_obj.keywords['hessian'] == 'schema':
-    #     def extract_energy(input_obj, output_obj):
-    #             if input_obj.keywords['schema_driver'] == 'energy':
-    #                 energy = output_obj.extract_from_schema(input_obj.keywords['schema_driver'], input_obj.keywords)
-    #                 return energy
-    #             elif input_obj.keywords['schema_driver'] == 'gradient':
-    #                 if input_obj.keywords['energy'] == 'schema':
-    #                     energy, gradient = output_obj.extract_from_schema(input_obj.keywords['schema_driver'], input_obj.keywords)
-    #                     return energy, gradient
-    #                 else:
-    #                     gradient = output_obj.extract_from_schema(input_obj.keywords['schema_driver'], input_obj.keywords)
-    #                     return gradient
-    #             elif input_obj.keywords['schema_driver'] == 'hessian':
-    #                 if input_obj.keywords['energy'] == 'schema':
-    #                     if input_obj.keywords['gradient'] == 'schema':
-    #                         energy, gradient, hessian = output_obj.extract_from_schema(input_obj.keywords['schema_driver'], input_obj.keywords)
-    #                         return energy, gradient, hessian
-    #                     elif not input_obj.keywords['gradient'] == 'schema':
-    #                         energy, hessian = output_obj.extract_from_schema(input_obj.keywords['schema_driver'], input_obj.keywords)
-    #                         return energy, hessian
-    #                 elif input_obj.keywords['gradient'] == 'schema' and not input_obj.keywords['energy'] == 'schema':
-    #                     gradient, hessian = output_obj.extract_from_schema(input_obj.keywords['schema_driver'], input_obj.keywords)
-    #                     return gradient, hessian
-    #                 elif not input_obj.keywords['energy'] == 'schema' and not input_obj.keywords['gradient'] == 'schema':
-    #                     hessian = output_obj.extract_from_schema(input_obj.keywords['schema_driver'], input_obj.keywords)
-    #                     return hessian
     
     # define gradient extraction routine based on user keywords
     if input_obj.keywords['gradient'] == 'cclib':
@@ -115,6 +86,9 @@ def parse(input_obj, mol):
         
 
     # parse output files 
+    E = 0
+    G = 0
+    H = 0
     os.chdir("./" + input_obj.keywords['pes_dir_name'])
     dirs = [i for i in os.listdir(".") if os.path.isdir(i) ]
     dirs = sorted(dirs, key=lambda x: int(x))
@@ -131,24 +105,29 @@ def parse(input_obj, mol):
             H = extract_hessian(input_obj, output_obj)
             nhess = (3*(mol.n_atoms - mol.n_dummy))*(3*(mol.n_atoms - mol.n_dummy))
             hess_cols = ["h%d" % (i) for i in range(nhess)]
-            
-        with open(d + geom_path) as f:
-            for line in f:
-                tmp = json.loads(line, object_pairs_hook=OrderedDict)
-                df = pd.DataFrame(data=tmp, index=None, columns=tmp[0].keys())
-                if input_obj.keywords['energy']:
-                    df['E'] = E
-                if input_obj.keywords['gradient']:
-                    df2 = pd.DataFrame(data=[G.flatten().tolist()],index=None, columns=grad_cols)
-                    df = pd.concat([df, df2], axis=1)
-                if input_obj.keywords['hessian']:
-                    df3 = pd.DataFrame(data=[H.flatten().tolist()], index=None, columns=hess_cols)
-                    df = pd.concat([df,df3], axis=1)
-                data = pd.concat([data, df])
-                if input_obj.keywords['pes_redundancy'] == 'true':
-                    continue
-                else:
-                    break
+                
+        if E == 'False' or G == 'False' or H == 'False':
+            with open('errors.txt','a') as e:
+                    error_string = 'File in dir {} returned an error, the parsed output has been omitted from {}.\n'.format(d, input_obj.keywords['pes_name'])
+                    e.write(error_string)
+        else:
+            with open(d + geom_path) as f:
+                for line in f:
+                    tmp = json.loads(line, object_pairs_hook=OrderedDict)
+                    df = pd.DataFrame(data=tmp, index=None, columns=tmp[0].keys())
+                    if input_obj.keywords['energy']:
+                        df['E'] = E
+                    if input_obj.keywords['gradient']:
+                        df2 = pd.DataFrame(data=[G.flatten().tolist()],index=None, columns=grad_cols)
+                        df = pd.concat([df, df2], axis=1)
+                    if input_obj.keywords['hessian']:
+                        df3 = pd.DataFrame(data=[H.flatten().tolist()], index=None, columns=hess_cols)
+                        df = pd.concat([df,df3], axis=1)
+                    data = pd.concat([data, df])
+                    if input_obj.keywords['pes_redundancy'] == 'true':
+                        continue
+                    else:
+                        break
     os.chdir('../')
 
     if input_obj.keywords['sort_pes'] == 'true': 
@@ -161,3 +140,10 @@ def parse(input_obj, mol):
             data = data.sort_values("E")
     data.to_csv(input_obj.keywords['pes_name'], sep=',', index=False, float_format='%12.12f')
     print("Parsed data has been written to {}".format(input_obj.keywords['pes_name']))
+    # if num_errors > 0:
+    #     print("One or more output files returned an error, refer to {}/errors.txt for more information".format(input_obj.keywords['pes_dir_name']))
+
+
+    error_path = "./" + input_obj.keywords['pes_dir_name'] + "/errors.txt"
+    if os.path.exists(error_path):
+        print("One or more output files returned an error, refer to {}/errors.txt for more information".format(input_obj.keywords['pes_dir_name']))
