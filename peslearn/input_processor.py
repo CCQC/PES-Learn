@@ -65,7 +65,7 @@ class InputProcessor(object):
                            'hp_maxit': 20,                   # any int
                            'rseed': None,                    # any int
                            'gp_ard': 'true',                 # 'true', 'false'. 'opt' treats as hyperparameter
-                           'nas_trial_layers': None,         # List of lists e.g. [[10,], [10,10,10], [50,50]]
+                           'nas_trial_layers': None,         # List of tuples e.g. [(10,), (10,10,10), (50,50)]
                            'nn_precision': 32,               # neural network floating point precision 32 or 64
                            'hp_opt': 'true',                 # 'false'
                            'schema_generate' : 'false',      # 'true'
@@ -74,7 +74,8 @@ class InputProcessor(object):
                            'schema_basis' : None,            # any basis interperetable by QC software of choice
                            'schema_driver' : 'energy',       # 'hessian', 'gradient', 'properties'
                            'schema_keywords' : None,         # any keywords interperetable by QC software of choice, python dictionary in quotes
-                           'schema_prog' : None              # any program supported by QCEngine
+                           'schema_prog' : None,             # any program supported by QCEngine
+                           'kernel' : None                   # None or 'verbose' to use only RBF kernel or all possible kernels
                             }
 
         for k in string_keywords:
