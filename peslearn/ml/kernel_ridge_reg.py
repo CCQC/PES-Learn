@@ -46,11 +46,11 @@ class KernelRidgeReg(Model):
         # Kernel hyperparameters
         self.set_hyperparameter('alpha', hp.choice('alpha', [1e-06, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 1e+1, 1e+2, 1e+3, 1e+4, 1e+5, 1e+6]))
 
-        # If 'kernel' keyword is 'None' (default) an rbf kernel will be used and only 'alpha' will be hyperparameter
+        # if 'kernel' keyword is 'None' (default) an rbf kernel will be used and only 'alpha' will be hyperparameter
         if self.input_obj.keywords['kernel'] == None:
             self.set_hyperparameter('kernel', hp.choice('kernel',[{'ktype': 'rbf', 'gamma': None, 'degree': None}]))
 
-        # If 'kernel' keywords is 'verbose' choice of kernel will be hyperparameter
+        # if 'kernel' keyword is 'verbose' choice of kernel will be hyperparameter
         elif self.input_obj.keywords['kernel'] == 'verbose':
             self.set_hyperparameter('kernel', hp.choice('kernel', [
                 # {'ktype': 'chi2', 'gamma': hp.quniform('gamma', 0.5, 1.5, 0.1), 'degree': None},
@@ -61,9 +61,78 @@ class KernelRidgeReg(Model):
                 {'ktype': 'cosine', 'gamma': None, 'degree': None}
                 ]))
             
-        #TODO add option for 'precomputed' kernel
-        # If 'kernel' keywords is 'precomputed' only non-specified options will be hyperparameter
-        # elif self.input_obj.keywords['kernel'] == 'precomputed': ...
+        #TODO add option for coef0 from scikit-learn docs
+        # if 'kernel' keyword is 'precomputed' choose hyperparamaters accordingly
+        elif self.input_obj.keywords['kernel'] == 'precomputed':
+            if self.input_obj.keywords['precomputed_kernel']:
+                precomputed_kernel = self.input_obj.keywords['precomputed_kernel']
+                if 'kernel' in precomputed_kernel:
+                    kernels = list(precomputed_kernel['kernel'])
+                    self.set_hyperparameter('kernel', hp.choice('kernel', kernels))
+                    if 'polynomial' in kernels or 'poly' in kernels:
+                        print("WARNING: Polynomial type kernels are included in this hyperoptimization.")
+                        print("\t It is strongly cautioned against optimizing polynomial kernels in a precomputed kernel along with other types of kernels.")
+                        print("\t See KRR docs for more info.")
+                        # add link to docs?
+                    if 'degree' in precomputed_kernel:
+                        degrees = np.asarray(precomputed_kernel['degree'])
+                        if degrees[0] == 'uniform':
+                            self.set_hyperparameter('degree', hp.quniform('degree', int(degrees[1]), int(degrees[2]), int(degrees[3])))
+                        else:
+                            degrees.astype(np.float64)
+                            self.set_hyperparameter('degree', hp.choice('degree', degrees))
+                    else:
+                        if 'polynomial' in kernels or 'poly' in kernels:
+                            self.set_hyperparameter('degree', hp.quniform('degree', 1, 5, 1))
+                        else:
+                            self.set_hyperparameter('degree', 1)
+                else:
+                    if 'degree' in precomputed_kernel:
+                        degrees = np.asarray(precomputed_kernel['degree'])
+                        if degrees[0] == 'uniform':
+                            self.set_hyperparameter('kernel', hp.choice('kernel', [
+                                {'kernel': 'polynomial', 'degree':  hp.quniform('degree', int(degrees[1]), int(degrees[2]), int(degrees[3]))},
+                                {'kernel': 'rbf', 'degree': 1},
+                                {'kernel': 'laplacian', 'degree': 1},
+                                {'kernel': 'sigmoid', 'degree': 1},
+                                {'kernel': 'cosine', 'degree': 1}
+                                ]))
+                        else:
+                            degrees.astype(np.float64)
+                            self.set_hyperparameter('kernel', hp.choice('kernel', [
+                                {'kernel': 'polynomial', 'degree':  hp.choice('degree', degrees)},
+                                {'kernel': 'rbf', 'degree': 1},
+                                {'kernel': 'laplacian', 'degree': 1},
+                                {'kernel': 'sigmoid', 'degree': 1},
+                                {'kernel': 'cosine', 'degree': 1}
+                                ]))
+                    else:
+                        self.set_hyperparameter('kernel', hp.choice('kernel', [
+                                {'kernel': 'polynomial', 'degree':  hp.quniform('degree', 1, 5, 1)},
+                                {'kernel': 'rbf', 'degree': 1},
+                                {'kernel': 'laplacian', 'degree': 1},
+                                {'kernel': 'sigmoid', 'degree': 1},
+                                {'kernel': 'cosine', 'degree': 1}
+                                ]))
+
+                if 'gamma' in precomputed_kernel:
+                    gammas = np.asarray(precomputed_kernel['gamma'])
+                    if gammas[0] == 'uniform':
+                        self.set_hyperparameter('gamma', hp.quniform('gamma', float(gammas[1]), float(gammas[2]), float(gammas[3])))
+                    else:
+                        gammas.astype(np.float64)
+                        self.set_hyperparameter('gamma', hp.choice('gamma', gammas))
+                else:
+                    self.set_hyperparameter('gamma', None)
+
+                if 'alpha' in precomputed_kernel:
+                    alphas = np.asarray(precomputed_kernel['alpha'])
+                    if alphas[0] == 'uniform':
+                        self.set_hyperparameter('alpha', hp.quniform('alpha', float(alphas[1]), float(alphas[2]), float(alphas[3])))
+                    else:
+                        alphas = alphas.astype(np.float64)
+                        self.set_hyperparameter('alpha', hp.choice('alpha', alphas))
+
 
     def split_train_test(self, params):
         """
@@ -125,18 +194,26 @@ class KernelRidgeReg(Model):
     def build_model(self, params):
         print("Hyperparameters: ", params)
         self.split_train_test(params)
-        kernel = params['kernel']['ktype']
-        if params['kernel']['gamma']:
-            gamma = params['kernel']['gamma']
+        if self.input_obj.keywords['kernel'] == 'precomputed':
+            gamma = params['gamma']
+            if 'kernel' not in self.input_obj.keywords['precomputed_kernel']:
+                degree = int(params['kernel']['degree'])
+                kernel = params['kernel']['kernel']
+            else:
+                degree = int(params['degree'])
+                kernel = params['kernel']
         else:
-            gamma = None
-        if params['kernel']['degree']:
-            degree = int(params['kernel']['degree'])
-        else:
-            degree = 3
+            kernel = params['kernel']['ktype']
+            if params['kernel']['gamma']:
+                gamma = params['kernel']['gamma']
+            else:
+                gamma = None
+            if params['kernel']['degree']:
+                degree = int(params['kernel']['degree'])
+            else:
+                degree = 3
         alpha = params['alpha']
         self.model = KernelRidge(alpha=alpha, kernel=kernel, gamma=gamma, degree=degree)
-        print(self.ytr)
         self.model = self.model.fit(self.Xtr, self.ytr)
 
     def vet_model(self, model):
@@ -146,7 +223,7 @@ class KernelRidgeReg(Model):
         pred_test, rsq = self.predict(model, self.Xtest, ytest=self.ytest)
         pred_full = self.predict(model, self.X)
         error_test = self.compute_error(self.ytest, pred_test, self.yscaler)
-        error_full, median_error, max_errors, e = self.compute_error(self.y, pred_full, yscaler=self.yscaler, max_errors=5)
+        error_full, median_error, max_errors = self.compute_error(self.y, pred_full, yscaler=self.yscaler, max_errors=5)
         print("R^2 {}".format(rsq))
         print("Test Dataset {}".format(round(hartree2cm * error_test,2)), end='  ')
         print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='     ')
