@@ -38,44 +38,45 @@ class InputProcessor(object):
         string_keywords = {'energy': None,                   # parse energies with 'cclib', 'regex', or 'schema'
                            'energy_regex': None,             # a regular expression string, surround by '' or ""
                            'energy_cclib': None,             # a cclib energy option. 'scfenergies', 'mpenergies', 'ccenergies'
+                           'eq_geom'      : None,            #[1.05, 1.15, 104.5] etc
                            'gradient': None,                 # parse gradients with 'cclib', 'regex', or 'schema'
                            'gradient_header': None,          # gradient header regular expression string
                            'gradient_footer': None,          # gradient footer regular expression string
                            'gradient_line': None,            # regular expression string for one line of the cartesian gradient
-                           'hessian':None,                   # parse hessian with 'schema'
+                           'grid_generation' : 'fixed',      # 'uniform' for uniform random drawing, else fixed intervals 
+                           'grid_reduction' : None,          # any int
+                           'gp_ard': 'true',                 # 'true', 'false'. 'opt' treats as hyperparameter
+                           'hessian': None,                  # parse hessian with 'schema'
+                           'hp_maxit': 20,                   # any int
+                           'hp_opt': 'true',                 # 'false'
                            'input_name': 'input.dat',        # what to call new input files generated from template, can be any name
-                           'output_name': 'output.dat',      # the name of electronic structure theory output files corresponding to input_name
+                           'kernel' : None,                  # None, 'verbose', or 'precomputed'
                            'ml_model': 'gp',                 # 'gp', 'nn'
                            'mode': None,                     # 'generate', 'parse', 'learn', or shorthand: 'g', 'p', 'l'
+                           'n_low_energy_train': 0,          # any int
+                           'nas_trial_layers': None,         # List of tuples e.g. [(10,), (10,10,10), (50,50)]
+                           'nn_precision': 32,               # neural network floating point precision 32 or 64
+                           'output_name': 'output.dat',      # the name of electronic structure theory output files corresponding to input_name
                            'pes_name': 'PES.dat',            # any name
                            'pes_dir_name': 'PES_data',       # any name
                            'pes_redundancy': 'false',        # 'true'
                            'pes_format': 'interatomics',     # 'zmat'
+                           'precomputed_kernel' : None,       # dict in quotes of precomputed kernel options
                            'remove_redundancy': 'true',      # 'false'
                            'remember_redundancy' : 'false',  # 'true'
-                           'grid_generation' : 'fixed',      # 'uniform' for uniform random drawing, else fixed intervals 
-                           'grid_reduction' : None,          # any int
-                           'eq_geom'      : None,            #[1.05, 1.15, 104.5] etc
-                           'use_pips': 'true',               #'false'
-                           'sort_pes': 'true',               #'false'
-                           'sampling': 'structure_based',    # 'structure_based','sobol', 'smart_random', 'random', 'energy_ordered'
-                           'n_low_energy_train': 0,          # any int
-                           'training_points': None,          # any int
-                           'validation_points': None,        # any int
-                           'hp_maxit': 20,                   # any int
                            'rseed': None,                    # any int
-                           'gp_ard': 'true',                 # 'true', 'false'. 'opt' treats as hyperparameter
-                           'nas_trial_layers': None,         # List of tuples e.g. [(10,), (10,10,10), (50,50)]
-                           'nn_precision': 32,               # neural network floating point precision 32 or 64
-                           'hp_opt': 'true',                 # 'false'
-                           'schema_generate' : 'false',      # 'true'
-                           'schema_units' : 'angstrom',      # 'bohr'
-                           'schema_method' : None,           # any method interpretable by QC software of choice
+                           'sampling': 'structure_based',    # 'structure_based','sobol', 'smart_random', 'random', 'energy_ordered'
                            'schema_basis' : None,            # any basis interperetable by QC software of choice
                            'schema_driver' : 'energy',       # 'hessian', 'gradient', 'properties'
+                           'schema_generate' : 'false',      # 'true'
                            'schema_keywords' : None,         # any keywords interperetable by QC software of choice, python dictionary in quotes
+                           'schema_method' : None,           # any method interpretable by QC software of choice
                            'schema_prog' : None,             # any program supported by QCEngine
-                           'kernel' : None                   # None or 'verbose' to use only RBF kernel or all possible kernels
+                           'schema_units' : 'angstrom',      # 'bohr'
+                           'sort_pes': 'true',               #'false'
+                           'training_points': None,          # any int
+                           'use_pips': 'true',               #'false'
+                           'validation_points': None        # any int
                             }
 
         for k in string_keywords:
