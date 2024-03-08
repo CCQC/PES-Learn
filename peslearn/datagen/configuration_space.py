@@ -45,8 +45,14 @@ class ConfigurationSpace(object):
         start = timeit.default_timer()
         self.input_obj.extract_intcos_ranges()
         d = self.input_obj.intcos_ranges
+        np.random.seed(self.input_obj.keywords['rseed'])
         for key, value in d.items():
-            if len(value) == 3:
+            # Draw fixed intervals of values or uniform random between geometry parameter bounds?
+            if len(value) == 3 and self.input_obj.keywords['grid_generation'] == 'fixed':
+                d[key] = np.linspace(value[0], value[1], value[2])
+            elif len(value) == 3 and self.input_obj.keywords['grid_generation'] == 'uniform':
+                d[key] = np.random.uniform(value[0], value[1], value[2])
+            elif len(value) == 3: # if bad keyword specification, default to fixed
                 d[key] = np.linspace(value[0], value[1], value[2])
             elif len(value) == 1:
                 d[key] = np.asarray(value[0])    

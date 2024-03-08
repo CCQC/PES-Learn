@@ -52,6 +52,7 @@ class InputProcessor(object):
                            'pes_format': 'interatomics',     # 'zmat'
                            'remove_redundancy': 'true',      # 'false'
                            'remember_redundancy' : 'false',  # 'true'
+                           'grid_generation' : 'fixed',      # 'uniform' for uniform random drawing, else fixed intervals 
                            'grid_reduction' : None,          # any int
                            'eq_geom'      : None,            #[1.05, 1.15, 104.5] etc
                            'use_pips': 'true',               #'false'
