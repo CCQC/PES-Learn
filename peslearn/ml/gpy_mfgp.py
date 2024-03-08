@@ -122,8 +122,7 @@ class GaussianProcess(Model):
         print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='     ')
         print("Median error: {}".format(np.round(median_error[0],2)), end='  ')
         print("Max 5 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))),'\n')
-        error_test_invcm = round(hartree2cm * error_test,2)
-        return error_test_invcm 
+        return error_test
      
     def preprocess(self, params, raw_X, raw_y):
         """

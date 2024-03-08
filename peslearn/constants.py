@@ -51,7 +51,7 @@ def pes(geom_vectors, cartesian=True):
             axis = 0
         g = np.apply_along_axis(cart1d_to_distances1d, axis, g)
     newX = gp.transform_new_X(g, params, Xscaler)
-    E, cov = final.predict(newX, full_cov=False)
+    E, cov = model.predict_f_compiled(newX)
     e = gp.inverse_transform_new_y(E,yscaler)
     #e = e - (insert min energy here)
     #e *= 219474.63  ( convert units )
