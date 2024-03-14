@@ -321,14 +321,16 @@ class KernelRidgeReg(Model):
         # ensure x dimension is n x m (n new points, m input variables)
         if len(newX.shape) == 1:
             newX = np.expand_dims(newX, 0)
-        elif len(newX) > 2:
+        elif len(newX.shape) > 2:
             raise Exception("Dimensions of input data is incorrect.")
         if params['morse_transform']['morse']:
             newX = morse(newX, params['morse_transform']['morse_alpha'])
         if params['pip']['pip']:
             # find path to fundamental invariants for an N atom subsystem with molecule type AxByCz...
             path = os.path.join(package_directory, "lib", self.molecule_type, "output")
-            newX, degrees = interatomics_to_fundinvar(newX, degrees)
+            newX, degrees = interatomics_to_fundinvar(newX, path)
+            if params['pip']['degree_reduction']:
+                newX = degree_reduce(newX, degrees)
         if Xscaler:
             newX = Xscaler.transform(newX)
         return newX
