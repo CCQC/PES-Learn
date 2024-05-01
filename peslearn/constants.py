@@ -14,9 +14,9 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Gaussian process convenience function writer 
 gp_convenience_function = """
-# How to use 'compute_energy()' function
+# How to use 'pes()' function
 # --------------------------------------
-# E = compute_energy(geom_vectors, cartesian=bool)
+# E = pes(geom_vectors, cartesian=bool)
 # 'geom_vectors' is either: 
 #  1. A list or tuple of coordinates for a single geometry. 
 #  2. A column vector of one or more sets of 1d coordinate vectors as a list of lists or 2D NumPy array:
@@ -70,9 +70,9 @@ def cart1d_to_distances1d(vec):
 
 
 nn_convenience_function = """
-# How to use 'compute_energy()' function
+# How to use 'pes()' function
 # --------------------------------------
-# E = compute_energy(geom_vectors, cartesian=bool)
+# E = pes(geom_vectors, cartesian=bool)
 # 'geom_vectors' is either: 
 #  1. A list or tuple of coordinates for a single geometry. 
 #  2. A column vector of one or more sets of 1d coordinate vectors as a list of lists or 2D NumPy array:
@@ -127,9 +127,9 @@ def cart1d_to_distances1d(vec):
 """    
 
 krr_convenience_funciton = """
-# How to use 'compute_energy()' function
+# How to use 'pes()' function
 # --------------------------------------
-# E = compute_energy(geom_vectors, cartesian=bool)
+# E = pes(geom_vectors, cartesian=bool)
 # 'geom_vectors' is either: 
 #  1. A list or tuple of coordinates for a single geometry. 
 #  2. A column vector of one or more sets of 1d coordinate vectors as a list of lists or 2D NumPy array:
@@ -165,7 +165,7 @@ def pes(geom_vectors, cartesian=True):
         g = np.apply_along_axis(cart1d_to_distances1d, axis, g)
     newX = krr.transform_new_X(g, params, Xscaler)
     E = model.predict(newX)
-    e = nn.inverse_transform_new_y(E, yscaler)
+    e = krr.inverse_transform_new_y(E, yscaler)
     #e = e - (insert min energy here)
     #e *= 219474.63  ( convert units )
     return e
