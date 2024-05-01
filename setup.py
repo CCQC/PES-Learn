@@ -3,10 +3,9 @@ import setuptools
 if __name__ == "__main__":
     setuptools.setup(
         name='peslearn',
-        version="0.1.1",
+        version="1.0.0",
         description='Automated Construction of Machine Learning Models of Molecular Potential Energy Surfaces.',
-        author='Adam Abbott',
-        author_email='adabbott@uga.edu',
+        author='Adam Abbott, Ian Beck',
         url="https://github.com/CCQC/PES-Learn",
         license='BSD-3C',
         packages=setuptools.find_packages(),
