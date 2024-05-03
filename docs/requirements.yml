@@ -3,7 +3,7 @@ channels:
     - nodefaults
     - conda-forge
 dependencies:
-    - python=3
+    - python=3.8
     - sphinx
     - sphinx_rtd_theme
     - sphinx-automodapi
