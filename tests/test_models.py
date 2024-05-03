@@ -32,7 +32,6 @@ def test_gp():
         gp = peslearn.ml.GaussianProcess(datasets[i], input_obj, mol_strings[i])
         gp.optimize_model()
         errors.append(gp.test_error)
-        print(gp.test_error)
     # Test set error < 50 cm-1
     assert errors[0] < 50
     assert errors[1] < 50
