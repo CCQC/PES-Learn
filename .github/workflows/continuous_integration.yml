@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.7
+    - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
-        python-version: 3.7
+        python-version: 3.8
     - name: Add conda to system path
       run: |
         # $CONDA is an environment variable pointing to the root of the miniconda directory
@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       shell: bash -l {0}
       run: |
-        conda install python=3.7
+        conda install python=3.8
         conda install numpy
         conda install -c conda-forge gpy
         conda install pytorch
