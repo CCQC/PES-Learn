@@ -97,7 +97,7 @@ class NeuralNetwork(Model):
         self.hyperopt_trials = Trials()
         self.itercount = 1
         if self.input_obj.keywords['rseed']:
-            rstate = np.random.RandomState(self.input_obj.keywords['rseed'])
+            rstate = np.random.default_rng(self.input_obj.keywords['rseed'])
         else:
             rstate = None
         best = fmin(self.hyperopt_model,

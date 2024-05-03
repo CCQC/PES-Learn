@@ -105,6 +105,85 @@ class OutputFile(object):
             e /= constants.hartree2ev
         return e 
     
+    def extract_from_schema(self, driver):
+        """
+        Attempts to extract result from standard QCSchema output
+
+        Parameters
+        ---------
+        driver : str
+            The result to parse from QCSchema output: 'energy', 'gradient', 'hessian' or 'properties'
+
+        Returns
+        ---------
+        energy : str
+            The energy result from the 'return_result' item in the standard QCSchema output
+        gradient : np.array
+            A numpy array of floats representing the cartesian gradient from the 'retun_gradient' item in the standard QCSchema output
+        hessian : np.array
+            A numpy array of floats representing the hessian from the 'return_hessian' item in the standard QCSchema output
+
+        """
+        if driver == "energy":
+            energy = []
+            energy = re.findall("\s\'return_energy\'\:\s+(-\d+\.\d+)", self.output_str)
+            if energy:
+                return energy
+            else:
+                success = re.findall("\s\'success\'\:\s+(\S+)\}", self.output_str)
+                if success[0] == 'False':
+                    energy = 'False'
+                    return energy
+                else:
+                    # if success is 'True' but energy was not found
+                    energy = 'False'
+                    return energy
+
+        if driver == "gradient":
+            gradient = re.findall("\s\'return_gradient\'\:\s+array\(([\s\S]*?)\)\,", self.output_str)
+            if gradient:
+                import ast
+                gradient = re.sub(r'\s+', "", str(gradient))
+                gradient = re.sub(r'\\n','',gradient)
+                gradient = re.sub(r'\[\'','',gradient)
+                gradient = re.sub(r'\'\]','',gradient)
+                gradient = np.asarray(ast.literal_eval(gradient)).astype(np.float64)
+                return gradient
+            else:
+                success = re.findall("\s\'success\'\:\s+(\S+)\}", self.output_str)
+                if success[0] == 'False':
+                    gradient = 'False'
+                    return gradient
+                else:
+                    gradient = 'False'
+                    return gradient
+
+
+        if driver == "hessian":
+            hessian = re.findall("\s\'return_hessian\'\:\s+array\(([\s\S]*?)\)\,", self.output_str)
+            if hessian:
+                import ast
+                hessian = re.sub(r'\s+', "", str(hessian))
+                hessian = re.sub(r'\\n','',hessian)
+                hessian = re.sub(r'\[\'','',hessian)
+                hessian = re.sub(r'\'\]','',hessian)
+                hessian = np.asarray(ast.literal_eval(hessian)).astype(np.float64)
+                return hessian
+            else:
+                success = re.findall("\s\'success\'\:\s+(\S+)\}", self.output_str)
+                if success[0] == 'False':
+                    hessian = 'False'
+                    return hessian
+                else:
+                    hessian = 'False'
+                    return hessian
+        
+        #TODO add support for properties from QCSchema outuput
+        if driver == "properties":
+            properties = None
+
+            return properties
+
     def extract_cartesian_gradient_with_regex(self, header, footer, grad_line_regex):
         """
         Extracts cartesian gradients according to user supplied regular expressions.
@@ -152,7 +231,7 @@ class OutputFile(object):
         #TODO add catch for when only some lines of the gradient are parsed but not all, check against number of atoms or something
         if gradient:
             # this gradient is a list of tuples, each tuple is an x, y, z for one atom
-            gradient = np.asarray(gradient).astype(np.float)
+            gradient = np.asarray(gradient).astype(np.float64)
             return gradient        
         else:
             return None

@@ -235,9 +235,9 @@ class ConfigurationSpace(object):
                         # add duplicate to duplicate_interatomics column if it has not been found
                         if idm not in row[-1]:
                             row[-1].append(idm) 
+            
 
-
-    def generate_PES(self, template_obj):
+    def generate_templates(self, template_obj):
         # generate the full geometry set or the removed redundancy geometry set?
         self.generate_geometries()
         if self.input_obj.keywords['remove_redundancy'].lower().strip() == 'true':
@@ -251,7 +251,7 @@ class ConfigurationSpace(object):
             df = self.unique_geometries 
         elif self.input_obj.keywords['remove_redundancy'].lower().strip() == 'false':
             df = self.all_geometries
-          
+        
         pes_dir_name = self.input_obj.keywords['pes_dir_name']
         if not os.path.exists("./" +  pes_dir_name):
             os.mkdir("./" +  pes_dir_name)
@@ -291,7 +291,103 @@ class ConfigurationSpace(object):
 
         os.chdir("../")
         print("Your PES inputs are now generated. Run the jobs in the {} directory and then parse.".format(pes_dir_name))
-        
+
+    def generate_schema(self):
+
+        self.generate_geometries()
+        if self.input_obj.keywords['remove_redundancy'].lower().strip() == 'true':
+            print("Removing symmetry-redundant geometries...", end='  ')
+            self.remove_redundancies()
+
+            if self.input_obj.keywords['grid_reduction']:
+                self.filter_configurations()
+            if self.input_obj.keywords['remember_redundancy'].lower().strip() == 'true':
+                self.add_redundancies_back()
+            df = self.unique_geometries 
+        elif self.input_obj.keywords['remove_redundancy'].lower().strip() == 'false':
+            df = self.all_geometries  
+
+        pes_dir_name = self.input_obj.keywords['pes_dir_name']
+        if not os.path.exists("./" +  pes_dir_name):
+            os.mkdir("./" +  pes_dir_name)
+        os.chdir("./" +  pes_dir_name)    
+
+        for i, cart_array in enumerate(df['cartesians'], start=1):
+            xyz = ''
+            # check the contents of the input string for keywords necessary for schema generation
+            driver = self.input_obj.keywords['schema_driver']
+            if driver not in ['energy','hessian','gradient','properties']:
+                raise Exception("{} is not a valid option for 'schema_driver', entry must be 'energy', 'hessian', 'gradient', 'properties'".format(driver))            
+            method = self.input_obj.keywords['schema_method']
+            if method == None:
+                raise Exception("'schema_method' cannot be blank, please enter a method.")
+            basis = self.input_obj.keywords['schema_basis']
+            if basis == None:
+                raise Exception("'schema_basis' cannot be blank, please enter a basis.")
+            if self.input_obj.keywords['schema_keywords'] == None:
+                keywords = '{}'
+            else:
+                keywords = self.input_obj.keywords['schema_keywords']
+            prog = self.input_obj.keywords['schema_prog']
+            if prog == None:
+                raise Exception("'schema_prog' must be defined, please enter a program.")
+            units = self.input_obj.keywords['schema_units']
+            if units == 'bohr':
+                from .. import constants
+    
+            if not os.path.exists(str(i)):
+                os.mkdir(str(i))
+
+            # tag with internal coordinates, include duplicates if requested
+            with open("{}/geom".format(str(i)), 'w') as f:
+                tmp_dict = OrderedDict(zip(self.mol.geom_parameters, list(df.iloc[i-1]['internals'])))
+                f.write(json.dumps([tmp_dict]))
+                #f.write(json.dumps([df.iloc[i-1]['internals']])) 
+                if 'duplicate_internals' in df:
+                    for j in range(len(df.iloc[i-1]['duplicate_internals'])):
+                        f.write("\n")
+                        tmp_dict = OrderedDict(zip(self.mol.geom_parameters, df.iloc[i-1]['duplicate_internals'][j]))
+                        f.write(json.dumps([tmp_dict]))
+                        #f.write(json.dumps([df.iloc[i-1]['duplicate_internals'][j]])) 
+            # tag with interatomic distance coordinates, include duplicates if requested
+            with open("{}/interatomics".format(str(i)), 'w') as f:
+                f.write(json.dumps([OrderedDict(df.iloc[i-1][self.bond_columns])]))
+                if 'duplicate_interatomics' in df:
+                    for j in range(len(df.iloc[i-1]['duplicate_interatomics'])):
+                        f.write("\n") 
+                        f.write(json.dumps([df.iloc[i-1]['duplicate_interatomics'][j]])) 
+
+            os.chdir(str(i))
+
+            # write the input files to run with qcengine
+            with open('input.py', 'w') as f:
+                f.write("import qcengine as qcng\nimport qcelemental as qcel\nimport pprint\n\n")
+                f.write('molecule = qcel.models.Molecule.from_data("""\n')
+                for j in range(len(self.mol.std_order_atoms)):
+                    if units == 'bohr':
+                        xyz += "%s %10.10f %10.10f %10.10f\n" % (self.mol.std_order_atom_labels[j], cart_array[j][0] * constants.bohr2angstroms, cart_array[j][1] * constants.bohr2angstroms, cart_array[j][2] * constants.bohr2angstroms)
+                    elif units == 'angstrom':
+                        xyz += "%s %10.10f %10.10f %10.10f\n" % (self.mol.std_order_atom_labels[j], cart_array[j][0], cart_array[j][1], cart_array[j][2])
+                f.write(xyz)
+                f.write('""",\nfix_com=True,\nfix_orientation=True)\n')
+                if units == 'bohr':
+                    f.write('# The above geometry is in Angstroms for QCEngine input purposes.\n\n')
+                f.write("driver = '%s'\nmodel = {'method':'%s', 'basis':'%s'}\nkeywords = %s\nprog = '%s'\n\n" % (driver, method, basis, keywords, prog))
+                f.write("atomic_inp = qcel.models.AtomicInput(molecule=molecule, driver=driver, model=model, keywords=keywords)\n\n")
+                f.write("atomic_res = qcng.compute(atomic_inp, prog)\n\n")
+                f.write("with open('%s','w') as f:\n\tpprint.pprint(atomic_res.dict(), f)" % (self.input_obj.keywords['output_name']))
+            os.chdir("../")
+
+        print("Your PES inputs are now generated. Run the jobs in the {} directory and then parse.".format(pes_dir_name))
+
+    def generate_PES(self, template_obj=None, schema_gen='false'):
+        if self.input_obj.keywords['schema_generate'].lower().strip() == 'true' or schema_gen == 'true':
+            self.generate_schema()
+        elif template_obj == None and self.input_obj.keywords['schema_generate'].lower().strip() == 'false' and schema_gen == 'false':
+            raise Exception("template_obj not found, check your path.")
+        else:
+            self.generate_templates(template_obj)
+            
 
     def old_remove_redundancies(self):
         """

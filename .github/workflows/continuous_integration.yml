@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.7
+    - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
-        python-version: 3.7
+        python-version: 3.8
     - name: Add conda to system path
       run: |
         # $CONDA is an environment variable pointing to the root of the miniconda directory
@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       shell: bash -l {0}
       run: |
-        conda install python=3.7
+        conda install python=3.8
         conda install numpy
         conda install -c conda-forge gpy
         conda install pytorch
@@ -37,3 +37,54 @@ jobs:
       run: |
         conda install pytest
         pytest
+
+  release_sphinx:
+    #needs: [build]
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        cfg:
+          - conda-env: docs-cf
+            python-version: 3.8
+            label: Sphinx
+            runs-on: ubuntu-latest
+
+    name: "🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.label }}"
+    runs-on: ${{ matrix.cfg.runs-on }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Create Environment
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        activate-environment: test
+        environment-file: docs/requirements.yml
+        python-version: ${{ matrix.cfg.python-version }}
+        auto-activate-base: false
+        miniforge-variant: Mambaforge
+        miniforge-version: latest
+        use-mamba: true
+        add-pip-as-python-dependency: true
+        channels: conda-forge
+
+    - name: Environment Information
+      run: |
+        mamba info
+        mamba list --show-channel-urls
+
+    - name: Build Documentation
+      run: |
+        python -m pip install . --no-deps
+        cd docs
+        make html
+
+    - name: GitHub Pages Deploy
+      uses: JamesIves/github-pages-deploy-action@4.1.1
+      if: github.event_name == 'push' && github.repository == 'CCQC/PES-Learn' && ( startsWith( github.ref, 'refs/tags/' ) || github.ref == 'refs/heads/master' )
+      with:
+        branch: gh-pages
+        folder: docs/build/html

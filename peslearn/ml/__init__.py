@@ -7,3 +7,4 @@ from . import model
 from .gaussian_process import GaussianProcess
 from .data_sampler import DataSampler
 from .neural_network import NeuralNetwork
+from .kernel_ridge_reg import KernelRidgeReg
