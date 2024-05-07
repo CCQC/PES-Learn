@@ -14,7 +14,7 @@ dependencies = [
     "numpy==1.24.4",
     "GPy>=1.9",
     "scikit-learn>=0.20",
-    "pandas>=0.24",
+    "pandas>=2.0",
     "hyperopt>=0.1.1",
     "cclib>=1.6",
     "torch>=1.0.1",
