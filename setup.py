@@ -16,7 +16,8 @@ if __name__ == "__main__":
             'docs': [
                 'sphinx==1.2.3', 
                 'sphinxcontrib-napoleon',
-                'sphinx_rtd_theme',
+                'sphinx-book-theme',
+                'sphinx-copybutton'
                 'numpydoc',
             ],
             'tests': [
