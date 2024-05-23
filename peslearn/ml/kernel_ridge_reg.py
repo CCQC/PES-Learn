@@ -67,7 +67,7 @@ class KernelRidgeReg(Model):
             if self.input_obj.keywords['precomputed_kernel']:
                 precomputed_kernel = self.input_obj.keywords['precomputed_kernel']
                 if 'kernel' in precomputed_kernel:
-                    kernels = list(precomputed_kernel['kernel'])
+                    kernels = precomputed_kernel['kernel']
                     self.set_hyperparameter('kernel', hp.choice('kernel', kernels))
                     if 'polynomial' in kernels or 'poly' in kernels:
                         print("WARNING: Polynomial type kernels are included in this hyperoptimization.")
