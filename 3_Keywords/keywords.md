@@ -186,6 +186,12 @@ If this keyword is not used, the software will ask what you want to do.
     * **Default**: angstrom
     * **Possible values**: bohr, angstrom
 
+* `tooclose`  
+  **Description:** Metric to compare interatimic distances. If a generated geometry contains an interatomic distance less than this value then the geometry will be removed. Comparisons are done in units of initial geometry.
+    * **Type**: int
+    * **Default**: 0.1
+    * **Possible values**: any integer
+
 
 ## Machine Learning Keywords (in alphabetical order)
 

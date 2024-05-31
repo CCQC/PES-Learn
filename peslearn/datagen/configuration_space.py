@@ -127,9 +127,50 @@ class ConfigurationSpace(object):
         self.all_geometries['cartesians'] = [cartesians[i,:,:] for i in range(self.n_disps)]
         self.all_geometries['internals'] = [intcos[i,:] for i in range(self.n_disps)]
         print("Geometry grid generated in {} seconds".format(round((timeit.default_timer() - t1),3)))
+        if self.input_obj.keywords['tooclose'] != 0:
+            self.too_close(tooclose=self.input_obj.keywords['tooclose'])
         return self.all_geometries
         # Memory is expensive to evaluate
         #print("Peak memory usage estimate (GB): ", 3*(self.all_geometries.memory_usage(deep=True).sum() + cartesians.nbytes + interatomics.nbytes + intcos.nbytes)* (1/1e9))
+
+    def too_close(self, tooclose=0.1):
+        """
+        Check to ensure no interatomic distances are too close.
+        """
+        start = timeit.default_timer()
+        print("Removing geometries with atoms that are too close...")
+        nrows_before = len(self.all_geometries.index)
+        df = self.all_geometries.copy()
+        df = df.round(10)
+        og_cols = df.columns.tolist()
+        # sort interatomic distance columns according to alphabetized bond types
+        # e.g. OH HH CH --> CH HH OH
+        alpha_bond_cols = [og_cols[i] for i in self.mol.alpha_bond_types_indices]
+        alpha_bond_cols.append('cartesians')
+        alpha_bond_cols.append('internals')
+        df = df[alpha_bond_cols]
+        df_cols = df.columns.tolist()
+        # sort values of each 'bondtype' subpartition of interatomic distance columns
+        # subpartitions are defined by the index of the first occurance of each 
+        # bond_type label.  CH CH CH HH HH OH would be [0,3,5]. These define partition bounds.
+        ind = self.mol.alpha_bond_types_first_occur_indices
+        K = len(ind)
+        # sort each subpartition
+        for i in range(K):
+            if i < (K - 1):
+                cut = slice(ind[i], ind[i+1])
+                mask = df_cols[cut]
+                df.loc[:,mask] = np.sort(df.loc[:,mask].values, axis=1)
+            else:
+                mask = df_cols[i:self.n_interatomics]
+                df.loc[:,mask] = np.sort(df.loc[:,mask].values, axis=1)
+        # remove row if interatomic ditance is less than tooclose        
+        for j in range(len(self.bond_columns)):
+            df.drop(df[df[self.bond_columns[j]] < tooclose].index, inplace=True)
+        self.all_geometries = df
+        self.n_tooclose = len(self.all_geometries.index)
+        print("Removed {} geometries where atoms were too close from a set of {} geometries in {} seconds.".format(nrows_before-self.n_tooclose, nrows_before, round((timeit.default_timer() - start), 2)))
+
 
     def remove_redundancies(self):
         """
