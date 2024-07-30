@@ -75,7 +75,7 @@ class InputProcessor(object):
                            'schema_units' : 'angstrom',      # 'bohr'
                            'sort_pes': 'true',               #'false'
                            'training_points': None,          # any int
-                           'tooclose': 0.1,                  # any int or None
+                           'tooclose': 0.1,                  # any int
                            'use_pips': 'true',               #'false'
                            'validation_points': None         # any int
                             }

@@ -138,7 +138,6 @@ class ConfigurationSpace(object):
         Check to ensure no interatomic distances are too close.
         """
         start = timeit.default_timer()
-        print("Removing geometries with atoms that are too close...")
         nrows_before = len(self.all_geometries.index)
         df = self.all_geometries.copy()
         df = df.round(10)

@@ -72,7 +72,7 @@ class KernelRidgeReg(Model):
                     if 'polynomial' in kernels or 'poly' in kernels:
                         print("WARNING: Polynomial type kernels are included in this hyperoptimization.")
                         print("\t It is strongly cautioned against optimizing polynomial kernels in a precomputed kernel along with other types of kernels.")
-                        print("\t See KRR docs for more info.")
+                        print("\t See KRR example docs for more info.")
                         # add link to docs?
                     if 'degree' in precomputed_kernel:
                         degrees = np.asarray(precomputed_kernel['degree'])
