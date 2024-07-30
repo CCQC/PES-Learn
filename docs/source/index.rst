@@ -6,6 +6,8 @@
 Welcome to PES-Learn's documentation!
 =====================================
 
+**Version**: |release|
+
 **PES-Learn** is  a Python library designed to fit system-specific Born-Oppenheimer 
 potential energy surfaces using modern machine learning models. PES-Learn assists in 
 generating datasets, and features Gaussian process, neural network, and kernel ridge regression
@@ -14,10 +16,19 @@ model optimization routines. The goal is to provide high-performance models for 
 
 This project is under active development and welcomes community suggestions and contributions.
 
+**Useful Links**:
+`Source Repository <https://github.com/CCQC/PES-Learn>`_ |
+`Issue Tracker <https://github.com/CCQC/PES-Learn/issues>`_
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   Getting Started <started/main>
+   User Guides <guides/guide>
+   PES-Learn Community <community/community>
+   Reference <reference/keywords>
+   Developers Documentation <develop/dev_docs>
 
 
 Indices and tables
