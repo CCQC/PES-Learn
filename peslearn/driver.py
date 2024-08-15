@@ -17,7 +17,7 @@ with open('input.dat', 'r') as f:
 input_obj = peslearn.InputProcessor(input_string)
 
 if input_obj.keywords['mode'] == None:
-    text = input("Do you want to 'generate' data, 'parse' data, or 'learn'?")
+    text = input("Do you want to 'generate' data, 'parse' data, or 'learn'? ")
     text = text.strip()
 
 else:
@@ -28,8 +28,12 @@ start = timeit.default_timer()
 if text == 'generate' or text == 'g':
     mol = peslearn.datagen.Molecule(input_obj.zmat_string)
     config = peslearn.datagen.ConfigurationSpace(mol, input_obj)
-    template_obj = peslearn.datagen.Template("./template.dat")
-    config.generate_PES(template_obj)
+    if input_obj.keywords['schema_generate'].lower().strip() == 'true':
+        template_obj = None
+        config.generate_PES(template_obj, schema_gen='true')
+    else:
+        template_obj = peslearn.datagen.Template("./template.dat")
+        config.generate_PES(template_obj)
     print("Data generation finished in {} seconds".format(round((timeit.default_timer() - start),2)))
 
 if text == 'parse' or text == 'p':
@@ -52,6 +56,13 @@ if text == 'learn' or text == 'l':
         else:
             nn = peslearn.ml.NeuralNetwork(input_obj.keywords["pes_name"], input_obj)
         nn.optimize_model()
+
+    if input_obj.keywords["ml_model"] == 'krr':
+        if input_obj.keywords['use_pips'] == 'true':
+            krr = peslearn.ml.KernelRidgeReg(input_obj.keywords["pes_name"], input_obj, molecule_type=mol.molecule_type)
+        else:
+            krr = peslearn.ml.KernelRidgeReg(input_obj.keywords["pes_name"], input_obj)
+        krr.optimize_model()
     
 stop = timeit.default_timer()
 print("Total run time: {} seconds".format(round(stop - start,2)))

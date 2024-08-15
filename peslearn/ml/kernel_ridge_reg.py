@@ -67,12 +67,12 @@ class KernelRidgeReg(Model):
             if self.input_obj.keywords['precomputed_kernel']:
                 precomputed_kernel = self.input_obj.keywords['precomputed_kernel']
                 if 'kernel' in precomputed_kernel:
-                    kernels = list(precomputed_kernel['kernel'])
+                    kernels = precomputed_kernel['kernel']
                     self.set_hyperparameter('kernel', hp.choice('kernel', kernels))
                     if 'polynomial' in kernels or 'poly' in kernels:
                         print("WARNING: Polynomial type kernels are included in this hyperoptimization.")
                         print("\t It is strongly cautioned against optimizing polynomial kernels in a precomputed kernel along with other types of kernels.")
-                        print("\t See KRR docs for more info.")
+                        print("\t See KRR example docs for more info.")
                         # add link to docs?
                     if 'degree' in precomputed_kernel:
                         degrees = np.asarray(precomputed_kernel['degree'])

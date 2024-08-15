@@ -51,7 +51,7 @@ class InputProcessor(object):
                            'hp_opt': 'true',                 # 'false'
                            'input_name': 'input.dat',        # what to call new input files generated from template, can be any name
                            'kernel' : None,                  # None, 'verbose', or 'precomputed'
-                           'ml_model': 'gp',                 # 'gp', 'nn'
+                           'ml_model': 'gp',                 # 'gp', 'nn', 'krr'
                            'mode': None,                     # 'generate', 'parse', 'learn', or shorthand: 'g', 'p', 'l'
                            'n_low_energy_train': 0,          # any int
                            'nas_trial_layers': None,         # List of tuples e.g. [(10,), (10,10,10), (50,50)]
@@ -75,8 +75,9 @@ class InputProcessor(object):
                            'schema_units' : 'angstrom',      # 'bohr'
                            'sort_pes': 'true',               #'false'
                            'training_points': None,          # any int
+                           'tooclose': 0.1,                  # any int
                            'use_pips': 'true',               #'false'
-                           'validation_points': None        # any int
+                           'validation_points': None         # any int
                             }
 
         for k in string_keywords:
