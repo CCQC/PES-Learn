@@ -1,0 +1,1340 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>PES-Learn Command-Line Interface (CLI) Tutorial &#8212; PES-Learn 1.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guides/cli';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="PES-Learn Application Program Interface (CLI) Tutorial" href="api.html" />
+    <link rel="prev" title="Tutorials" href="tutorials.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/peslearn.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/peslearn.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">PES-Learn</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../started/main.html">Getting Started</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../started/installation.html">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="guide.html">User Guides</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="tutorials.html">Tutorials</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Command line interface (CLI)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html">Application porgram interface (API)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ext_data.html">Loading external datasets</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="gp_ex.html">Gaussian Process (GP)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nn_ex.html">Neural Network (NN)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="krr_ex.html">Kernel Ridge Regression (KRR)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_gen.html">Data Generation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../community/community.html">PES-Learn Community</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../community/support.html">Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../community/contribute.html">Contribute</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/keywords.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../develop/dev_docs.html">Developers Documentation</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/guides/cli.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>PES-Learn Command-Line Interface (CLI) Tutorial</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-data"><strong>Generating Data</strong></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-an-internal-coordinate-grid">Defining an internal coordinate grid</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#schemas-and-templates">Schemas and Templates</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-generation-keywords">Data Generation Keywords</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-pes-learn-and-generating-data">Running PES-Learn and generating data</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parsing-output-files"><strong>Parsing output files</strong></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-parsing-keywords-in-the-pes-learn-input-file">Setting parsing keywords in the PES-Learn input file</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-the-input-file">Setting up the input file</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parsing-the-output-files-and-creating-a-dataset">Parsing the output files and creating a dataset</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-auto-generated-machine-learning-models-of-the-pes"><strong>Creating Auto-Generated Machine Learning models of the PES</strong></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gaussian-process-regression">Gaussian Process Regression</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-gp-model">Using the GP Model</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#neural-network-regression">Neural Network Regression</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-nn-model">Using the NN model</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kernel-ridge-regression">Kernel Ridge Regression</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-krr-model">Using the KRR model</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#analyzing-model-performance-using-python">Analyzing model performance using Python</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="pes-learn-command-line-interface-cli-tutorial">
+<h1>PES-Learn Command-Line Interface (CLI) Tutorial<a class="headerlink" href="#pes-learn-command-line-interface-cli-tutorial" title="Permalink to this heading">#</a></h1>
+<p>PES-Learn is designed to work similarly to standard electronic structure theory packages:
+users can generate an input file with appropriate keywords, run the software, and get a result.
+This tutorial covers how to do exactly that. Here we generate a machine-learning model of the PES
+of water from start to finish (no knowledge of Python required!).</p>
+<section id="generating-data">
+<h2><strong>Generating Data</strong><a class="headerlink" href="#generating-data" title="Permalink to this heading">#</a></h2>
+<section id="defining-an-internal-coordinate-grid">
+<h3>Defining an internal coordinate grid<a class="headerlink" href="#defining-an-internal-coordinate-grid" title="Permalink to this heading">#</a></h3>
+<p>Currently PES-Learn supports generating points across PESs by displacing in simple internal coordinates
+(a ‘Z-Matrix’). To do this, we must define a Z-Matrix in the input file. We first create an input file called <code class="docutils literal notranslate"><span class="pre">input.dat</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vi</span> <span class="nb">input</span><span class="o">.</span><span class="n">dat</span>
+</pre></div>
+</div>
+<p>in the input file we define the Z-Matrix and the displacements:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">O</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r1</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r2</span> <span class="mi">2</span> <span class="n">a1</span>
+
+<span class="n">r1</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">1.30</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">1.30</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">a1</span> <span class="o">=</span> <span class="p">[</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">120.0</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The syntax defining the internal coordinate ranges is of the form [start, stop, number of points],
+with the bounds included in the number of points. The angles and dihedrals are always specified in degrees.
+The units of length can be anything, though typically Angstrom or Bohr. Dummy atoms are supported (and in fact,
+are required if there are 3 or more co-linear atoms, otherwise in that case those internal coordinate configurations
+will just be deleted!). Labels for geometry parameters can be anything (RDUM, ROH1, A120, etc) as long as they do not
+start with a number. Parameters can be fixed with <code class="docutils literal notranslate"><span class="pre">r1</span> <span class="pre">=</span> <span class="pre">1.0</span></code>, etc. An equilibruim geometry can be specified in the
+order the internal coordinates appear with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">eq_geom</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.96</span><span class="p">,</span><span class="mf">0.96</span><span class="p">,</span><span class="mf">104.5</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>and this will also be included.</p>
+</section>
+<section id="schemas-and-templates">
+<h3>Schemas and Templates<a class="headerlink" href="#schemas-and-templates" title="Permalink to this heading">#</a></h3>
+<p>Before we talk about building the rest of the input file by adding keywords that controll the program, lets first talk
+about schemas and template files. PES-Learn has two options to interface to the electronic structure theory
+program of choice. The first option is an interface to the QC program suite, namely <a class="reference external" href="https://github.com/MolSSI/QCEngine">QCEngine</a>. QCEngine excecutes
+quantum chemistry programs with a standardized input and output system (QCSchema). With PES-Learn, all input
+specifications are written in the previously defined input file and PES-Learn will create simple python scripts
+that contain all the required information for QCEngine to pass to the quantum chemistry program.</p>
+<p>That’s great but how do the specifications work? Let’s return to the input file that we defined in the last section
+and define some keywords to tell PES-Learn to create scripts to generate QCSchemas and run QCEngine. We will put
+these and any other keyword after the Z-Matrix and internal coordinate ranges:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">schema_generate</span> <span class="o">=</span> <span class="n">true</span>
+<span class="n">schema_prog</span> <span class="o">=</span> <span class="n">psi4</span>
+<span class="n">schema_driver</span> <span class="o">=</span> <span class="n">energy</span>
+<span class="n">schema_method</span> <span class="o">=</span> <span class="n">ccsd</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="n">schema_basis</span> <span class="o">=</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+<span class="n">schema_keywords</span> <span class="o">=</span> <span class="s2">&quot;{&#39;reference: &#39;rhf&#39;}&quot;</span>
+</pre></div>
+</div>
+<p>The above keywords are all required for PES-Learn to utilize QCEngine/QCSchema.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">schema_generate</span></code> tells the program that you want to generate scripts to run QCEngine.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">schema_prog</span></code> tells what electronic structure theory program to use, QCEngine has a limited number of programs that it can interface to. Check the <a class="reference external" href="https://molssi.github.io/QCEngine/index.html">QCEngine Docs</a> to see which programs are currently available.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">schema_driver</span></code> tells what kind of computation to run.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">schema_method</span></code> tells what level of theory to run the computations.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">schema_basis</span></code> tells the basis set to use for the computations.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">schema_keywords</span></code> tells QCEngine which program specific keywords to pass to the quantum chemistry program. These must be interpretable by the program you are using, and it is best practice to put them in quotes or PES-Learn may change the case.</p></li>
+</ul>
+<p>For more information about these options and other schema related keywords, check out the <a class="reference external" href="../reference/keywords.html">Keywords</a>
+section, all of the schema related keywords begin with <cite>schema_</cite>.</p>
+<p>The advantage to interfacing with QCEngine is the ease of specifications to run computations, and the parsing
+that comes from the QCSchema outputs which is handled automatically by PES-Learn. When we run the code later on
+the auto-generated scripts to run QCEngine with geometries corresponding to the defined internal coordinate
+grid will be put into their own newly-created sub-directories like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PES_data</span><span class="o">/</span><span class="mi">1</span><span class="o">/</span>
+<span class="n">PES_data</span><span class="o">/</span><span class="mi">2</span><span class="o">/</span>
+<span class="n">PES_data</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>With each numbered sub-directory in <code class="docutils literal notranslate"><span class="pre">PES_data/</span></code> containing a different geometry.
+This PES_data folder can then be zipped up and sent to whatever computing resources you want to use.</p>
+<p>Generating schemas is convenient, however, there are a limited number of programs that QCEngine interfaces to.
+If you want to use a program that is not in the list of programs interfacable to QCEngine, you can instead use a
+<em>template input file</em>. A template input file is a file named <code class="docutils literal notranslate"><span class="pre">template.dat</span></code> it is a cartesian coordinate input
+file for an electronic structure theory package such as Gaussian, Molpro, Psi4, CFOUR, QChem, NWChem, and so on.
+It does not matter what package you want to use, it only matters that the <code class="docutils literal notranslate"><span class="pre">template.dat</span></code> contains Cartesian
+coordinates, and computes an electronic energy by whatever means you wish. PES-Learn will use the template file
+to generate a bunch of (Guassian, Molpro, Psi4, etc) input files, each with different Cartesian geometries
+corresponding to the above internal coordinate grid. The template input file we will use in this example is a
+Psi4 input file which computes a CCSD(T)/cc-pvdz energy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">h2o</span> <span class="p">{</span>
+<span class="mi">0</span> <span class="mi">1</span>
+<span class="n">H</span> <span class="mf">0.00</span> <span class="mf">0.00</span> <span class="mf">0.00</span>
+<span class="n">H</span> <span class="mf">0.00</span> <span class="mf">0.00</span> <span class="mf">0.00</span>
+<span class="n">O</span> <span class="mf">0.00</span> <span class="mf">0.00</span> <span class="mf">0.00</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+<span class="n">reference</span> <span class="n">rhf</span>
+<span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+<span class="p">}</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;ccsd(t)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The actual contents of the Cartesian coordinates does not matter. Later on when we run the code, the auto-generated
+input files with Cartesian geometries corresponding to our internal coordinate grid will be put into their own
+sub-directories similarly as above.</p>
+</section>
+<section id="data-generation-keywords">
+<h3>Data Generation Keywords<a class="headerlink" href="#data-generation-keywords" title="Permalink to this heading">#</a></h3>
+<p>Let’s go back to our PES-Learn input file, add a few keywords, and discuss them.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">O</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r1</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r2</span> <span class="mi">2</span> <span class="n">a1</span>
+
+<span class="n">r1</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">1.30</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">1.30</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">a1</span> <span class="o">=</span> <span class="p">[</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">120.0</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+
+<span class="o">...</span>
+<span class="c1"># Data generation-relevant keywords</span>
+<span class="n">eq_geom</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.96</span><span class="p">,</span><span class="mf">0.96</span><span class="p">,</span><span class="mf">104.5</span><span class="p">]</span>
+<span class="n">input_name</span> <span class="o">=</span> <span class="s1">&#39;input.dat&#39;</span>
+<span class="n">remove_redundancy</span> <span class="o">=</span> <span class="n">true</span>
+<span class="n">remember_redundancy</span> <span class="o">=</span> <span class="n">false</span>
+<span class="n">grid_reduction</span> <span class="o">=</span> <span class="mi">300</span>
+</pre></div>
+</div>
+<p>Comments (ignored text) can be specified with a <code class="docutils literal notranslate"><span class="pre">#</span></code> sign. All entries are case-insensitive. Multiple word phrases
+are seperated with an underscore. Text that doesn’t match any keywords is simply ignored (in this way, the use of
+comment lines is really not necessary unless your are commenting out keyword options). <em>This means if you spell a
+keyword or its value incorrectly it will be ignored.</em> The first occurance of a keyword will be used.</p>
+<ul class="simple">
+<li><p>We discussed <code class="docutils literal notranslate"><span class="pre">eq_geom</span></code> before, it is a geometry forced into the dataset, and it would typically correspond to the global minimum at the level of theory you are using. It is often a good idea to create your dataset such that the minimum of the dataset is the true minimum of the surface, especially for vibrational levels applications.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">input_name</span></code> tells PES-Learn what to call the electronic structure theory input files (when using template files). <cite>‘input.dat’`</cite> is the default value, no need to set it normally. Note that it is surrounded in quotes; this is so PES-Learn doesn’t touch it or change anything about it, such as lowering the case of all the letters.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">remove_redundancy</span></code> removes symmetry-redundant geometries from the internal coordinate grid. In this case, there is redundancy in the equivalent OH bonds and they will be removed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">remember_redundancy</span></code> keeps a cache of redundant-geometry pairs, so that when the energies are parsed from the output files and the dataset is created later on, all of the original geometries are kept in the dataset, with duplicate energies for redundant geometries. If one does not use a permutation-invariant geometry for ML later, this may be useful.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">grid_reduction</span></code> reduces the grid size to the value entered. In this case it means only 300 geometries will be created. This is done by finding the Euclidean distances between all the points in the dataset, and extracting a maximally spaced ‘sub-grid’ of the size specified.</p></li>
+</ul>
+</section>
+<section id="running-pes-learn-and-generating-data">
+<h3>Running PES-Learn and generating data<a class="headerlink" href="#running-pes-learn-and-generating-data" title="Permalink to this heading">#</a></h3>
+<p>In the directory containing the PES-Learn input file <code class="docutils literal notranslate"><span class="pre">input.dat</span></code> (and <code class="docutils literal notranslate"><span class="pre">template.dat</span></code> if you so choose to use it), simply run</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">PES</span><span class="o">-</span><span class="n">Learn</span><span class="o">/</span><span class="n">peslearn</span><span class="o">/</span><span class="n">driver</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>The code will then ask what you want to do, here we type <code class="docutils literal notranslate"><span class="pre">g</span></code> or <code class="docutils literal notranslate"><span class="pre">generate</span></code> and hit enter, and this is the output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Do you want to &#39;generate&#39; data, &#39;parse&#39; data, or &#39;learn&#39;? g
+
+1000 internal coordinate displacements generated in 0.00741 seconds
+Total displacements: 1001
+Number of interatomic distances: 3
+Geometry grid generated in 0.06 seconds
+Removing symmetry-redundant geometries...  Redundancy removal took 0.01 seconds
+Removed 450 redundant geometries from a set of 1001 geometries
+Reducing size of configuration space from 551 datapoints to 300 datapoints
+Configuration space reduction complete in 0.05 seconds
+Your PES inputs are now generated. Run the jobs in the PES_data directory and then parse.
+Data generation finished in 0.41 seconds
+Total run time: 0.41 seconds
+</pre></div>
+</div>
+<p>Now the python scripts (for schemas) or input files (for templates) with Cartesian coordinates corresponding to the internal
+coordinate grid are placed into a directory call <code class="docutils literal notranslate"><span class="pre">PES_data</span></code> with numbered sub-directories containing the unique coordinates.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You do not have to use the command line to specify whether you want to <code class="docutils literal notranslate"><span class="pre">generate</span></code>, <code class="docutils literal notranslate"><span class="pre">parse</span></code>, or <code class="docutils literal notranslate"><span class="pre">learn</span></code>, you can instead specify the mode keyword in the input file:</p>
+<p><code class="docutils literal notranslate"><span class="pre">mode</span> <span class="pre">=</span> <span class="pre">generate</span></code></p>
+<p>This is at times convenient if computations are submitted remotely in an automated fashion, and the users are not directly interacting with a command line.</p>
+</div>
+<p>Now that we have built our inputs we are ready to run the computations!</p>
+<p>If you are using schemas, then each of the numbered directories in <code class="docutils literal notranslate"><span class="pre">PES_data</span></code> will contain a python script that just needs to be excecuted.
+To do this in an automated fashion one might create a simple python script like the following</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span> <span class="nn">os</span>
+<span class="linenos"> 2</span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;PES_data&#39;</span><span class="p">)</span>
+<span class="linenos"> 3</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">300</span><span class="p">):</span>
+<span class="linenos"> 4</span>    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+<span class="linenos"> 5</span>    <span class="k">if</span> <span class="s2">&quot;output.dat&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+<span class="linenos"> 6</span>        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="p">)</span>
+<span class="linenos"> 7</span>        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python input.py&#39;</span><span class="p">)</span>
+<span class="linenos"> 8</span>    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;../&#39;</span><span class="p">)</span>
+<span class="linenos"> 9</span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;../&#39;</span><span class="p">)</span>
+<span class="linenos">10</span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Your input scripts have been submitted.&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you are working with this method and have compiled PES-Learn from source, make sure than you have QCEngine and QCSchema in your active environemnt,
+if you have installed PES-Learn from pip then it should have installed these dependencies already.</p>
+<p>If you are instead working with templates, line 7 of this script can be changed to run your electronic sctructure program instead of Python.
+If using Psi4, for example, we can change line 7 to be</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;psi4 input.dat&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and then run your script. When your jobs have finished you are then able to move on to parsing the data.</p>
+</section>
+</section>
+<section id="parsing-output-files">
+<h2><strong>Parsing output files</strong><a class="headerlink" href="#parsing-output-files" title="Permalink to this heading">#</a></h2>
+<p>Now that every Psi4 input file has been run, and there is a corresponding <code class="docutils literal notranslate"><span class="pre">output.dat</span></code> in each sub-directory
+of <code class="docutils literal notranslate"><span class="pre">PES_data</span></code>, we are ready to use PES-Learn to grab all of the energies, match them with the appropriate
+geometries, and create a dataset.</p>
+<p>There are three schemes for parsing output files with PES-Learn
+* Automatic parsing from schemas
+* User-supplied Python regular expressions (regex)
+* cclib</p>
+<p><strong>Schemas</strong> are very useful and actually parse the data for us. The output is standardized, regardless of
+electronic structure program being utilized by QCEngine. The output is a JSON type strucure and the desired
+output (energy, gradient, Hessian, etc.) will be in the <code class="docutils literal notranslate"><span class="pre">return_result</span></code> object. PES-Learn is able to
+pull the result from this using regex.</p>
+<p><strong>Regular expressions</strong> are a pattern-matching syntax. Though they are somewhat tedious to use, they are
+completely general. Using the regular expression scheme requires</p>
+<ol class="arabic simple">
+<li><p>Inspecting the electronic structure theory software output file</p></li>
+<li><p>Finding the line where the desired energy is</p></li>
+<li><p>Writing a regular expression to match the line’s text and grab the desired energy.</p></li>
+</ol>
+<p><strong>cclib</strong> is a Python library of hard-coded parsing routines. It works in a lot of cases. At the time of
+writing, cclib supports parsing <code class="docutils literal notranslate"><span class="pre">scfenergies</span></code>, <code class="docutils literal notranslate"><span class="pre">mpenergies</span></code>, and <code class="docutils literal notranslate"><span class="pre">ccenergies</span></code>. These different modes
+attempt to find the highest level of theory SCF energy (Hartree-Fock or DFT), highest level of Moller-Plesset
+perturbation theory energy, or the highest level of theory coupled cluster energy. Since these are hard-coded
+routines that are version-dependent, there is no gurantee it will work! It is also a bit slower than regular
+expressions (i.e. milliseconds –&gt; seconds slower)</p>
+<section id="setting-parsing-keywords-in-the-pes-learn-input-file">
+<h3>Setting parsing keywords in the PES-Learn input file<a class="headerlink" href="#setting-parsing-keywords-in-the-pes-learn-input-file" title="Permalink to this heading">#</a></h3>
+<p>When using schemas, parsing the output files is as simple as adding a single keyword to our PES-Learn
+<code class="docutils literal notranslate"><span class="pre">input.dat</span></code> file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Parsing-relevent keywords</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">schema</span>
+</pre></div>
+</div>
+<p>When you are parsing with regex or cclib, it is often a good idea to take a look at a successful output
+file in <code class="docutils literal notranslate"><span class="pre">PES_data/</span></code>. Here is the output file in <code class="docutils literal notranslate"><span class="pre">PES_data/1/</span></code>, which is the geometry corresponding
+to <code class="docutils literal notranslate"><span class="pre">eq_geom</span></code> that we defined earlier:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>            **************************
+            *                        *
+            *        CCTRIPLES       *
+            *                        *
+            **************************
+
+
+    Wave function   =    CCSD_T
+    Reference wfn   =      RHF
+
+    Nuclear Rep. energy (wfn)                =    9.168193296244223
+    SCF energy          (wfn)                =  -76.026653661887252
+    Reference energy    (file100)            =  -76.026653661887366
+    CCSD energy         (file100)            =   -0.213480496782495
+    Total CCSD energy   (file100)            =  -76.240134158669861
+
+    Number of ijk index combinations:               35
+    Memory available in words        :        65536000
+    ~Words needed per explicit thread:            2048
+    Number of threads for explicit ijk threading:    1
+
+    MKL num_threads set to 1 for explicit threading.
+
+    (T) energy                                =   -0.003068821713392
+    * CCSD(T) total energy                  =  -76.243202980383259
+
+
+    Psi4 stopped on: Thursday, 09 May 2019 01:51PM
+    Psi4 wall time for execution: 0:00:01.05
+
+*** Psi4 exiting successfully. Buy a developer a beer!
+</pre></div>
+</div>
+<p>If we were to use cclib, we would put into our PES-Learn <code class="docutils literal notranslate"><span class="pre">input.dat</span></code> file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Parsing-relevant keywords</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">cclib</span>
+<span class="n">energy_cclib</span> <span class="o">=</span> <span class="n">ccenergies</span>
+</pre></div>
+</div>
+<p>to grab coupled cluster energies. When using cclib, however, the CCSD energies might be
+grabbed instead of the CCSD(T) energies. It is always a good idea to check a few of your
+enegies after you parse, regardless of which method you are using.</p>
+<p>Let’s not look at using Regular expressions (regex) to parse our outputs. One fact is
+always very important to keep in mind when using regular expressions in PES-Learn:
+<strong>PES-Learn always grabs the last matching entry in the output file.</strong></p>
+<p>This is good to know, since a pattern may match multiple entries in the output file,
+but it’s okay as long as you want the <em>last one</em>.</p>
+<p>We observe that the energy we want is always contained in a line like</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="n">CCSD</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="n">total</span> <span class="n">energy</span>                  <span class="o">=</span>  <span class="o">-</span><span class="mf">76.243202980383259</span>
+</pre></div>
+</div>
+<p>So the general pattern we want to match is <code class="docutils literal notranslate"><span class="pre">total</span> <span class="pre">energy</span></code> (whitespace) <code class="docutils literal notranslate"><span class="pre">=</span></code> (whitespace)
+(negative floating point number). We may put into our PES-Learn input file the following regular expression:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Parsing-relevant keywords</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">regex</span>
+<span class="n">energy_regex</span> <span class="o">=</span> <span class="s1">&#39;total energy\s+=\s+(-\d+\.\d+)&#39;</span>
+</pre></div>
+</div>
+<p>Here we have taken advantage of the fact that the pattern <code class="docutils literal notranslate"><span class="pre">total</span> <span class="pre">energy</span></code> does not appear
+anymore after the CCSD(T) energy in the output file. The above <code class="docutils literal notranslate"><span class="pre">energy_regex</span></code> line matches
+the words ‘total energy’ followed by one or more whitespaces <code class="docutils literal notranslate"><span class="pre">\s+</span></code>, an equal sign <code class="docutils literal notranslate"><span class="pre">=</span></code>,
+one or more whitespaces <code class="docutils literal notranslate"><span class="pre">\s+</span></code>, and then a negative floating point number <code class="docutils literal notranslate"><span class="pre">-\d+\.\d+</span></code>
+which we have necessarily enclosed in parentheses to indicate that we only want to capture
+the number itself, not the whole line. This is a bit cumbersome to use, so if this in foreign
+to you I recommend trying out various regular expressions via trial and error using
+<a class="reference external" href="https://regex101.com/">Regex101</a>  or <a class="reference external" href="https://pythex.org/">Pythex</a> to ensure that the
+pattern is matched.</p>
+<p>A few other valid <code class="docutils literal notranslate"><span class="pre">energy_regex</span></code> lines would be:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy_regex</span> <span class="o">=</span> <span class="s1">&#39;CCSD\(T\) total energy\s+=\s+(-\d+\.\d+)&#39;</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy_regex</span> <span class="o">=</span> <span class="s1">&#39;=\s+(-\d+\.\d+)&#39;</span>
+</pre></div>
+</div>
+<p>Note that above we had to “escape” the parentheses with backward slashes since it is a <a class="reference external" href="https://www.debuggex.com/cheatsheet/regex/python">reserved
+character</a>. If you want to be safe from parsing
+the wrong energy, more verbose is probably better.</p>
+</section>
+<section id="setting-up-the-input-file">
+<h3>Setting up the input file<a class="headerlink" href="#setting-up-the-input-file" title="Permalink to this heading">#</a></h3>
+<p>Here we have added out parsin keywords to out PES-Learn input file. (We could have had these
+keywords earlier as well, but to keep things simple I am only adding them when needed.)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">O</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r1</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r2</span> <span class="mi">2</span> <span class="n">a1</span>
+
+<span class="n">r1</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">1.30</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">1.30</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">a1</span> <span class="o">=</span> <span class="p">[</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">120.0</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+
+<span class="c1"># Data generation-relevant keywords</span>
+<span class="n">eq_geom</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.96</span><span class="p">,</span><span class="mf">0.96</span><span class="p">,</span><span class="mf">104.5</span><span class="p">]</span>
+<span class="n">input_name</span> <span class="o">=</span> <span class="s1">&#39;input.dat&#39;</span>
+<span class="n">remove_redundancy</span> <span class="o">=</span> <span class="n">true</span>
+<span class="n">remember_redundancy</span> <span class="o">=</span> <span class="n">false</span>
+<span class="n">grid_reduction</span> <span class="o">=</span> <span class="mi">300</span>
+<span class="n">schema_generate</span> <span class="o">=</span> <span class="n">true</span>
+<span class="n">schema_prog</span> <span class="o">=</span> <span class="n">psi4</span>
+<span class="n">schema_driver</span> <span class="o">=</span> <span class="n">energy</span>
+<span class="n">schema_method</span> <span class="o">=</span> <span class="n">ccsd</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="n">schema_basis</span> <span class="o">=</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+<span class="n">schema_keywords</span> <span class="o">=</span> <span class="s2">&quot;{&#39;reference: &#39;rhf&#39;}&quot;</span>
+
+<span class="c1"># Parsing-relevant keywords</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">schema</span>
+<span class="n">pes_name</span> <span class="o">=</span> <span class="s1">&#39;PES.dat&#39;</span>      <span class="c1"># name for the output file containing parsed data</span>
+<span class="n">sort_pes</span> <span class="o">=</span> <span class="n">true</span>           <span class="c1"># sort in terms of increasing energy</span>
+<span class="n">pes_format</span> <span class="o">=</span> <span class="n">interatomics</span> <span class="c1"># could also choose internal coordinates r1, r2, a1</span>
+</pre></div>
+</div>
+<p>Note that the example above is for parsing from schemas, and if you are parsing with cclib
+or regex, then you should include the appropriate <code class="docutils literal notranslate"><span class="pre">energy</span></code>, <code class="docutils literal notranslate"><span class="pre">energy_cclib</span></code>, and/or <code class="docutils literal notranslate"><span class="pre">energy_regex</span></code>
+keywords, instead of the schema keywords.</p>
+</section>
+<section id="parsing-the-output-files-and-creating-a-dataset">
+<h3>Parsing the output files and creating a dataset<a class="headerlink" href="#parsing-the-output-files-and-creating-a-dataset" title="Permalink to this heading">#</a></h3>
+<p>Just as before, we run PES-Learn</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">PES</span><span class="o">-</span><span class="n">Learn</span><span class="o">/</span><span class="n">peslearn</span><span class="o">/</span><span class="n">driver</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>This time choose <code class="docutils literal notranslate"><span class="pre">parse</span></code> or <code class="docutils literal notranslate"><span class="pre">p</span></code> when prompted:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Do you want to &#39;generate&#39; data, &#39;parse&#39; data, or &#39;learn&#39;? p
+Parsed data has been written to PES.dat
+Total run time: 0.38 seconds
+</pre></div>
+</div>
+<p>This will compile all of the data necessary for generating machine learning models in
+the <code class="docutils literal notranslate"><span class="pre">PES.dat</span></code> file, which looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">r0</span><span class="p">,</span><span class="n">r1</span><span class="p">,</span><span class="n">r2</span><span class="p">,</span><span class="n">E</span>
+<span class="mf">1.518123981600</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="o">-</span><span class="mf">76.243202980383</span>
+<span class="mf">1.455484441900</span><span class="p">,</span><span class="mf">0.950000000000</span><span class="p">,</span><span class="mf">0.950000000000</span><span class="p">,</span><span class="o">-</span><span class="mf">76.242743191056</span>
+<span class="mf">1.494132369500</span><span class="p">,</span><span class="mf">1.000000000000</span><span class="p">,</span><span class="mf">0.950000000000</span><span class="p">,</span><span class="o">-</span><span class="mf">76.242037809799</span>
+<span class="mf">1.568831329800</span><span class="p">,</span><span class="mf">1.000000000000</span><span class="p">,</span><span class="mf">1.000000000000</span><span class="p">,</span><span class="o">-</span><span class="mf">76.241196021922</span>
+<span class="mf">1.494050142500</span><span class="p">,</span><span class="mf">1.000000000000</span><span class="p">,</span><span class="mf">1.000000000000</span><span class="p">,</span><span class="o">-</span><span class="mf">76.240995054410</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>If you are working with schemas and one of the outputs failed (i.e. the QCSchema <code class="docutils literal notranslate"><span class="pre">success</span></code> entry is <code class="docutils literal notranslate"><span class="pre">False</span></code>)
+then PES-Learn will ommit this entry from your <code class="docutils literal notranslate"><span class="pre">PES.dat</span></code> file and write the failed directory number
+in a file <code class="docutils literal notranslate"><span class="pre">errors.txt</span></code>.</p>
+</section>
+</section>
+<section id="creating-auto-generated-machine-learning-models-of-the-pes">
+<h2><strong>Creating Auto-Generated Machine Learning models of the PES</strong><a class="headerlink" href="#creating-auto-generated-machine-learning-models-of-the-pes" title="Permalink to this heading">#</a></h2>
+<section id="gaussian-process-regression">
+<h3>Gaussian Process Regression<a class="headerlink" href="#gaussian-process-regression" title="Permalink to this heading">#</a></h3>
+<p>We now have in our working directory a file called <code class="docutils literal notranslate"><span class="pre">PES.dat</span></code>, created with the routine above.
+An auto-optimized machine learning model of the surface can be produced by this dataset. Below
+we have added keywords to our PES-Learn input file which are relevant to training a ML model</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">O</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r1</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r2</span> <span class="mi">2</span> <span class="n">a1</span>
+
+<span class="n">r1</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">1.30</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">1.30</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">a1</span> <span class="o">=</span> <span class="p">[</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">120.0</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+
+<span class="c1"># Data generation-relevant keywords</span>
+<span class="n">eq_geom</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.96</span><span class="p">,</span><span class="mf">0.96</span><span class="p">,</span><span class="mf">104.5</span><span class="p">]</span>
+<span class="n">input_name</span> <span class="o">=</span> <span class="s1">&#39;input.dat&#39;</span>
+<span class="n">remove_redundancy</span> <span class="o">=</span> <span class="n">true</span>
+<span class="n">remember_redundancy</span> <span class="o">=</span> <span class="n">false</span>
+<span class="n">grid_reduction</span> <span class="o">=</span> <span class="mi">300</span>
+
+<span class="c1"># Parsing-relevant keywords</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">regex</span>
+<span class="n">energy_regex</span> <span class="o">=</span> <span class="s1">&#39;total energy\s+=\s+(-\d+\.\d+)&#39;</span>
+<span class="n">pes_name</span> <span class="o">=</span> <span class="s1">&#39;PES.dat&#39;</span>
+<span class="n">sort_pes</span> <span class="o">=</span> <span class="n">true</span>           <span class="c1"># sort in terms of increasing energy</span>
+<span class="n">pes_format</span> <span class="o">=</span> <span class="n">interatomics</span> <span class="c1"># could also choose internal coordinates r1, r2, a1</span>
+
+<span class="c1"># ML-relevant keywords</span>
+<span class="n">ml_model</span> <span class="o">=</span> <span class="n">gp</span>              <span class="c1"># Use Gaussian Process regression</span>
+<span class="n">pes_format</span> <span class="o">=</span> <span class="n">interatomics</span>  <span class="c1"># Geometry values in the PES file</span>
+<span class="n">use_pips</span> <span class="o">=</span> <span class="n">true</span>            <span class="c1"># Transform interatomic distances into permutation invariant polynomials</span>
+<span class="n">hp_maxit</span> <span class="o">=</span> <span class="mi">15</span>              <span class="c1"># Train 15 models with hyperparameter optimization, select the best</span>
+<span class="n">training_points</span> <span class="o">=</span> <span class="mi">200</span>      <span class="c1"># Train with 200 points (out of 300 total)</span>
+<span class="n">sampling</span> <span class="o">=</span> <span class="n">structure_based</span> <span class="c1"># Sample training set by maximizing Euclidean distances</span>
+<span class="n">n_low_energy_train</span> <span class="o">=</span> <span class="mi">1</span>     <span class="c1"># Force lowest energy point into training set</span>
+</pre></div>
+</div>
+<p>Note that a minimal working input file would only need the internal coordinate definition (because we
+are using PIPs and need to know the atom types!) and the ML relevant keywords:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">O</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r1</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r2</span> <span class="mi">2</span> <span class="n">a1</span>
+
+<span class="c1"># ML-relevant keywords</span>
+<span class="n">ml_model</span> <span class="o">=</span> <span class="n">gp</span>              <span class="c1"># Use Gaussian Process regression</span>
+<span class="n">pes_format</span> <span class="o">=</span> <span class="n">interatomics</span>  <span class="c1"># Geometry values in the PES file</span>
+<span class="n">use_pips</span> <span class="o">=</span> <span class="n">true</span>            <span class="c1"># Transform interatomic distances into permutation invariant polynomials</span>
+<span class="n">hp_maxit</span> <span class="o">=</span> <span class="mi">15</span>              <span class="c1"># Train 15 models with hyperparameter optimization, select the best</span>
+<span class="n">training_points</span> <span class="o">=</span> <span class="mi">200</span>      <span class="c1"># Train with 200 points (out of 300 total)</span>
+<span class="n">sampling</span> <span class="o">=</span> <span class="n">structure_based</span> <span class="c1"># Sample training set by maximizing Euclidean distances</span>
+<span class="n">n_low_energy_train</span> <span class="o">=</span> <span class="mi">1</span>     <span class="c1"># Force lowest energy point into training set</span>
+</pre></div>
+</div>
+<p>running this input in the same way that we <code class="docutils literal notranslate"><span class="pre">generated</span></code> and <code class="docutils literal notranslate"><span class="pre">parsed</span></code>, now we select <code class="docutils literal notranslate"><span class="pre">learn</span></code> or <code class="docutils literal notranslate"><span class="pre">l</span></code>.
+This will try out several models and print the performance statistics in units of wavenumbers (cm <span class="math notranslate nohighlight">\(^{-1}\)</span>)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Do you want to &#39;generate&#39; data, &#39;parse&#39; data, or &#39;learn&#39;? l
+Using permutation invariant polynomial transformation for molecule type  A2B
+Beginning hyperparameter optimization...
+Trying 15 combinations of hyperparameters
+Training with 200 points (Full dataset contains 300 points).
+Using structure_based training set point sampling.
+Errors are root-mean-square error in wavenumbers (cm-1)
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: &#39;mm01&#39;, &#39;scale_y&#39;: None}
+Test Dataset 5.38
+Full Dataset 5.36
+Median error: 4.18
+Max 5 errors: [11.3 11.4 11.9 12.7 13.9]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 2.0}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: &#39;mm11&#39;, &#39;scale_y&#39;: &#39;mm11&#39;}
+Test Dataset 0.94
+Full Dataset 0.77
+Median error: 0.53
+Max 5 errors: [1.9 2.  2.  2.  2.2]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: &#39;mm11&#39;, &#39;scale_y&#39;: &#39;mm11&#39;}
+Test Dataset 0.55
+Full Dataset 0.51
+Median error: 0.33
+Max 5 errors: [1.2 1.3 1.3 1.5 1.8]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: &#39;mm01&#39;, &#39;scale_y&#39;: &#39;std&#39;}
+Test Dataset 0.52
+Full Dataset 0.42
+Median error: 0.26
+Max 5 errors: [1.1 1.1 1.1 1.2 1.2]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: &#39;std&#39;, &#39;scale_y&#39;: None}
+Test Dataset 5.38
+Full Dataset 5.36
+Median error: 4.17
+Max 5 errors: [11.4 11.5 11.9 12.7 13.9]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: &#39;std&#39;, &#39;scale_y&#39;: &#39;mm01&#39;}
+Test Dataset 0.86
+Full Dataset 0.81
+Median error: 0.52
+Max 5 errors: [2.  2.  2.2 2.3 3. ]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: &#39;mm11&#39;, &#39;scale_y&#39;: &#39;mm11&#39;}
+Test Dataset 0.54
+Full Dataset 0.49
+Median error: 0.35
+Max 5 errors: [1.2 1.2 1.2 1.2 1.4]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.2000000000000002}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: &#39;mm01&#39;, &#39;scale_y&#39;: None}
+Test Dataset 9.84
+Full Dataset 8.51
+Median error: 6.29
+Max 5 errors: [19.4 20.4 20.5 21.1 25.2]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.8}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: None, &#39;scale_y&#39;: &#39;std&#39;}
+Test Dataset 0.28
+Full Dataset 0.24
+Median error: 0.15
+Max 5 errors: [0.7 0.8 0.8 1.2 1.4]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: None, &#39;scale_y&#39;: &#39;mm01&#39;}
+Test Dataset 0.91
+Full Dataset 0.87
+Median error: 0.57
+Max 5 errors: [2.2 2.2 2.3 2.4 2.8]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: None, &#39;scale_y&#39;: &#39;mm01&#39;}
+Test Dataset 0.97
+Full Dataset 0.9
+Median error: 0.61
+Max 5 errors: [2.2 2.3 2.4 2.5 2.8]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: &#39;mm11&#39;, &#39;scale_y&#39;: None}
+Test Dataset 5.38
+Full Dataset 5.37
+Median error: 4.15
+Max 5 errors: [11.4 11.5 12.  12.7 13.9]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.3}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: &#39;mm01&#39;, &#39;scale_y&#39;: &#39;mm01&#39;}
+Test Dataset 1.37
+Full Dataset 1.06
+Median error: 0.57
+Max 5 errors: [3.2 3.2 3.3 3.5 3.7]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: &#39;mm11&#39;, &#39;scale_y&#39;: None}
+Test Dataset 5.7
+Full Dataset 5.68
+Median error: 4.33
+Max 5 errors: [13.  13.8 14.7 14.7 15.1]
+Hyperparameters:
+{&#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.5}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: &#39;mm01&#39;, &#39;scale_y&#39;: &#39;mm01&#39;}
+Test Dataset 1.3
+Full Dataset 1.03
+Median error: 0.65
+Max 5 errors: [2.9 2.9 3.  3.  3.1]
+
+###################################################
+#                                                 #
+#     Hyperparameter Optimization Complete!!!     #
+#                                                 #
+###################################################
+
+Best performing hyperparameters are:
+[(&#39;morse_transform&#39;, {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.8}), (&#39;pip&#39;, {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}), (&#39;scale_X&#39;, None), (&#39;scale_y&#39;, &#39;std&#39;)]
+Fine-tuning final model architecture...
+Hyperparameters:  {&#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.8}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: None, &#39;scale_y&#39;: &#39;std&#39;}
+Final model performance (cm-1):
+Test Dataset 0.28  Full Dataset 0.24     Median error: 0.15  Max 5 errors: [0.7 0.8 0.8 1.2 1.4]
+
+Saving ML model data...
+Total run time: 66.25 seconds
+</pre></div>
+</div>
+<p>Training with just 200 points, the best model had a RMSE on the 100-point test set of 0.28 cm <span class="math notranslate nohighlight">\(^{-1}\)</span>,
+and the full 300 point dataset had a RMSE of 0.24 cm <span class="math notranslate nohighlight">\(^{-1}\)</span>. This is absurdly accurate; it’s a good
+thing we used <code class="docutils literal notranslate"><span class="pre">grid_reduction</span></code> back when generating our data to reduce our dataset from 551 points to just 300!
+We clearly did not need more than a few hundred points to model this portion of the PES of water; any more
+computations would have been unnecessary! This is why it is important to probe how much data one needs along
+the surface at a <em>meaningful but low level of theory</em>.</p>
+<section id="using-the-gp-model">
+<h4>Using the GP Model<a class="headerlink" href="#using-the-gp-model" title="Permalink to this heading">#</a></h4>
+<p>After running the above, PES-Learn creates a directory called <code class="docutils literal notranslate"><span class="pre">model1data</span></code> (subsequently trained models will
+not overwrite this, but instead create new directories <code class="docutils literal notranslate"><span class="pre">model2data</span></code>, <code class="docutils literal notranslate"><span class="pre">model3data</span></code>, etc.). Inside this
+directory is a variety of files which are self-explanatory.</p>
+<p>The most important file is the auto-generated Python script <code class="docutils literal notranslate"><span class="pre">compute_energy.py</span></code> which can be used to evaluate
+new energies using the model. It needs to be in the same directory as <code class="docutils literal notranslate"><span class="pre">PES.dat</span></code> and <code class="docutils literal notranslate"><span class="pre">model.json</span></code> to work.
+It contains a function <code class="docutils literal notranslate"><span class="pre">pes()</span></code> which takes one or more cartesian or internal coordinate arguments and outputs
+one or more energies corresponding to the geometries. If the argument <code class="docutils literal notranslate"><span class="pre">cartesian=False</span></code> is set, you must supply
+coordinates in the exact same format and exact same order as the model was trained on (i.e. the format in <code class="docutils literal notranslate"><span class="pre">PES.dat</span></code>).
+If the argument <code class="docutils literal notranslate"><span class="pre">cartesian=True</span></code> is set, cartesian coordinates are supplied in the same order as given in a
+typical <code class="docutils literal notranslate"><span class="pre">PES_data</span></code> input file (not the <code class="docutils literal notranslate"><span class="pre">template.dat</span></code> file). <strong>Cartesians can only be supplied if the model
+was trained on interatomic distances or PIPs of the interatomic distances.</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">compute_energy.py</span></code> file can be imported and used. Here’s an example python script <code class="docutils literal notranslate"><span class="pre">use_model.py</span></code> which
+imports the pes function and evaluates some energies at some cartesian geometries.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compute_energy</span> <span class="kn">import</span> <span class="n">pes</span>
+
+<span class="n">cart_geoms</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">1.1000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.7361215932</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4250000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.2000000000</span><span class="p">,</span> <span class="mf">1.2000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.7461215932</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4150000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.1000000000</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.1000000000</span><span class="p">,</span> <span class="mf">1.3000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.7561215932</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4350000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.2000000000</span><span class="p">]]</span>
+
+<span class="n">energies1</span> <span class="o">=</span> <span class="n">pes</span><span class="p">(</span><span class="n">cart_geoms</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">energies1</span><span class="p">)</span>
+
+<span class="n">interatomic_geoms</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">1.494050142500</span><span class="p">,</span><span class="mf">1.000000000000</span><span class="p">,</span><span class="mf">1.000000000000</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">1.597603916000</span><span class="p">,</span><span class="mf">1.000000000000</span><span class="p">,</span><span class="mf">0.950000000000</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">1.418793563200</span><span class="p">,</span><span class="mf">1.000000000000</span><span class="p">,</span><span class="mf">0.950000000000</span><span class="p">]]</span>
+
+<span class="n">energies2</span> <span class="o">=</span> <span class="n">pes</span><span class="p">(</span><span class="n">interatomic_geoms</span><span class="p">,</span> <span class="n">cartesian</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">energies2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The print statements yield the following output. The energies are in units of Hartrees (which are the unit of
+energy in our <code class="docutils literal notranslate"><span class="pre">PES.dat</span></code> which the model was trained on).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="o">-</span><span class="mf">76.20462724</span><span class="p">]</span>
+<span class="p">[</span><span class="o">-</span><span class="mf">76.21835841</span><span class="p">]</span>
+<span class="p">[</span><span class="o">-</span><span class="mf">76.21467994</span><span class="p">]]</span>
+<span class="p">[[</span><span class="o">-</span><span class="mf">76.24099496</span><span class="p">]</span>
+<span class="p">[</span><span class="o">-</span><span class="mf">76.24031118</span><span class="p">]</span>
+<span class="p">[</span><span class="o">-</span><span class="mf">76.24024971</span><span class="p">]]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Just as in the above example, it is possible to feed in multiple geometric parameters into the <code class="docutils literal notranslate"><span class="pre">pes()</span></code> function.
+If you have multiple geometries that you would like to feed into this function, it is <em>much</em> more efficient to
+feed them all into the function at once, rather than in some loop feeding them in one at a time.</p>
+</div>
+</section>
+</section>
+<section id="neural-network-regression">
+<h3>Neural Network Regression<a class="headerlink" href="#neural-network-regression" title="Permalink to this heading">#</a></h3>
+<p>Neural networks (NNs) are recommended for training sets of size 1000 and above for efficiency. This is because
+the hyperparameter tuning of NNs takes much longer than GPs, so there is an initial up-front cost to training
+NNs that GPs do not have. The NN building code can be broken down into three steps:</p>
+<ul class="simple">
+<li><p>Neural architecture search (NAS)</p></li>
+<li><p>Hyperparameter tuning</p></li>
+<li><p>Learning rate optimization</p></li>
+</ul>
+<p>Early stopping is used more aggressively in the first steps than in the last. Therefore, the performance of
+models during the NAS and hyperparameter tuning steps should not be taken as final; the training of the models
+is being stopped early to save time.</p>
+<p>Batch learning with the L-BFGS optimizer is currently the only option. For high-level regression tasks, it
+is far superior to 1st order optimizers such as Adam, SGD, and RMSProp.</p>
+<p>The Neural Architecture Search (NAS) tries out several hidden layer structures. One can override default NAS
+hidden layer strucutres with the keyword <code class="docutils literal notranslate"><span class="pre">nas_trial_layers</span></code> with the syntax <code class="docutils literal notranslate"><span class="pre">nas_trial_layers</span> <span class="pre">=</span> <span class="pre">[[32],</span> <span class="pre">[32,32],</span> <span class="pre">[256]]</span></code>,
+which would try out NNs with a single hidden layer of 32 nodes, two hidden layers with 32 nodes, and a single
+hidden layer with 256 nodes. The default NAS space is very large, so if you observe on your first run with the
+default NAS space that your dataset does better with a large number of nodes ([256,256] for example) you may
+consider restricting the NAS space on future runs using the <code class="docutils literal notranslate"><span class="pre">nas_trial_layers</span></code> keyword. There should be at
+least 3 hidden layer structures in the NAS space.</p>
+<p>Hyperparameter tuning is similar to the GP model optimizer. The learning rate optimizer is self-explanatory.
+There are checks in place to detect performance plateaus (in which learning rate decay triggers), or overfitting
+(in which case training is halted).</p>
+<p>For neural networks, a validation set must be specified since they are more prone to overfitting. The validation
+points are sampled from all points which are not training set points. If one does not specify a number of validation
+points, by default half of the test set points are converted to validation set points. If you dataset has 1000 points
+and 800 are used for training, there would by default be 100 validation points and 100 test points. The validation error
+is used to optimize hyperparameters, while the test set error is not used for anything, though it is printed in all cases.</p>
+<p>A neural network can be trained with minimal modification of the GP input used previously:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">O</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r1</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r2</span> <span class="mi">2</span> <span class="n">a1</span>
+
+<span class="c1"># ML-relevant keywords</span>
+<span class="n">ml_model</span> <span class="o">=</span> <span class="n">nn</span>              <span class="c1"># Use Neural Network regression</span>
+<span class="n">pes_format</span> <span class="o">=</span> <span class="n">interatomics</span>  <span class="c1"># Geometry values in the PES file</span>
+<span class="n">use_pips</span> <span class="o">=</span> <span class="n">true</span>            <span class="c1"># Transform interatomic distances into permutation invariant polynomials</span>
+<span class="n">hp_maxit</span> <span class="o">=</span> <span class="mi">15</span>              <span class="c1"># Train 15 models with hyperparameter optimization, select the best</span>
+<span class="n">training_points</span> <span class="o">=</span> <span class="mi">200</span>      <span class="c1"># Train with 200 points (out of 300 total)</span>
+<span class="n">validation_points</span> <span class="o">=</span> <span class="mi">50</span>     <span class="c1"># Validate with  50 points (50 left over for testing)</span>
+<span class="n">sampling</span> <span class="o">=</span> <span class="n">structure_based</span> <span class="c1"># Sample training set by maximizing Euclidean distances</span>
+<span class="n">n_low_energy_train</span> <span class="o">=</span> <span class="mi">1</span>     <span class="c1"># Force lowest energy point into training set</span>
+<span class="n">nas_trial_layers</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">32</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">],</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="mi">16</span><span class="p">]]</span> <span class="c1"># NAS hidden layer trial structures</span>
+</pre></div>
+</div>
+<p>The output from running PES-Learn gives:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Do you want to &#39;generate&#39; data, &#39;parse&#39; data, or &#39;learn&#39;? l
+Using permutation invariant polynomial transformation for molecule type  A2B
+Number of validation points not specified. Splitting test set in half --&gt; 50% test, 50% validation
+Training with 200 points. Validating with 50 points. Full dataset contains 300 points.
+Using structure_based training set point sampling.
+Errors are root-mean-square error in wavenumbers (cm-1)
+
+Performing neural architecture search...
+
+Hidden layer structure:  [32]
+Hyperparameters:  {&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;scale_X&#39;: {&#39;scale_X&#39;: &#39;std&#39;, &#39;activation&#39;: &#39;tanh&#39;}, &#39;scale_y&#39;: &#39;std&#39;, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;layers&#39;: [32]}
+Test set RMSE (cm-1):  5.11  Validation set RMSE (cm-1):  5.03 Full dataset RMSE (cm-1):  4.40
+Hidden layer structure:  [64]
+Hyperparameters:  {&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;scale_X&#39;: {&#39;scale_X&#39;: &#39;std&#39;, &#39;activation&#39;: &#39;tanh&#39;}, &#39;scale_y&#39;: &#39;std&#39;, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;layers&#39;: [64]}
+Test set RMSE (cm-1):  6.30  Validation set RMSE (cm-1):  4.59 Full dataset RMSE (cm-1):  5.06
+Hidden layer structure:  [16, 16, 16]
+Hyperparameters:  {&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;scale_X&#39;: {&#39;scale_X&#39;: &#39;std&#39;, &#39;activation&#39;: &#39;tanh&#39;}, &#39;scale_y&#39;: &#39;std&#39;, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;layers&#39;: [16, 16, 16]}
+Test set RMSE (cm-1):  5.83  Validation set RMSE (cm-1):  6.52 Full dataset RMSE (cm-1):  4.99
+Hidden layer structure:  [32, 32]
+Hyperparameters:  {&#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;scale_X&#39;: {&#39;scale_X&#39;: &#39;std&#39;, &#39;activation&#39;: &#39;tanh&#39;}, &#39;scale_y&#39;: &#39;std&#39;, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;layers&#39;: [32, 32]}
+Test set RMSE (cm-1):  1.67  Validation set RMSE (cm-1):  1.69 Full dataset RMSE (cm-1):  1.57
+
+Neural architecture search complete. Best hidden layer structures: [[32, 32], [32], [16, 16, 16]]
+
+Beginning hyperparameter optimization...
+Trying 15 combinations of hyperparameters
+Hyperparameters:
+{&#39;layers&#39;: (32,), &#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.6}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;mm11&#39;}
+Test set RMSE (cm-1):  2.98  Validation set RMSE (cm-1):  2.67 Full dataset RMSE (cm-1):  2.94
+Hyperparameters:
+{&#39;layers&#39;: (32,), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;mm11&#39;}, &#39;scale_y&#39;: &#39;mm01&#39;}
+Test set RMSE (cm-1): 17.35  Validation set RMSE (cm-1): 16.15 Full dataset RMSE (cm-1): 17.24
+Hyperparameters:
+{&#39;layers&#39;: (32, 32), &#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.6}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;mm11&#39;}, &#39;scale_y&#39;: &#39;mm01&#39;}
+Test set RMSE (cm-1):   inf  Validation set RMSE (cm-1):   inf Full dataset RMSE (cm-1):   inf
+Hyperparameters:
+{&#39;layers&#39;: (16, 16, 16), &#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.9000000000000001}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;std&#39;}
+Test set RMSE (cm-1):  4.13  Validation set RMSE (cm-1):  4.00 Full dataset RMSE (cm-1):  3.65
+Hyperparameters:
+{&#39;layers&#39;: (32,), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;mm11&#39;}, &#39;scale_y&#39;: &#39;std&#39;}
+Test set RMSE (cm-1):  1.49  Validation set RMSE (cm-1):  1.42 Full dataset RMSE (cm-1):  1.31
+Hyperparameters:
+{&#39;layers&#39;: (32, 32), &#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.6}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;mm11&#39;}, &#39;scale_y&#39;: &#39;std&#39;}
+Test set RMSE (cm-1):   inf  Validation set RMSE (cm-1):   inf Full dataset RMSE (cm-1):   inf
+Hyperparameters:
+{&#39;layers&#39;: (32,), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;mm11&#39;}
+Test set RMSE (cm-1): 25623.45  Validation set RMSE (cm-1): 44170.74 Full dataset RMSE (cm-1): 20903.16
+Hyperparameters:
+{&#39;layers&#39;: (16, 16, 16), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;mm11&#39;}
+Test set RMSE (cm-1):  4.87  Validation set RMSE (cm-1):  3.20 Full dataset RMSE (cm-1):  3.10
+Hyperparameters:
+{&#39;layers&#39;: (32, 32), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;std&#39;}
+Test set RMSE (cm-1):  0.81  Validation set RMSE (cm-1):  0.82 Full dataset RMSE (cm-1):  0.71
+Hyperparameters:
+{&#39;layers&#39;: (16, 16, 16), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;mm11&#39;}, &#39;scale_y&#39;: &#39;std&#39;}
+Test set RMSE (cm-1):  2.61  Validation set RMSE (cm-1):  2.43 Full dataset RMSE (cm-1):  2.11
+Hyperparameters:
+{&#39;layers&#39;: (32, 32), &#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.5}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;mm11&#39;}, &#39;scale_y&#39;: &#39;std&#39;}
+Test set RMSE (cm-1):  4.09  Validation set RMSE (cm-1):  3.02 Full dataset RMSE (cm-1):  3.41
+Hyperparameters:
+{&#39;layers&#39;: (32,), &#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.8}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;mm11&#39;}, &#39;scale_y&#39;: &#39;mm11&#39;}
+Test set RMSE (cm-1):  1.99  Validation set RMSE (cm-1):  1.93 Full dataset RMSE (cm-1):  2.23
+Hyperparameters:
+{&#39;layers&#39;: (16, 16, 16), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;mm01&#39;}
+Test set RMSE (cm-1):   inf  Validation set RMSE (cm-1):   inf Full dataset RMSE (cm-1):   inf
+Hyperparameters:
+{&#39;layers&#39;: (16, 16, 16), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: False, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;std&#39;}
+Test set RMSE (cm-1):  5.83  Validation set RMSE (cm-1):  6.52 Full dataset RMSE (cm-1):  4.99
+Hyperparameters:
+{&#39;layers&#39;: (16, 16, 16), &#39;morse_transform&#39;: {&#39;morse&#39;: True, &#39;morse_alpha&#39;: 1.6}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;mm11&#39;}
+Test set RMSE (cm-1):  2.82  Validation set RMSE (cm-1):  2.70 Full dataset RMSE (cm-1):  2.61
+
+###################################################
+#                                                 #
+#     Hyperparameter Optimization Complete!!!     #
+#                                                 #
+###################################################
+
+Best performing hyperparameters are:
+[(&#39;layers&#39;, (32, 32)), (&#39;morse_transform&#39;, {&#39;morse&#39;: False}), (&#39;pip&#39;, {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}), (&#39;scale_X&#39;, {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}), (&#39;scale_y&#39;, &#39;std&#39;)]
+Optimizing learning rate...
+Hyperparameters:  {&#39;layers&#39;: (32, 32), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;std&#39;, &#39;lr&#39;: 1.0}
+Test set RMSE (cm-1): 316275944698408704.00  Validation set RMSE (cm-1): 278706602952744288.00 Full dataset RMSE (cm-1): 269540779801922272.00
+Hyperparameters:  {&#39;layers&#39;: (32, 32), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;std&#39;, &#39;lr&#39;: 0.8}
+Test set RMSE (cm-1):  5.71  Validation set RMSE (cm-1):  4.43 Full dataset RMSE (cm-1):  3.70
+Hyperparameters:  {&#39;layers&#39;: (32, 32), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;std&#39;, &#39;lr&#39;: 0.6}
+Test set RMSE (cm-1): 42.92  Validation set RMSE (cm-1): 27.75 Full dataset RMSE (cm-1): 21.25
+Hyperparameters:  {&#39;layers&#39;: (32, 32), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;std&#39;, &#39;lr&#39;: 0.5}
+Test set RMSE (cm-1):  0.81  Validation set RMSE (cm-1):  0.82 Full dataset RMSE (cm-1):  0.71
+Hyperparameters:  {&#39;layers&#39;: (32, 32), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;std&#39;, &#39;lr&#39;: 0.4}
+Test set RMSE (cm-1):  1.30  Validation set RMSE (cm-1):  0.98 Full dataset RMSE (cm-1):  1.06
+Hyperparameters:  {&#39;layers&#39;: (32, 32), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;std&#39;, &#39;lr&#39;: 0.2}
+Test set RMSE (cm-1):  1.50  Validation set RMSE (cm-1):  1.12 Full dataset RMSE (cm-1):  1.19
+Fine-tuning final model...
+Hyperparameters:  {&#39;layers&#39;: (32, 32), &#39;morse_transform&#39;: {&#39;morse&#39;: False}, &#39;pip&#39;: {&#39;degree_reduction&#39;: True, &#39;pip&#39;: True}, &#39;scale_X&#39;: {&#39;activation&#39;: &#39;tanh&#39;, &#39;scale_X&#39;: &#39;std&#39;}, &#39;scale_y&#39;: &#39;std&#39;, &#39;lr&#39;: 0.5}
+Epoch 1 Validation RMSE (cm-1): 2008.26
+Epoch 2 Validation RMSE (cm-1): 719.83
+Epoch 3 Validation RMSE (cm-1): 411.05
+...
+Epoch 355 Validation RMSE (cm-1):  0.95
+Test set RMSE (cm-1):  1.04  Validation set RMSE (cm-1):  0.95 Full dataset RMSE (cm-1):  0.80
+Model optimization complete. Saving final model...
+Saving ML model data...
+Total run time: 957.76 seconds
+</pre></div>
+</div>
+<p>The final results is a Test/Validation/Full dataset RMSE (cm-1) of 1.04, 0.95, and 0.80, respectively.
+Not quite as good as the GP models, but still about as accurate as you would ever want it to be!</p>
+<section id="using-the-nn-model">
+<h4>Using the NN model<a class="headerlink" href="#using-the-nn-model" title="Permalink to this heading">#</a></h4>
+<p>The neural networks can be used in the exact same way as the GP models outlined above. The trained
+model is easily accessible using the <code class="docutils literal notranslate"><span class="pre">compute_energy.py</span></code> file. Model performance and the datasets
+are also saved.</p>
+</section>
+</section>
+<section id="kernel-ridge-regression">
+<h3>Kernel Ridge Regression<a class="headerlink" href="#kernel-ridge-regression" title="Permalink to this heading">#</a></h3>
+<p>Kernel ridge regression (KRR) models have the advantage that they are typically pretty quick to train, even
+though the hyperparameter space is considerably larger than the GP or NN space. The disadvantage compared
+to GP and NN models is that the KRR models are typically less accurate when generated completely automatically.</p>
+<p>The automated default procedure for KRR models is over a large space, however if a user notices that a
+particular type of model is better than others, the ability to reduce the hyperparameter space is available.</p>
+<p>To run the default KRR hyperparameter optimization scheme, we can slightly modify the GP or NN schemes from above:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">O</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r1</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="n">r2</span> <span class="mi">2</span> <span class="n">a1</span>
+
+<span class="c1"># ML-relevant keywords</span>
+<span class="n">ml_model</span> <span class="o">=</span> <span class="n">krr</span>             <span class="c1"># Use Kernel Ridge Regression</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">verbose</span>           <span class="c1"># Use all types of available kernels in hyperparameter optimization</span>
+<span class="n">pes_format</span> <span class="o">=</span> <span class="n">interatomics</span>  <span class="c1"># Geometry values in the PES file</span>
+<span class="n">use_pips</span> <span class="o">=</span> <span class="n">true</span>            <span class="c1"># Transform interatomic distances into permutation invariant polynomials</span>
+<span class="n">hp_maxit</span> <span class="o">=</span> <span class="mi">200</span>             <span class="c1"># Train 15 models with hyperparameter optimization, select the best</span>
+<span class="n">training_points</span> <span class="o">=</span> <span class="mi">200</span>      <span class="c1"># Train with 200 points (out of 300 total)</span>
+<span class="n">sampling</span> <span class="o">=</span> <span class="n">structure_based</span> <span class="c1"># Sample training set by maximizing Euclidean distances</span>
+<span class="n">n_low_energy_train</span> <span class="o">=</span> <span class="mi">1</span>     <span class="c1"># Force lowest energy point into training set</span>
+</pre></div>
+</div>
+<p>Here we set the <code class="docutils literal notranslate"><span class="pre">ml_model</span></code> keyword to <code class="docutils literal notranslate"><span class="pre">krr</span></code> and the <code class="docutils literal notranslate"><span class="pre">kernel</span> <span class="pre">=</span> <span class="pre">verbose</span></code> option was added.
+<code class="docutils literal notranslate"><span class="pre">kernel</span> <span class="pre">=</span> <span class="pre">verbose</span></code> tells PES-Learn to use every type of available kernel for hyperparameter optimization.
+This does include quite a few options so it might be good to start with this option and then look at the
+results and see which kernels work best and then narrow your search. Alternatively you could increase the number of
+hyperparameter optimizations with <code class="docutils literal notranslate"><span class="pre">hp_maxit</span></code>. Note that the extent of the hyperparameter space for KRR gives
+over 100,000 possibilities with the <code class="docutils literal notranslate"><span class="pre">kernel</span></code> keyword set to <code class="docutils literal notranslate"><span class="pre">verbose</span></code>!</p>
+<p>This can be excecuted in the same way as the GP or NN models and gives similar output which has been ommited here to reduce
+space. The main difference is the added R <span class="math notranslate nohighlight">\(^2\)</span> calculation that gets printed with each hyperparameter optimization.</p>
+<p>If you find a kernel that works well and you want to reduce the hyperparameter space to optimize over, you can
+modify the <code class="docutils literal notranslate"><span class="pre">kernel</span></code> keyword to be <code class="docutils literal notranslate"><span class="pre">precomputed</span></code> and add an additional keyword <code class="docutils literal notranslate"><span class="pre">precomputed_kernel</span> <span class="pre">=</span></code>.
+For more information about using precomputed kernels, check out the KRR Examples page (link to be added).</p>
+<section id="using-the-krr-model">
+<h4>Using the KRR model<a class="headerlink" href="#using-the-krr-model" title="Permalink to this heading">#</a></h4>
+<p>The neural networks can be used in the exact same way as the GP or NN models outlined above. The trained model
+is easily accessible using the <code class="docutils literal notranslate"><span class="pre">compute_energy.py</span></code> file. Model performance and the datasets are also saved.</p>
+</section>
+</section>
+<section id="analyzing-model-performance-using-python">
+<h3>Analyzing model performance using Python<a class="headerlink" href="#analyzing-model-performance-using-python" title="Permalink to this heading">#</a></h3>
+<p>One can use Python to further analyze the performance of a PES-Learn ML model. Here’s a simple example
+of how to evaluate the error of a PES-Learn ML model as a function of energy relative to the global minimum.
+The following python file <code class="docutils literal notranslate"><span class="pre">analyze.py</span></code> must be in the same directory as the auto-generated <code class="docutils literal notranslate"><span class="pre">compute_energy.py</span></code>
+file, the dataset file <code class="docutils literal notranslate"><span class="pre">PES.dat</span></code>, and the saved ML model file <code class="docutils literal notranslate"><span class="pre">model.json</span></code>, <code class="docutils literal notranslate"><span class="pre">model.pt</span></code>, or <code class="docutils literal notranslate"><span class="pre">model.joblib</span></code>
+depending on the type of ML method used to build the model.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compute_energy</span> <span class="kn">import</span> <span class="n">pes</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="c1"># load data</span>
+<span class="n">full_dataset</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;PES.dat&#39;</span><span class="p">)</span>
+<span class="c1"># Split data into column arrays of geometries and energies</span>
+<span class="n">geoms</span> <span class="o">=</span> <span class="n">full_dataset</span><span class="o">.</span><span class="n">values</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">energies</span> <span class="o">=</span> <span class="n">full_dataset</span><span class="o">.</span><span class="n">values</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Geometries are ready to be sent through the model</span>
+<span class="n">predicted_energies</span> <span class="o">=</span> <span class="n">pes</span><span class="p">(</span><span class="n">geoms</span><span class="p">,</span> <span class="n">cartesian</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Prepare a plot of energy vs prediction error</span>
+<span class="n">relative_energies</span> <span class="o">=</span> <span class="p">(</span><span class="n">energies</span> <span class="o">-</span> <span class="n">energies</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+<span class="n">errors</span> <span class="o">=</span> <span class="n">predicted_energies</span> <span class="o">-</span> <span class="n">energies</span>
+
+
+<span class="c1"># Plot error distribution</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">relative_energies</span> <span class="o">*=</span> <span class="mf">627.509</span> <span class="c1"># convert to kcal/mol</span>
+<span class="n">errors</span> <span class="o">*=</span> <span class="mf">627.509</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">relative_energies</span><span class="p">,</span> <span class="n">errors</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Energy (kcal/mol)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Prediction Error (kcal/mol)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/plot.png" src="../_images/plot.png" />
+</figure>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="tutorials.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Tutorials</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="api.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">PES-Learn Application Program Interface (CLI) Tutorial</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-data"><strong>Generating Data</strong></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-an-internal-coordinate-grid">Defining an internal coordinate grid</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#schemas-and-templates">Schemas and Templates</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-generation-keywords">Data Generation Keywords</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-pes-learn-and-generating-data">Running PES-Learn and generating data</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parsing-output-files"><strong>Parsing output files</strong></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-parsing-keywords-in-the-pes-learn-input-file">Setting parsing keywords in the PES-Learn input file</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-the-input-file">Setting up the input file</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parsing-the-output-files-and-creating-a-dataset">Parsing the output files and creating a dataset</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-auto-generated-machine-learning-models-of-the-pes"><strong>Creating Auto-Generated Machine Learning models of the PES</strong></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gaussian-process-regression">Gaussian Process Regression</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-gp-model">Using the GP Model</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#neural-network-regression">Neural Network Regression</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-nn-model">Using the NN model</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kernel-ridge-regression">Kernel Ridge Regression</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-krr-model">Using the KRR model</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#analyzing-model-performance-using-python">Analyzing model performance using Python</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By PES-Learn Development Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024, PES-Learn Development Team.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

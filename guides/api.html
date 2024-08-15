@@ -1,0 +1,765 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>PES-Learn Application Program Interface (CLI) Tutorial &#8212; PES-Learn 1.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guides/api';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Training models with datasets Not created by PES-Learn" href="ext_data.html" />
+    <link rel="prev" title="PES-Learn Command-Line Interface (CLI) Tutorial" href="cli.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/peslearn.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/peslearn.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">PES-Learn</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../started/main.html">Getting Started</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../started/installation.html">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="guide.html">User Guides</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="tutorials.html">Tutorials</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="cli.html">Command line interface (CLI)</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Application porgram interface (API)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ext_data.html">Loading external datasets</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="gp_ex.html">Gaussian Process (GP)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nn_ex.html">Neural Network (NN)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="krr_ex.html">Kernel Ridge Regression (KRR)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_gen.html">Data Generation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../community/community.html">PES-Learn Community</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../community/support.html">Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../community/contribute.html">Contribute</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/keywords.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../develop/dev_docs.html">Developers Documentation</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/guides/api.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>PES-Learn Application Program Interface (CLI) Tutorial</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="pes-learn-application-program-interface-cli-tutorial">
+<h1>PES-Learn Application Program Interface (CLI) Tutorial<a class="headerlink" href="#pes-learn-application-program-interface-cli-tutorial" title="Permalink to this heading">#</a></h1>
+<p>The following tutorial goes over an example of how to use PES-Learn with Python API. This allows the user to
+import the peslearn python package and use python to excecute instead of the peslearn driver as with the CLI
+option. Some of the differences between ML models and parsing methods are left out of this tutorial. For a
+more detailed description on these differences, check out the <a class="reference external" href="cli.html">CLI</a> tutorial.</p>
+<p>First, import the PES-Learn python package <code class="docutils literal notranslate"><span class="pre">peslearn</span></code>:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Check out the <a class="reference external" href="../started/installation.html">Installation</a> guide for information on how to install the
+<code class="docutils literal notranslate"><span class="pre">peslearn</span></code> package.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">peslearn</span>
+</pre></div>
+</div>
+<p>Here we will generate a simple potential energy surface of water. First, we need to create an input object
+which contains information such as the grid of geometries we wish to generate and the various keyword options.
+The input object is initialized from a string. Here we use a multiline string with triple quotes. Anything can
+go in this multiline string; only text patterns which match PES-Learn keyword options will be considered. Because
+of this, if a keyword is spelled wrong it will be ignored. We choose to scan over the OH bond distances from 0.85
+to 1.2 angstroms and the bond angle from 90 to 120 degrees. Also, we will remove redundant geometries arising from
+equivalent values of r1 and r2.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_string</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">O</span>
+<span class="s2">H 1 r1</span>
+<span class="s2">H 1 r2 2 a2</span>
+
+<span class="s2">r1 = [0.85,1.20, 5]</span>
+<span class="s2">r2 = [0.85,1.20, 5]</span>
+<span class="s2">a2 = [90.0,120.0, 5]</span>
+
+<span class="s2">remove_redundancy = true</span>
+<span class="s2">input_name = input.dat</span>
+<span class="s2">                &quot;&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">input_name</span></code> value tells PES-Learn what to call the produced input files based on our template file <code class="docutils literal notranslate"><span class="pre">template.dat</span></code>.
+Alternatively, schema can be used in the same way as described in the <a class="reference external" href="cli.html">CLI</a> tutorial, with all of the necessary
+keywords in the <code class="docutils literal notranslate"><span class="pre">input_string</span></code>. In this example, however, we will be using a template.dat, which will be a Psi4 input
+file that computes a density-fitted MP2 energy with a 6-31g basis set. The only relevant part of this file from
+PES-Learn’s perspective is the Cartesian coordinates, which will be found and replaced by the Cartesian coordinates
+corresponding to the internal coordinate grid given above to create a series of input files. The example <code class="docutils literal notranslate"><span class="pre">template.dat</span></code>
+file looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">h2o</span> <span class="p">{</span>
+<span class="mi">0</span> <span class="mi">1</span>
+<span class="n">H</span> <span class="mf">0.00</span> <span class="mf">0.00</span> <span class="mf">0.00</span>
+<span class="n">H</span> <span class="mf">0.00</span> <span class="mf">0.00</span> <span class="mf">0.00</span>
+<span class="n">O</span> <span class="mf">0.00</span> <span class="mf">0.00</span> <span class="mf">0.00</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="n">basis</span> <span class="mi">6</span><span class="o">-</span><span class="mi">31</span><span class="n">g</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;mp2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We instantiate a PES-Learn InputProcessor object with the input string given above, as well as a template object with
+the template file <code class="docutils literal notranslate"><span class="pre">template.dat</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_object</span> <span class="o">=</span> <span class="n">peslearn</span><span class="o">.</span><span class="n">InputProcessor</span><span class="p">(</span><span class="n">input_string</span><span class="p">)</span>
+<span class="n">template_object</span> <span class="o">=</span> <span class="n">peslearn</span><span class="o">.</span><span class="n">datagen</span><span class="o">.</span><span class="n">Template</span><span class="p">(</span><span class="s2">&quot;./template.dat&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you are using schemas, <code class="docutils literal notranslate"><span class="pre">template_object</span></code> does not need to be instantiated. The input_object holds the Z-Matrix
+connectivity information as well as the internal coordinate ranges and keyword options. A PES-Learn Molecule object
+takes in this Z-Matrix information and derives obtains a bunch of information about the molecule, and is able to
+update its internal coordinates and convert to Cartesian coordinates.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">molecule_object</span> <span class="o">=</span> <span class="n">peslearn</span><span class="o">.</span><span class="n">datagen</span><span class="o">.</span><span class="n">Molecule</span><span class="p">(</span><span class="n">input_object</span><span class="o">.</span><span class="n">zmat_string</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We are now ready to generate all of the Psi4 input files for these geometries. To do this, we create a <code class="docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code>
+object. This object actually creates all of the internal coordinate displacements, uses the Molecule object to obtain
+Cartesian coordinates, and also finds the interatomic distances. Each of the coordinate representations are kept in a
+pandas DataFrame. The interatomic distances are used to remove redundant geometries using permutational symmetry of
+the two identical hydrogen atoms. The <code class="docutils literal notranslate"><span class="pre">generate_PES</span></code> method of the Configuration space object creates a directory
+<code class="docutils literal notranslate"><span class="pre">PES_data</span></code> containing a series of subdirectories with integer values <code class="docutils literal notranslate"><span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">3</span></code>… which each contain a
+unique cartesian coordinate Psi4 input file across the PES of water.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">peslearn</span><span class="o">.</span><span class="n">datagen</span><span class="o">.</span><span class="n">ConfigurationSpace</span><span class="p">(</span><span class="n">molecule_object</span><span class="p">,</span> <span class="n">input_object</span><span class="p">)</span>
+<span class="n">config</span><span class="o">.</span><span class="n">generate_PES</span><span class="p">(</span><span class="n">template_object</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you are using schemas instead of template objects, you can instead use the following line instead of the last one:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span><span class="o">.</span><span class="n">generate_PES</span><span class="p">(</span><span class="n">template_object</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">schema_gen</span><span class="o">=</span><span class="n">true</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Excecution of <code class="docutils literal notranslate"><span class="pre">config.generate_PES()</span></code> will generate input files (or python scripts with schemas) in a directory <code class="docutils literal notranslate"><span class="pre">PES_data</span></code>,
+along with the following output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">125</span> <span class="n">internal</span> <span class="n">coordinate</span> <span class="n">displacements</span> <span class="n">generated</span> <span class="ow">in</span> <span class="mf">0.00139</span> <span class="n">seconds</span>
+<span class="n">Total</span> <span class="n">displacements</span><span class="p">:</span> <span class="mi">125</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">interatomic</span> <span class="n">distances</span><span class="p">:</span> <span class="mi">3</span>
+<span class="n">Geometry</span> <span class="n">grid</span> <span class="n">generated</span> <span class="ow">in</span> <span class="mf">0.01</span> <span class="n">seconds</span>
+<span class="n">Removing</span> <span class="n">symmetry</span><span class="o">-</span><span class="n">redundant</span> <span class="n">geometries</span><span class="o">...</span>  <span class="n">Redundancy</span> <span class="n">removal</span> <span class="n">took</span> <span class="mf">0.01</span> <span class="n">seconds</span>
+<span class="n">Removed</span> <span class="mi">50</span> <span class="n">redundant</span> <span class="n">geometries</span> <span class="kn">from</span> <span class="nn">a</span> <span class="nb">set</span> <span class="n">of</span> <span class="mi">125</span> <span class="n">geometries</span>
+<span class="n">Your</span> <span class="n">PES</span> <span class="n">inputs</span> <span class="n">are</span> <span class="n">now</span> <span class="n">generated</span><span class="o">.</span> <span class="n">Run</span> <span class="n">the</span> <span class="n">jobs</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">PES_data</span> <span class="n">directory</span> <span class="ow">and</span> <span class="n">then</span> <span class="n">parse</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>We see here that 50 redundant geometries corresponding to identical molecular configurations were removed,
+leaving just 75 energies needed to be explicitly computed. We proceed to compute the energies with Psi4 by
+moving to each subdirectory created by PES-Learn, <code class="docutils literal notranslate"><span class="pre">PES_data/1</span></code>, <code class="docutils literal notranslate"><span class="pre">PES_data/2</span></code> …, and running Psi4 with
+the command line:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;PES_data&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">76</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="k">if</span> <span class="s2">&quot;output.dat&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;psi4 input.dat&#39;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;../&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;../&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>See the <a class="reference external" href="cli.html">Command line tutorial</a> for tips on doing this with schemas.</p>
+</div>
+<p>Once the computations are complete, we wish to create a dataset of geometry, energy pairs for creating a
+machine learning model of the potential energy surface. To do this, we use the parsing capabilities of PES-Learn
+to extract the energies from the Psi4 output files. There are three schemes for doing this: exctracting from schemas,
+regular expressions, and cclib. In this case, for my version of Psi4, cclib does not work for parsing MP2 energies.
+Luckily we can use the general regular expression scheme. We first need to come up with a regular expression pattern
+which matches the energy we want from the Psi4 output file. We observe that the MP2 energy in an output file is
+printed as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="o">==================&gt;</span> <span class="n">DF</span><span class="o">-</span><span class="n">MP2</span> <span class="n">Energies</span> <span class="o">&lt;====================</span>
+<span class="o">-----------------------------------------------------------</span>
+ <span class="n">Reference</span> <span class="n">Energy</span>          <span class="o">=</span>     <span class="o">-</span><span class="mf">75.9381224063424440</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+ <span class="n">Singles</span> <span class="n">Energy</span>            <span class="o">=</span>      <span class="o">-</span><span class="mf">0.0000000000000000</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+ <span class="n">Same</span><span class="o">-</span><span class="n">Spin</span> <span class="n">Energy</span>          <span class="o">=</span>      <span class="o">-</span><span class="mf">0.0277202185419175</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+ <span class="n">Opposite</span><span class="o">-</span><span class="n">Spin</span> <span class="n">Energy</span>      <span class="o">=</span>      <span class="o">-</span><span class="mf">0.0919994716794230</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+ <span class="n">Correlation</span> <span class="n">Energy</span>        <span class="o">=</span>      <span class="o">-</span><span class="mf">0.1197196902213406</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+ <span class="n">Total</span> <span class="n">Energy</span>              <span class="o">=</span>     <span class="o">-</span><span class="mf">76.0578420965637889</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>A regular expression which grabs the energy we want is <code class="docutils literal notranslate"><span class="pre">Total</span> <span class="pre">Energy\s+=\s+(-\d+\.\d+)</span></code> which matches the words
+‘Total Energy’ followed by one or more whitespaces <code class="docutils literal notranslate"><span class="pre">\s+</span></code>, an equal sign <code class="docutils literal notranslate"><span class="pre">=</span></code>, one or more whitespaces <code class="docutils literal notranslate"><span class="pre">\s+</span></code>,
+and then a negative floating point number <code class="docutils literal notranslate"><span class="pre">-\d+\.\d+</span></code> which we have necessarily enclosed in parentheses to indicate
+that we only want to capture the number itself, not the whole line. This is a bit cumbersome to use, so in practice
+it is recommend trying out various regular expressions via trial and error using <a class="reference external" href="https://regex101.com/">Regex101</a>
+or <a class="reference external" href="https://pythex.org/">Pythex</a> to ensure that the pattern is matched. In the context of PES-Learn, we would set
+the following keywords in the input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy</span> <span class="o">=</span> <span class="s1">&#39;regex&#39;</span>
+<span class="n">energy_regex</span> <span class="o">=</span> <span class="s1">&#39;Total Energy\s+=\s+(-\d+\.\d+)&#39;</span>
+</pre></div>
+</div>
+<p>However, Psi4 will print out this same line ‘Total Energy = (float)’ for the Hartree-Fock, MP2, SCS-MP2,
+and all other energies:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="nd">@DF</span><span class="o">-</span><span class="n">RHF</span> <span class="n">Final</span> <span class="n">Energy</span><span class="p">:</span>   <span class="o">-</span><span class="mf">75.93812240634244</span>
+
+    <span class="o">=&gt;</span> <span class="n">Energetics</span> <span class="o">&lt;=</span>
+
+    <span class="n">Nuclear</span> <span class="n">Repulsion</span> <span class="n">Energy</span> <span class="o">=</span>             <span class="mf">10.4012001939225183</span>
+    <span class="n">One</span><span class="o">-</span><span class="n">Electron</span> <span class="n">Energy</span> <span class="o">=</span>                <span class="o">-</span><span class="mf">124.9779212700375410</span>
+    <span class="n">Two</span><span class="o">-</span><span class="n">Electron</span> <span class="n">Energy</span> <span class="o">=</span>                  <span class="mf">38.6385986697725912</span>
+    <span class="n">Total</span> <span class="n">Energy</span> <span class="o">=</span>                        <span class="o">-</span><span class="mf">75.9381224063424298</span>
+<span class="o">...</span>
+<span class="o">...</span>
+<span class="o">...</span>
+    <span class="o">==================&gt;</span> <span class="n">DF</span><span class="o">-</span><span class="n">MP2</span> <span class="n">Energies</span> <span class="o">&lt;====================</span>
+    <span class="o">-----------------------------------------------------------</span>
+    <span class="n">Reference</span> <span class="n">Energy</span>          <span class="o">=</span>     <span class="o">-</span><span class="mf">75.9381224063424440</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+    <span class="n">Singles</span> <span class="n">Energy</span>            <span class="o">=</span>      <span class="o">-</span><span class="mf">0.0000000000000000</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+    <span class="n">Same</span><span class="o">-</span><span class="n">Spin</span> <span class="n">Energy</span>          <span class="o">=</span>      <span class="o">-</span><span class="mf">0.0277202185419175</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+    <span class="n">Opposite</span><span class="o">-</span><span class="n">Spin</span> <span class="n">Energy</span>      <span class="o">=</span>      <span class="o">-</span><span class="mf">0.0919994716794230</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+    <span class="n">Correlation</span> <span class="n">Energy</span>        <span class="o">=</span>      <span class="o">-</span><span class="mf">0.1197196902213406</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+    <span class="n">Total</span> <span class="n">Energy</span>              <span class="o">=</span>     <span class="o">-</span><span class="mf">76.0578420965637889</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+    <span class="o">-----------------------------------------------------------</span>
+    <span class="o">================&gt;</span> <span class="n">DF</span><span class="o">-</span><span class="n">SCS</span><span class="o">-</span><span class="n">MP2</span> <span class="n">Energies</span> <span class="o">&lt;==================</span>
+    <span class="o">-----------------------------------------------------------</span>
+    <span class="n">SCS</span> <span class="n">Same</span><span class="o">-</span><span class="n">Spin</span> <span class="n">Scale</span>       <span class="o">=</span>       <span class="mf">0.3333333333333333</span> <span class="p">[</span><span class="o">-</span><span class="p">]</span>
+    <span class="n">SCS</span> <span class="n">Opposite</span><span class="o">-</span><span class="n">Spin</span> <span class="n">Scale</span>   <span class="o">=</span>       <span class="mf">1.2000000000000000</span> <span class="p">[</span><span class="o">-</span><span class="p">]</span>
+    <span class="n">SCS</span> <span class="n">Same</span><span class="o">-</span><span class="n">Spin</span> <span class="n">Energy</span>      <span class="o">=</span>      <span class="o">-</span><span class="mf">0.0092400728473058</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+    <span class="n">SCS</span> <span class="n">Opposite</span><span class="o">-</span><span class="n">Spin</span> <span class="n">Energy</span>  <span class="o">=</span>      <span class="o">-</span><span class="mf">0.1103993660153076</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+    <span class="n">SCS</span> <span class="n">Correlation</span> <span class="n">Energy</span>    <span class="o">=</span>      <span class="o">-</span><span class="mf">0.1196394388626135</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+    <span class="n">SCS</span> <span class="n">Total</span> <span class="n">Energy</span>          <span class="o">=</span>     <span class="o">-</span><span class="mf">76.0577618452050643</span> <span class="p">[</span><span class="n">Eh</span><span class="p">]</span>
+    <span class="o">-----------------------------------------------------------</span>
+</pre></div>
+</div>
+<p>We note that PES-Learn by default takes the <em>last match occurance</em> of the regex pattern as the energy.
+Thus, the Hartree-Fock line is not relavent as it occurs earlier. However, with our above regex we will
+accidentally match the ‘SCS Total Energy’ line. To fix this, we just input some spaces before the word
+‘Total’ to ensure the correct energy is matched. Using the set_keyword method, we can directly modify
+our input_object with the new parsing-relevant keywords. We note here that these could have just as
+easily been included at the very beginning in our multi-line input string, but this method is valid as well:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_object</span><span class="o">.</span><span class="n">set_keyword</span><span class="p">({</span><span class="s1">&#39;energy&#39;</span><span class="p">:</span><span class="s1">&#39;regex&#39;</span><span class="p">})</span>
+<span class="n">input_object</span><span class="o">.</span><span class="n">set_keyword</span><span class="p">({</span><span class="s1">&#39;energy_regex&#39;</span><span class="p">:</span><span class="s1">&#39;\s+Total Energy\s+=\s+(-\d+\.\d+)&#39;</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>Now at the begining of our regex we have <code class="docutils literal notranslate"><span class="pre">\s+</span></code> which will look for any amount of whitespace before
+‘Total Energy’. We will also choose to create a PES file using interatomic distances as the geometry
+representation instead of the internal coordinates. The reason is because we plan to use a permutation-invariant
+geometry representation when we do machine learning, and this requires the interatomic distances format.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_object</span><span class="o">.</span><span class="n">set_keyword</span><span class="p">({</span><span class="s1">&#39;pes_format&#39;</span><span class="p">:</span><span class="s1">&#39;interatomics&#39;</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>After a bit of work, we are ready to parse the output files and create the dataset, which si a simple csv file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">peslearn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">parsing_helper</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">input_object</span><span class="p">,</span> <span class="n">molecule_object</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let’s take a look at this dataset with the Python module pandas:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;PES.dat&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>          <span class="n">r0</span>      <span class="n">r1</span>      <span class="n">r2</span>          <span class="n">E</span>
+<span class="mi">0</span>   <span class="mf">1.559006</span>  <span class="mf">0.9375</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.985033</span>
+<span class="mi">1</span>   <span class="mf">1.487538</span>  <span class="mf">0.9375</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.983615</span>
+<span class="mi">2</span>   <span class="mf">1.623798</span>  <span class="mf">0.9375</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.983490</span>
+<span class="mi">3</span>   <span class="mf">1.632483</span>  <span class="mf">1.0250</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.979965</span>
+<span class="mi">4</span>   <span class="mf">1.557867</span>  <span class="mf">1.0250</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.979436</span>
+<span class="mi">5</span>   <span class="mf">1.409700</span>  <span class="mf">0.9375</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.978781</span>
+<span class="mi">6</span>   <span class="mf">1.700138</span>  <span class="mf">1.0250</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.977620</span>
+<span class="mi">7</span>   <span class="mf">1.476613</span>  <span class="mf">1.0250</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.975593</span>
+<span class="mi">8</span>   <span class="mf">1.626374</span>  <span class="mf">1.0250</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.975385</span>
+<span class="mi">9</span>   <span class="mf">1.704513</span>  <span class="mf">1.0250</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.975163</span>
+<span class="mi">10</span>  <span class="mf">1.541272</span>  <span class="mf">1.0250</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.972390</span>
+<span class="mi">11</span>  <span class="mf">1.775352</span>  <span class="mf">1.0250</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.972145</span>
+<span class="mi">12</span>  <span class="mf">1.487047</span>  <span class="mf">0.9375</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.971909</span>
+<span class="mi">13</span>  <span class="mf">1.548639</span>  <span class="mf">0.9375</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.971168</span>
+<span class="mi">14</span>  <span class="mf">1.325825</span>  <span class="mf">0.9375</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.970199</span>
+<span class="mi">15</span>  <span class="mf">1.419119</span>  <span class="mf">0.9375</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.969622</span>
+<span class="mi">16</span>  <span class="mf">1.389076</span>  <span class="mf">1.0250</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.968116</span>
+<span class="mi">17</span>  <span class="mf">1.562034</span>  <span class="mf">1.0250</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.966560</span>
+<span class="mi">18</span>  <span class="mf">1.449569</span>  <span class="mf">1.0250</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.965868</span>
+<span class="mi">19</span>  <span class="mf">1.629860</span>  <span class="mf">1.1125</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.965474</span>
+<span class="mi">20</span>  <span class="mf">1.491347</span>  <span class="mf">1.0250</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.965295</span>
+<span class="mi">21</span>  <span class="mf">1.707283</span>  <span class="mf">1.1125</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.965147</span>
+<span class="mi">22</span>  <span class="mf">1.626153</span>  <span class="mf">1.0250</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.964895</span>
+<span class="mi">23</span>  <span class="mf">1.345151</span>  <span class="mf">0.9375</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.963847</span>
+<span class="mi">24</span>  <span class="mf">1.545585</span>  <span class="mf">1.1125</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.962611</span>
+<span class="mi">25</span>  <span class="mf">1.777507</span>  <span class="mf">1.1125</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.962048</span>
+<span class="mi">26</span>  <span class="mf">1.696629</span>  <span class="mf">1.1125</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.961554</span>
+<span class="mi">27</span>  <span class="mf">1.414414</span>  <span class="mf">1.0250</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.960651</span>
+<span class="mi">28</span>  <span class="mf">1.777931</span>  <span class="mf">1.1125</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.960609</span>
+<span class="mi">29</span>  <span class="mf">1.608093</span>  <span class="mf">1.1125</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.959401</span>
+<span class="mi">30</span>  <span class="mf">1.472243</span>  <span class="mf">0.8500</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.959264</span>
+<span class="mi">31</span>  <span class="mf">1.413498</span>  <span class="mf">0.8500</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.959080</span>
+<span class="mi">32</span>  <span class="mf">1.851646</span>  <span class="mf">1.1125</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.956962</span>
+<span class="mi">33</span>  <span class="mf">1.454841</span>  <span class="mf">1.1125</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.956255</span>
+<span class="mi">34</span>  <span class="mf">1.348701</span>  <span class="mf">0.8500</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.955794</span>
+<span class="mi">35</span>  <span class="mf">1.265467</span>  <span class="mf">0.9375</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.954234</span>
+<span class="mi">36</span>  <span class="mf">1.512707</span>  <span class="mf">1.1125</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.953858</span>
+<span class="mi">37</span>  <span class="mf">1.331587</span>  <span class="mf">1.0250</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.952297</span>
+<span class="mi">38</span>  <span class="mf">1.638263</span>  <span class="mf">1.1125</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.951463</span>
+<span class="mi">39</span>  <span class="mf">1.565135</span>  <span class="mf">1.1125</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.951179</span>
+<span class="mi">40</span>  <span class="mf">1.278128</span>  <span class="mf">0.8500</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.948932</span>
+<span class="mi">41</span>  <span class="mf">1.704635</span>  <span class="mf">1.1125</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.948923</span>
+<span class="mi">42</span>  <span class="mf">1.765211</span>  <span class="mf">1.1125</span>  <span class="mf">1.1125</span> <span class="o">-</span><span class="mf">75.947854</span>
+<span class="mi">43</span>  <span class="mf">1.485602</span>  <span class="mf">1.1125</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.947648</span>
+<span class="mi">44</span>  <span class="mf">1.703305</span>  <span class="mf">1.2000</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.946490</span>
+<span class="mi">45</span>  <span class="mf">1.672844</span>  <span class="mf">1.1125</span>  <span class="mf">1.1125</span> <span class="o">-</span><span class="mf">75.946405</span>
+<span class="mi">46</span>  <span class="mf">1.850020</span>  <span class="mf">1.1125</span>  <span class="mf">1.1125</span> <span class="o">-</span><span class="mf">75.946316</span>
+<span class="mi">47</span>  <span class="mf">1.783240</span>  <span class="mf">1.2000</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.945385</span>
+<span class="mi">48</span>  <span class="mf">1.616351</span>  <span class="mf">1.2000</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.944547</span>
+<span class="mi">49</span>  <span class="mf">1.768423</span>  <span class="mf">1.2000</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.942713</span>
+<span class="mi">50</span>  <span class="mf">1.926907</span>  <span class="mf">1.1125</span>  <span class="mf">1.1125</span> <span class="o">-</span><span class="mf">75.942161</span>
+<span class="mi">51</span>  <span class="mf">1.573313</span>  <span class="mf">1.1125</span>  <span class="mf">1.1125</span> <span class="o">-</span><span class="mf">75.941700</span>
+<span class="mi">52</span>  <span class="mf">1.855776</span>  <span class="mf">1.2000</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.941615</span>
+<span class="mi">53</span>  <span class="mf">1.676818</span>  <span class="mf">1.2000</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.941350</span>
+<span class="mi">54</span>  <span class="mf">1.852573</span>  <span class="mf">1.2000</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.941111</span>
+<span class="mi">55</span>  <span class="mf">1.400056</span>  <span class="mf">1.1125</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.940553</span>
+<span class="mi">56</span>  <span class="mf">1.522796</span>  <span class="mf">1.2000</span>  <span class="mf">0.9375</span> <span class="o">-</span><span class="mf">75.939274</span>
+<span class="mi">57</span>  <span class="mf">1.202082</span>  <span class="mf">0.8500</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.938122</span>
+<span class="mi">58</span>  <span class="mf">1.928892</span>  <span class="mf">1.2000</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.936908</span>
+<span class="mi">59</span>  <span class="mf">1.578171</span>  <span class="mf">1.2000</span>  <span class="mf">1.0250</span> <span class="o">-</span><span class="mf">75.936758</span>
+<span class="mi">60</span>  <span class="mf">1.640272</span>  <span class="mf">1.2000</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.932031</span>
+<span class="mi">61</span>  <span class="mf">1.715568</span>  <span class="mf">1.2000</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.931421</span>
+<span class="mi">62</span>  <span class="mf">1.558452</span>  <span class="mf">1.2000</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.929538</span>
+<span class="mi">63</span>  <span class="mf">1.835403</span>  <span class="mf">1.2000</span>  <span class="mf">1.1125</span> <span class="o">-</span><span class="mf">75.929147</span>
+<span class="mi">64</span>  <span class="mf">1.739586</span>  <span class="mf">1.2000</span>  <span class="mf">1.1125</span> <span class="o">-</span><span class="mf">75.928363</span>
+<span class="mi">65</span>  <span class="mf">1.783956</span>  <span class="mf">1.2000</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.928100</span>
+<span class="mi">66</span>  <span class="mf">1.923388</span>  <span class="mf">1.2000</span>  <span class="mf">1.1125</span> <span class="o">-</span><span class="mf">75.927074</span>
+<span class="mi">67</span>  <span class="mf">1.636355</span>  <span class="mf">1.2000</span>  <span class="mf">1.1125</span> <span class="o">-</span><span class="mf">75.924477</span>
+<span class="mi">68</span>  <span class="mf">1.470544</span>  <span class="mf">1.2000</span>  <span class="mf">0.8500</span> <span class="o">-</span><span class="mf">75.923650</span>
+<span class="mi">69</span>  <span class="mf">2.003162</span>  <span class="mf">1.2000</span>  <span class="mf">1.1125</span> <span class="o">-</span><span class="mf">75.922477</span>
+<span class="mi">70</span>  <span class="mf">1.904048</span>  <span class="mf">1.2000</span>  <span class="mf">1.2000</span> <span class="o">-</span><span class="mf">75.910576</span>
+<span class="mi">71</span>  <span class="mf">1.804416</span>  <span class="mf">1.2000</span>  <span class="mf">1.2000</span> <span class="o">-</span><span class="mf">75.910336</span>
+<span class="mi">72</span>  <span class="mf">1.995527</span>  <span class="mf">1.2000</span>  <span class="mf">1.2000</span> <span class="o">-</span><span class="mf">75.908080</span>
+<span class="mi">73</span>  <span class="mf">1.697056</span>  <span class="mf">1.2000</span>  <span class="mf">1.2000</span> <span class="o">-</span><span class="mf">75.907144</span>
+<span class="mi">74</span>  <span class="mf">2.078461</span>  <span class="mf">1.2000</span>  <span class="mf">1.2000</span> <span class="o">-</span><span class="mf">75.903146</span>
+</pre></div>
+</div>
+<p>As expected, we obtain 75 geometry, energy pairs (interatomic distances in Angstroms, Hartrees)
+with the energies sorted in increasing order. We are now ready to do some machine learning on this
+dataset. However, we did not set any keywords related to ML so lets do that here:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">input_object</span><span class="o">.</span><span class="n">set_keyword</span><span class="p">({</span><span class="s1">&#39;use_pips&#39;</span><span class="p">:</span><span class="s1">&#39;true&#39;</span><span class="p">})</span>
+<span class="n">input_object</span><span class="o">.</span><span class="n">set_keyword</span><span class="p">({</span><span class="s1">&#39;training_points&#39;</span><span class="p">:</span><span class="mi">40</span><span class="p">})</span>
+<span class="n">input_object</span><span class="o">.</span><span class="n">set_keyword</span><span class="p">({</span><span class="s1">&#39;sampling&#39;</span><span class="p">:</span><span class="s1">&#39;structure_based&#39;</span><span class="p">})</span>
+<span class="n">input_object</span><span class="o">.</span><span class="n">set_keyword</span><span class="p">({</span><span class="s1">&#39;hp_maxit&#39;</span><span class="p">:</span><span class="mi">10</span><span class="p">})</span>
+<span class="n">input_object</span><span class="o">.</span><span class="n">set_keyword</span><span class="p">({</span><span class="s1">&#39;rseed&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>We set the use of permutation invariant polynomials (pips). We also choose 40 training points out
+of our 75 point dataset. We sample the 40 training points with the structure-based sampling algorithm,
+and train over 10 different hyperparamter configurations. For reproduciblity, we fix the random seed
+of the hyperparameter search.</p>
+<p>We use Gaussian process regression here. We supply a dataset, and input_object for access to the various
+keywords we have set, and a <code class="docutils literal notranslate"><span class="pre">molecule_type</span></code> which is required for using PIPs. The <code class="docutils literal notranslate"><span class="pre">molecule_type</span></code> must be a
+string given in the order of most common element first, e.g. A3B2C, A4B, etc. We could alternatively supply
+our Molecule object from before by passing <code class="docutils literal notranslate"><span class="pre">molecule=molecule_object</span></code> instead.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gp</span> <span class="o">=</span> <span class="n">peslearn</span><span class="o">.</span><span class="n">ml</span><span class="o">.</span><span class="n">GaussianProcess</span><span class="p">(</span><span class="s2">&quot;PES.dat&quot;</span><span class="p">,</span> <span class="n">input_object</span><span class="p">,</span> <span class="n">molecule_type</span><span class="o">=</span><span class="s1">&#39;A2B&#39;</span><span class="p">)</span>
+<span class="n">gp</span><span class="o">.</span><span class="n">optimize_model</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Using</span> <span class="n">permutation</span> <span class="n">invariant</span> <span class="n">polynomial</span> <span class="n">transformation</span> <span class="k">for</span> <span class="n">molecule</span> <span class="nb">type</span>  <span class="n">A2B</span>
+<span class="n">Beginning</span> <span class="n">hyperparameter</span> <span class="n">optimization</span><span class="o">...</span>
+<span class="n">Trying</span> <span class="mi">10</span> <span class="n">combinations</span> <span class="n">of</span> <span class="n">hyperparameters</span>
+<span class="n">Training</span> <span class="k">with</span> <span class="mi">40</span> <span class="n">points</span> <span class="p">(</span><span class="n">Full</span> <span class="n">dataset</span> <span class="n">contains</span> <span class="mi">75</span> <span class="n">points</span><span class="p">)</span><span class="o">.</span>
+<span class="n">Using</span> <span class="n">structure_based</span> <span class="n">training</span> <span class="nb">set</span> <span class="n">point</span> <span class="n">sampling</span><span class="o">.</span>
+<span class="n">Hyperparameters</span><span class="p">:</span>
+<span class="p">{</span><span class="s1">&#39;morse_transform&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;morse&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;degree_reduction&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="s1">&#39;scale_X&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;scale_y&#39;</span><span class="p">:</span> <span class="s1">&#39;mm11&#39;</span><span class="p">}</span>
+<span class="n">Test</span> <span class="n">Dataset</span> <span class="mf">84.45</span>
+<span class="n">Full</span> <span class="n">Dataset</span> <span class="mf">73.93</span>
+<span class="n">Median</span> <span class="n">error</span><span class="p">:</span> <span class="mf">48.46</span>
+<span class="n">Max</span> <span class="mi">5</span> <span class="n">errors</span><span class="p">:</span> <span class="p">[</span><span class="mf">148.2</span> <span class="mf">153.1</span> <span class="mf">154.5</span> <span class="mf">171.6</span> <span class="mf">225.3</span><span class="p">]</span>
+<span class="n">Hyperparameters</span><span class="p">:</span>
+<span class="p">{</span><span class="s1">&#39;morse_transform&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;morse&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;morse_alpha&#39;</span><span class="p">:</span> <span class="mf">1.9000000000000001</span><span class="p">},</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;degree_reduction&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="s1">&#39;scale_X&#39;</span><span class="p">:</span> <span class="s1">&#39;std&#39;</span><span class="p">,</span> <span class="s1">&#39;scale_y&#39;</span><span class="p">:</span> <span class="s1">&#39;mm01&#39;</span><span class="p">}</span>
+<span class="n">Test</span> <span class="n">Dataset</span> <span class="mf">1323.87</span>
+<span class="n">Full</span> <span class="n">Dataset</span> <span class="mf">978.36</span>
+<span class="n">Median</span> <span class="n">error</span><span class="p">:</span> <span class="mf">606.51</span>
+<span class="n">Max</span> <span class="mi">5</span> <span class="n">errors</span><span class="p">:</span> <span class="p">[</span><span class="mf">1405.8</span> <span class="mf">2066.5</span> <span class="mf">3306.</span>  <span class="mf">3561.</span>  <span class="mf">3768.6</span><span class="p">]</span>
+<span class="o">...</span>
+<span class="o">...</span>
+<span class="o">...</span>
+
+<span class="c1">###################################################</span>
+<span class="c1">#                                                 #</span>
+<span class="c1">#     Hyperparameter Optimization Complete!!!     #</span>
+<span class="c1">#                                                 #</span>
+<span class="c1">###################################################</span>
+
+<span class="n">Best</span> <span class="n">performing</span> <span class="n">hyperparameters</span> <span class="n">are</span><span class="p">:</span>
+<span class="p">[(</span><span class="s1">&#39;morse_transform&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;morse&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;pip&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;degree_reduction&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;scale_X&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;scale_y&#39;</span><span class="p">,</span> <span class="s1">&#39;mm01&#39;</span><span class="p">)]</span>
+<span class="n">Fine</span><span class="o">-</span><span class="n">tuning</span> <span class="n">final</span> <span class="n">model</span> <span class="n">architecture</span><span class="o">...</span>
+<span class="n">Hyperparameters</span><span class="p">:</span>  <span class="p">{</span><span class="s1">&#39;morse_transform&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;morse&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;degree_reduction&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="s1">&#39;scale_X&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;scale_y&#39;</span><span class="p">:</span> <span class="s1">&#39;mm01&#39;</span><span class="p">}</span>
+<span class="n">Final</span> <span class="n">model</span> <span class="n">performance</span> <span class="p">(</span><span class="n">cm</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+<span class="n">Test</span> <span class="n">Dataset</span> <span class="mf">9.38</span>  <span class="n">Full</span> <span class="n">Dataset</span> <span class="mf">6.44</span>     <span class="n">Median</span> <span class="n">error</span><span class="p">:</span> <span class="mf">1.09</span>  <span class="n">Max</span> <span class="mi">5</span> <span class="n">errors</span><span class="p">:</span> <span class="p">[</span><span class="mf">11.8</span> <span class="mf">13.5</span> <span class="mf">18.4</span> <span class="mf">24.8</span> <span class="mf">34.8</span><span class="p">]</span>
+
+<span class="n">Saving</span> <span class="n">ML</span> <span class="n">model</span> <span class="n">data</span><span class="o">...</span>
+</pre></div>
+</div>
+<p>We have found a Gaussian process model which has a 9.38 cm-1 RMS prediction error on the test set of
+35 points, and 6.44 cm-1 RMSE for the full 75 point dataset. Very nice! The model information is saved
+in a directory called <code class="docutils literal notranslate"><span class="pre">model1_data</span></code>, and if further models are trained (perhaps with different random
+seeds and maybe constrained hyperparameters) additional models will be saved in this same format but with
+increasing integer values, <code class="docutils literal notranslate"><span class="pre">model2_data</span></code>, <code class="docutils literal notranslate"><span class="pre">model3_data</span></code>, etc.</p>
+<p>A neural network can be trained with nearly identical syntax, though one may want to specify additional keywords.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nn</span> <span class="o">=</span> <span class="n">peslearn</span><span class="o">.</span><span class="n">ml</span><span class="o">.</span><span class="n">NeuralNetwork</span><span class="p">(</span><span class="s2">&quot;PES.dat&quot;</span><span class="p">,</span> <span class="n">input_object</span><span class="p">,</span> <span class="n">molecule_type</span><span class="o">=</span><span class="s1">&#39;A2B&#39;</span><span class="p">)</span>
+<span class="n">nn</span><span class="o">.</span><span class="n">optimize_model</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>More information on this can be found in the <a class="reference external" href="cli.html">CLI</a> tutorial page.</p>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="cli.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">PES-Learn Command-Line Interface (CLI) Tutorial</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="ext_data.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Training models with datasets Not created by PES-Learn</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By PES-Learn Development Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024, PES-Learn Development Team.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

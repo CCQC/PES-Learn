@@ -1,0 +1,561 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Kernel Ridge Regression &#8212; PES-Learn 1.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guides/krr_ex';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Data Generation Examples" href="data_gen.html" />
+    <link rel="prev" title="Neural Network" href="nn_ex.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/peslearn.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/peslearn.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">PES-Learn</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../started/main.html">Getting Started</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../started/installation.html">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="guide.html">User Guides</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="tutorials.html">Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli.html">Command line interface (CLI)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html">Application porgram interface (API)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ext_data.html">Loading external datasets</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="examples.html">Examples</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="gp_ex.html">Gaussian Process (GP)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nn_ex.html">Neural Network (NN)</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Kernel Ridge Regression (KRR)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_gen.html">Data Generation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../community/community.html">PES-Learn Community</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../community/support.html">Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../community/contribute.html">Contribute</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/keywords.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../develop/dev_docs.html">Developers Documentation</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/guides/krr_ex.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Kernel Ridge Regression</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#verbose-kernel-search">Verbose Kernel Search</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="kernel-ridge-regression">
+<h1>Kernel Ridge Regression<a class="headerlink" href="#kernel-ridge-regression" title="Permalink to this heading">#</a></h1>
+<p>Kernel Ridge Regression in PES-Learn is done via interface to <a class="reference external" href="https://scikit-learn.org/stable/">scikit-learn</a> .
+At the time of writing this, scikit-learn has six options for kernel functions to use with kernel ridge regresstion (KRR).
+PES-Learn implements five of these options, polynomial, RBF, Laplacian, Sigmoid, and cosine. When chosing a verbose
+kernel with the keyword <code class="docutils literal notranslate"><span class="pre">kernel</span> <span class="pre">=</span> <span class="pre">verbose</span></code>, PES-Learn will search the hyperparameter space of all five of these kernels, some of which
+have additional options (such as degree of polynomial) which makes the hyperparameter space very large. Because of this it is recommended
+to do an initial search with the verbose space and then narrow down the search with a <code class="docutils literal notranslate"><span class="pre">precomputed</span></code> kernel. The following
+example covers just this. If you would like to work along with this example, the <code class="docutils literal notranslate"><span class="pre">PES.dat</span></code> file is available <a class="reference external" href="pes.html">here</a> to copy.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>PES-Learn does not support the sixth kernel available with scikit-learn, chi^2, with the <code class="docutils literal notranslate"><span class="pre">kernel</span></code> keyword set to <code class="docutils literal notranslate"><span class="pre">verbose</span></code>,
+but if the user so chooses the option is still available with a <code class="docutils literal notranslate"><span class="pre">precomputed</span> <span class="pre">kernel</span></code>. This kernel is not in the <code class="docutils literal notranslate"><span class="pre">verbose</span></code> set
+because it typically is a poor description of potential energy surfaces, and was left out to reduce the hyperparameter space.</p>
+</div>
+<section id="verbose-kernel-search">
+<h2>Verbose Kernel Search<a class="headerlink" href="#verbose-kernel-search" title="Permalink to this heading">#</a></h2>
+<p>Let us assume that we have already generated data and parsed it to a file <code class="docutils literal notranslate"><span class="pre">PES.dat</span></code> (see <a class="reference external" href="cli.hmtl">CLI</a> for tips on doing this).
+In this example we are examining the PES of the water dimer at MP2/6-31+G**, our single point energies were run with Psi4, and our <code class="docutils literal notranslate"><span class="pre">PES.dat</span></code>
+looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">r0</span><span class="p">,</span><span class="n">r1</span><span class="p">,</span><span class="n">r2</span><span class="p">,</span><span class="n">r3</span><span class="p">,</span><span class="n">r4</span><span class="p">,</span><span class="n">r5</span><span class="p">,</span><span class="n">r6</span><span class="p">,</span><span class="n">r7</span><span class="p">,</span><span class="n">r8</span><span class="p">,</span><span class="n">r9</span><span class="p">,</span><span class="n">r10</span><span class="p">,</span><span class="n">r11</span><span class="p">,</span><span class="n">r12</span><span class="p">,</span><span class="n">r13</span><span class="p">,</span><span class="n">r14</span><span class="p">,</span><span class="n">E</span>
+<span class="mf">0.107393696300</span><span class="p">,</span><span class="mf">1.511209005600</span><span class="p">,</span><span class="mf">0.958000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.965000000000</span><span class="p">,</span><span class="mf">4.000000000000</span><span class="p">,</span><span class="mf">4.358877312500</span><span class="p">,</span><span class="mf">4.421347611400</span><span class="p">,</span><span class="mf">4.963684516800</span><span class="p">,</span><span class="mf">5.230357990000</span><span class="p">,</span><span class="mf">5.312408594200</span><span class="p">,</span><span class="mf">5.375381443600</span><span class="p">,</span><span class="mf">5.694425695800</span><span class="p">,</span><span class="mf">5.744200549400</span><span class="p">,</span><span class="o">-</span><span class="mf">148.80832244761734</span>
+<span class="mf">0.107393696300</span><span class="p">,</span><span class="mf">1.511209005600</span><span class="p">,</span><span class="mf">0.958000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.965000000000</span><span class="p">,</span><span class="mf">4.000000000000</span><span class="p">,</span><span class="mf">4.358877312500</span><span class="p">,</span><span class="mf">4.421347611400</span><span class="p">,</span><span class="mf">4.957842687500</span><span class="p">,</span><span class="mf">5.168189668400</span><span class="p">,</span><span class="mf">5.317748361000</span><span class="p">,</span><span class="mf">5.379703357400</span><span class="p">,</span><span class="mf">5.650727044700</span><span class="p">,</span><span class="mf">5.699458003200</span><span class="p">,</span><span class="o">-</span><span class="mf">148.80832802926432</span>
+<span class="mf">0.107393696300</span><span class="p">,</span><span class="mf">1.511209005600</span><span class="p">,</span><span class="mf">0.958000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.965000000000</span><span class="p">,</span><span class="mf">4.000000000000</span><span class="p">,</span><span class="mf">4.358877312500</span><span class="p">,</span><span class="mf">4.421347611400</span><span class="p">,</span><span class="mf">4.964853815800</span><span class="p">,</span><span class="mf">5.259243598200</span><span class="p">,</span><span class="mf">5.308560352700</span><span class="p">,</span><span class="mf">5.372087089700</span><span class="p">,</span><span class="mf">5.726738564900</span><span class="p">,</span><span class="mf">5.778198657600</span><span class="p">,</span><span class="o">-</span><span class="mf">148.80833921708614</span>
+<span class="mf">0.107393696300</span><span class="p">,</span><span class="mf">1.511209005600</span><span class="p">,</span><span class="mf">0.958000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.965000000000</span><span class="p">,</span><span class="mf">3.892857142900</span><span class="p">,</span><span class="mf">4.254231044800</span><span class="p">,</span><span class="mf">4.316513987700</span><span class="p">,</span><span class="mf">4.856548656300</span><span class="p">,</span><span class="mf">5.125227560200</span><span class="p">,</span><span class="mf">5.206358341000</span><span class="p">,</span><span class="mf">5.270299165700</span><span class="p">,</span><span class="mf">5.580693108000</span><span class="p">,</span><span class="mf">5.648377814800</span><span class="p">,</span><span class="o">-</span><span class="mf">148.80842398247543</span>
+<span class="mf">0.107393696300</span><span class="p">,</span><span class="mf">1.511209005600</span><span class="p">,</span><span class="mf">0.958000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.965000000000</span><span class="p">,</span><span class="mf">3.892857142900</span><span class="p">,</span><span class="mf">4.254231044800</span><span class="p">,</span><span class="mf">4.316513987700</span><span class="p">,</span><span class="mf">4.850737828400</span><span class="p">,</span><span class="mf">5.063478368600</span><span class="p">,</span><span class="mf">5.210650713200</span><span class="p">,</span><span class="mf">5.274891032200</span><span class="p">,</span><span class="mf">5.534120397300</span><span class="p">,</span><span class="mf">5.601491987300</span><span class="p">,</span><span class="o">-</span><span class="mf">148.80842822074243</span>
+<span class="mf">0.107393696300</span><span class="p">,</span><span class="mf">1.511209005600</span><span class="p">,</span><span class="mf">0.958000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.960000000000</span><span class="p">,</span><span class="mf">0.965000000000</span><span class="p">,</span><span class="mf">3.892857142900</span><span class="p">,</span><span class="mf">4.254231044800</span><span class="p">,</span><span class="mf">4.316513987700</span><span class="p">,</span><span class="mf">4.846094655800</span><span class="p">,</span><span class="mf">5.030456998800</span><span class="p">,</span><span class="mf">5.211506356100</span><span class="p">,</span><span class="mf">5.272612122600</span><span class="p">,</span><span class="mf">5.510508312600</span><span class="p">,</span><span class="mf">5.557029710400</span><span class="p">,</span><span class="o">-</span><span class="mf">148.80842874416982</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>In the generation of this data, the number of data points was reduced to 1500. Let’s examine this dataset with KRR using a <code class="docutils literal notranslate"><span class="pre">verbose</span></code>
+hyperparameter space since we don’t know much about the PES initially. We add the following keywords to our <code class="docutils literal notranslate"><span class="pre">input.dat</span></code> file to generate a
+KRR surface:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Machine learning keywords</span>
+<span class="n">ml_model</span> <span class="o">=</span> <span class="n">krr</span>
+<span class="n">hp_maxit</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">verbose</span>
+<span class="n">sampling</span> <span class="o">=</span> <span class="n">structure_based</span>
+<span class="n">use_pips</span> <span class="o">=</span> <span class="n">true</span>
+</pre></div>
+</div>
+<p>Here we tell PES-Learn that we want to create a machine learning model with KRR, allow it to run over 500 hyperparameter optimizations, do a verbose
+kernel hyperparameter search, use structure based sampling to split training and test sets, and use permutationally invariant polynomials (PIPs).</p>
+<p>We run this with PES-Learn and it will print the hyperparameter optimizations and run over the iterations given in <code class="docutils literal notranslate"><span class="pre">hp_maxit</span></code>. Of the iterations
+it will find the one with the lowest dataset error and return that collection of hyperparameters at the end:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Best</span> <span class="n">performing</span> <span class="n">hyperparameters</span> <span class="n">are</span><span class="p">:</span>
+<span class="p">[(</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="mf">1e-06</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;kernel&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;degree&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;ktype&#39;</span><span class="p">:</span> <span class="s1">&#39;laplacian&#39;</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;morse_transform&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;morse&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;morse_alpha&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;pip&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;degree_reduction&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;scale_X&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;scale_y&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">)]</span>
+<span class="n">Fine</span><span class="o">-</span><span class="n">tuning</span> <span class="n">final</span> <span class="n">model</span><span class="o">...</span>
+<span class="n">Hyperparameters</span><span class="p">:</span>  <span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mf">1e-06</span><span class="p">,</span> <span class="s1">&#39;kernel&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;degree&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;ktype&#39;</span><span class="p">:</span> <span class="s1">&#39;laplacian&#39;</span><span class="p">},</span> <span class="s1">&#39;morse_transform&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;morse&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;morse_alpha&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;degree_reduction&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="s1">&#39;scale_X&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;scale_y&#39;</span><span class="p">:</span> <span class="s1">&#39;std&#39;</span><span class="p">}</span>
+<span class="n">Final</span> <span class="n">model</span> <span class="n">performance</span> <span class="p">(</span><span class="n">cm</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+<span class="n">R</span><span class="o">^</span><span class="mi">2</span> <span class="mf">0.9999999878503739</span>
+<span class="n">Test</span> <span class="n">Dataset</span> <span class="mf">22.87</span>  <span class="n">Full</span> <span class="n">Dataset</span> <span class="mf">10.23</span>     <span class="n">Median</span> <span class="n">error</span><span class="p">:</span> <span class="mf">0.25</span>  <span class="n">Max</span> <span class="mi">5</span> <span class="n">errors</span><span class="p">:</span> <span class="p">[</span> <span class="mf">80.1</span> <span class="mf">139.7</span> <span class="mf">149.3</span> <span class="mf">150.1</span> <span class="mf">155.9</span><span class="p">]</span>
+
+<span class="n">Model</span> <span class="n">optimization</span> <span class="n">complete</span><span class="o">.</span> <span class="n">Saving</span> <span class="n">final</span> <span class="n">model</span><span class="o">...</span>
+<span class="n">Saving</span> <span class="n">ML</span> <span class="n">model</span> <span class="n">data</span><span class="o">...</span>
+<span class="n">Total</span> <span class="n">run</span> <span class="n">time</span><span class="p">:</span> <span class="mf">495.87</span> <span class="n">seconds</span>
+</pre></div>
+</div>
+<p>The errors are printed in wavenumbers (cm^-1) and we see that the best performing hyperparameters tested give an average error of 10.23 cm^-1 for the full dataset.</p>
+<p>PES-Learn generated a model that uses these hyperparameters that can be used to make predictions about the given PES. Before we get to that, however, lets see if we can
+generate a better ML model with a bit of fine-tuning.</p>
+<p>Let’s now build a <code class="docutils literal notranslate"><span class="pre">precomputed</span></code> kernel with some of the best performing hyperparameters to narrow our hyperparameter space and hopefully build a
+better model. From the hyperparameter optimizations, (not shown because of length) it appears the polynomial and Laplacian kernels performed well
+with respect to errors, so lets examine them separately. It is important to note that when using a precomputed kernel that includes a polynomial type
+kernel it is recommended to optimize the hyperparameters for that kernel separately. The polynomial kernel takes another hyperparameter, the degree
+of the polynomial. If you try to optimize multiple kernel functions at once with the degree hyperparameter, the optimization scheme will try and
+find trends between degree and performance with other kernels being used. This will a.) build a larger hyperparameter space and b.) could skew
+results with trends that don’t exist. This is explicitly accounted for with the <code class="docutils literal notranslate"><span class="pre">verbose</span></code> kernel option, but not with a <code class="docutils literal notranslate"><span class="pre">precomputed</span></code> kernel.
+As such we will try to build two separate models, one with a polynomial kernel and one with a Laplacian. Let us first do this for a polynomial kernel,
+we change our input to the following for a precomputed kernel:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Machine learning keywords</span>
+<span class="n">ml_model</span> <span class="o">=</span> <span class="n">krr</span>
+<span class="n">hp_maxit</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">precomputed</span>
+<span class="n">precomputed_kernel</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;kernel&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;polynomial&#39;</span><span class="p">],</span> <span class="s1">&#39;degree&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;uniform&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">]}</span>
+<span class="n">sampling</span> <span class="o">=</span> <span class="n">structure_based</span>
+<span class="n">use_pips</span> <span class="o">=</span> <span class="n">true</span>
+</pre></div>
+</div>
+<p>We have changed <code class="docutils literal notranslate"><span class="pre">kernel</span></code> to <code class="docutils literal notranslate"><span class="pre">precomputed</span></code> and set the <code class="docutils literal notranslate"><span class="pre">precomputed_kernel</span></code> option to a dicitonary of options for our kernel. By setting the
+first option in degree to ‘uniform’ that tells PES-Learn (and by extension HyperOpt) to use degrees from 1 to 6, stepping by 1 each time. This
+means that hyperparameter optimizations will examine polynomials of degree 1, 2, 3, 4, 5, and 6. Equivalently, we could leave out the ‘uniform’ option
+and set <code class="docutils literal notranslate"><span class="pre">precomputed_kernel</span> <span class="pre">=</span> <span class="pre">{'kernel':</span> <span class="pre">['polynomial'],</span> <span class="pre">'degree':</span> <span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6]}</span></code>. Leaving out ‘uniform’ allows specifications for exactly
+which degree(s) to examine.</p>
+<p>Let’s now run this with the precomputed polynomial kernel and see what that results us.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Best</span> <span class="n">performing</span> <span class="n">hyperparameters</span> <span class="n">are</span><span class="p">:</span>
+<span class="p">[(</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="mf">1e-06</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;gamma&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;kernel&#39;</span><span class="p">,</span> <span class="s1">&#39;polynomial&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;morse_transform&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;morse&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;morse_alpha&#39;</span><span class="p">:</span> <span class="mf">1.2000000000000002</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;pip&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;degree_reduction&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;scale_X&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;scale_y&#39;</span><span class="p">,</span> <span class="s1">&#39;mm01&#39;</span><span class="p">)]</span>
+<span class="n">Fine</span><span class="o">-</span><span class="n">tuning</span> <span class="n">final</span> <span class="n">model</span><span class="o">...</span>
+<span class="n">Hyperparameters</span><span class="p">:</span>  <span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mf">1e-06</span><span class="p">,</span> <span class="s1">&#39;degree&#39;</span><span class="p">:</span> <span class="mf">6.0</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;kernel&#39;</span><span class="p">:</span> <span class="s1">&#39;polynomial&#39;</span><span class="p">,</span> <span class="s1">&#39;morse_transform&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;morse&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;morse_alpha&#39;</span><span class="p">:</span> <span class="mf">1.2000000000000002</span><span class="p">},</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;degree_reduction&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="s1">&#39;scale_X&#39;</span><span class="p">:</span> <span class="s1">&#39;std&#39;</span><span class="p">,</span> <span class="s1">&#39;scale_y&#39;</span><span class="p">:</span> <span class="s1">&#39;mm01&#39;</span><span class="p">}</span>
+<span class="n">Final</span> <span class="n">model</span> <span class="n">performance</span> <span class="p">(</span><span class="n">cm</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+<span class="n">R</span><span class="o">^</span><span class="mi">2</span> <span class="mf">0.999999887725274</span>
+<span class="n">Test</span> <span class="n">Dataset</span> <span class="mf">69.53</span>  <span class="n">Full</span> <span class="n">Dataset</span> <span class="mf">45.16</span>     <span class="n">Median</span> <span class="n">error</span><span class="p">:</span> <span class="mf">21.14</span>  <span class="n">Max</span> <span class="mi">5</span> <span class="n">errors</span><span class="p">:</span> <span class="p">[</span><span class="mf">162.8</span> <span class="mf">183.3</span> <span class="mf">205.6</span> <span class="mf">293.8</span> <span class="mf">740.3</span><span class="p">]</span>
+
+<span class="n">Model</span> <span class="n">optimization</span> <span class="n">complete</span><span class="o">.</span> <span class="n">Saving</span> <span class="n">final</span> <span class="n">model</span><span class="o">...</span>
+<span class="n">Saving</span> <span class="n">ML</span> <span class="n">model</span> <span class="n">data</span><span class="o">...</span>
+<span class="n">Total</span> <span class="n">run</span> <span class="n">time</span><span class="p">:</span> <span class="mf">494.81</span> <span class="n">seconds</span>
+</pre></div>
+</div>
+<p>It looks like this didn’t do quite as well as we had hoped, so let’s try the Laplacian kernel now.  Let’s change the keywords in our input.dat again:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">precomputed_kernel</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;kernel&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;laplacian&#39;</span><span class="p">]}</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>Let’s run it and see what it gets us:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Best</span> <span class="n">performing</span> <span class="n">hyperparameters</span> <span class="n">are</span><span class="p">:</span>
+<span class="p">[(</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="mf">1e-06</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;gamma&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;kernel&#39;</span><span class="p">,</span> <span class="s1">&#39;laplacian&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;morse_transform&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;morse&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;morse_alpha&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;pip&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;degree_reduction&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}),</span> <span class="p">(</span><span class="s1">&#39;scale_X&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;scale_y&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">)]</span>
+<span class="n">Fine</span><span class="o">-</span><span class="n">tuning</span> <span class="n">final</span> <span class="n">model</span><span class="o">...</span>
+<span class="n">Hyperparameters</span><span class="p">:</span>  <span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mf">1e-06</span><span class="p">,</span> <span class="s1">&#39;degree&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;kernel&#39;</span><span class="p">:</span> <span class="s1">&#39;laplacian&#39;</span><span class="p">,</span> <span class="s1">&#39;morse_transform&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;morse&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;morse_alpha&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;degree_reduction&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;pip&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="s1">&#39;scale_X&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;scale_y&#39;</span><span class="p">:</span> <span class="s1">&#39;std&#39;</span><span class="p">}</span>
+<span class="n">Final</span> <span class="n">model</span> <span class="n">performance</span> <span class="p">(</span><span class="n">cm</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+<span class="n">R</span><span class="o">^</span><span class="mi">2</span> <span class="mf">0.9999999878503739</span>
+<span class="n">Test</span> <span class="n">Dataset</span> <span class="mf">22.87</span>  <span class="n">Full</span> <span class="n">Dataset</span> <span class="mf">10.23</span>     <span class="n">Median</span> <span class="n">error</span><span class="p">:</span> <span class="mf">0.25</span>  <span class="n">Max</span> <span class="mi">5</span> <span class="n">errors</span><span class="p">:</span> <span class="p">[</span> <span class="mf">80.1</span> <span class="mf">139.7</span> <span class="mf">149.3</span> <span class="mf">150.1</span> <span class="mf">155.9</span><span class="p">]</span>
+
+<span class="n">Model</span> <span class="n">optimization</span> <span class="n">complete</span><span class="o">.</span> <span class="n">Saving</span> <span class="n">final</span> <span class="n">model</span><span class="o">...</span>
+<span class="n">Saving</span> <span class="n">ML</span> <span class="n">model</span> <span class="n">data</span><span class="o">...</span>
+<span class="n">Total</span> <span class="n">run</span> <span class="n">time</span><span class="p">:</span> <span class="mf">515.5</span> <span class="n">seconds</span>
+</pre></div>
+</div>
+<p>We get the same answer as we initially did. This is a good indication that this may be the best model KRR can make, unless we drastically expand the hyperparameter space.
+You may notice some of the other hyperparameters, like gamma and alpha which can also be set with a precomputed kernel. show how to do this along with other hps bellow ian</p>
+<p>KRR example with precomputed_kernel (then link from cli (and maybe api))</p>
+<p>{‘kernel’: [‘rbf’,’polynomial’]</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="nn_ex.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Neural Network</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="data_gen.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Data Generation Examples</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#verbose-kernel-search">Verbose Kernel Search</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By PES-Learn Development Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024, PES-Learn Development Team.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
