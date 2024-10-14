@@ -11,7 +11,7 @@ import numpy as np
 class WTNN(NeuralNetwork):
     def __init__(self, dataset_path, dataset_path_lf, input_obj, input_obj_lf, molecule_type=None, molecule=None, train_path=None, test_path=None, valid_path=None):
         super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path, valid_path)
-        self.lf_model = Model(dataset_path_lf, input_obj_lf, molecule_type, molecule, train_path, test_path, valid_path) # TODO: Paths are for HF model
+        self.lf_model = Model(dataset_path_lf, input_obj_lf, molecule_type, molecule, train_path, test_path, valid_path) # TODO: Train, test, valid paths are for HF model
         if self.lf_model.input_obj.keywords['validation_points']:
             self.nvalid_lf = self.lf_model.input_obj.keywords['validation_points']
             if (self.nvalid_lf + self.lf_model.ntrain + 1) > self.lf_model.n_datapoints:

@@ -7,6 +7,7 @@ from . import svigp
 from . import mfgp
 from . import mfmodel
 from . import mfnn
+from . import diff_nn
 from . import gpytorch_gpr
 from . import mfgp_nsp
 
