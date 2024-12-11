@@ -17,7 +17,7 @@ class InputProcessor(object):
     """
     def __init__(self, input_string):
         # Remove all comments denoted by '#'
-        self.full_string = re.sub('\s*#.+', '', input_string) 
+        self.full_string = re.sub(r'\s*#.+', '', input_string) 
         if re.search(regex.intcoords_regex, self.full_string):
             self.zmat_string = re.findall(regex.intcoords_regex, self.full_string)[0] 
         self.intcos_ranges = None 
@@ -81,7 +81,7 @@ class InputProcessor(object):
                             }
 
         for k in string_keywords:
-            match = re.search(k+"\s*=\s*(.+)", self.full_string)
+            match = re.search(k + r"\s*=\s*(.+)", self.full_string)
             # if the keyword is mentioned
             if match:
                 value = str(match.group(1))
@@ -90,7 +90,7 @@ class InputProcessor(object):
                 if k not in regex_keywords:
                     value = value.lower().strip()
                 # if keyword is raw text, add quotes so it is a string
-                if re.match("[a-z\_]+", value):
+                if re.match(r"[a-z\_]+", value):
                     if (r"'" or r'"') not in value:
                         value = "".join((r'"',value,r'"',))
                 try:
@@ -114,11 +114,11 @@ class InputProcessor(object):
         # for every geometry label look for its range identifer, e.g. R1 = [0.5, 1.2, 25]
         for label in geomlabels:
             # check to make sure parameter isn't defined more than once
-            if len(re.findall("\W" + label+"\s*=\s*", self.full_string)) > 1:
+            if len(re.findall(r"\W" + label + r"\s*=\s*", self.full_string)) > 1:
                 raise Exception("Parameter {} defined more than once.".format(label))
 
             # if geom parameter has a geometry range, save it
-            match = re.search(label+"\s*=\s*(\[.+\])", self.full_string)
+            match = re.search(label + r"\s*=\s*(\[.+\])", self.full_string)
             if match:
                 try:
                     ranges[label] = ast.literal_eval(match.group(1))
@@ -126,7 +126,7 @@ class InputProcessor(object):
                     raise Exception("Something wrong with definition of parameter {} in input. Should be of the form [start, stop, # of points] or a fixed value".format(label))
             # if it has a fixed value, save it
             else:
-                match = re.search(label+"\s*=\s*(-?\d+\.?\d*)", self.full_string)
+                match = re.search(label + r"\s*=\s*(-?\d+\.?\d*)", self.full_string)
                 if not match:
                     raise Exception("\nDefinition of parameter {} not found in geometry input.      \
                                    \nThe definition is either missing or improperly formatted".format(label))

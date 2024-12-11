@@ -46,12 +46,12 @@ def interatomics_to_fundinvar(raw_X, fi_path):
     nbonds = raw_X.shape[1]
     with open(fi_path, 'r') as f:
         data = f.read()
-        data = re.sub('\^', '**', data)
+        data = re.sub(r'\^', '**', data)
         #  convert subscripts of bonds to 0 indexing
         for i in range(1, nbonds+1):
-            data = re.sub('x{}(\D)'.format(str(i)), 'x{}\\1'.format(i-1), data)
+            data = re.sub(r'x{}(\D)'.format(str(i)), 'x{}\\1'.format(i-1), data)
 
-        polys = re.findall("\]=(.+)",data)
+        polys = re.findall(r"\]=(.+)",data)
 
     # create a new_X matrix that is the shape of number geoms, number of Fundamental Invariants
     new_X = np.zeros((raw_X.shape[0],len(polys)))
@@ -67,7 +67,7 @@ def interatomics_to_fundinvar(raw_X, fi_path):
         # just checking first, assumes every term in each FI polynomial has the same degree (seems to always be true)
         tmp = p.split('+')[0]
         # count number of exponents and number of occurances of character 'x'
-        exps = [int(i) - 1 for i in re.findall("\*\*(\d+)", tmp)]
+        exps = [int(i) - 1 for i in re.findall(r"\*\*(\d+)", tmp)]
         ndegrees = len(re.findall("x", tmp)) + sum(exps)
         degrees.append(ndegrees)
 

@@ -190,7 +190,7 @@ def load_cartesian_dataset(xyz_path):
     # extract energy,geometry pairs
     #data_regex = "\s*-?\d+\.\d+\s*\n" + xyz_re
     #data_regex = maybe("\d\d?\n") + "\s*-?\d+\.\d+\s*\n" + xyz_re
-    data_regex = maybe("\d+\n") + "\s*-?\d+\.\d+\s*\n" + xyz_re
+    data_regex = maybe(r"\d+\n") + r"\s*-?\d+\.\d+\s*\n" + xyz_re
     datablock = re.findall(data_regex, data)
     for i in range(len(datablock)):
         datablock[i] = list(filter(None, datablock[i].split('\n')))
@@ -206,7 +206,7 @@ def load_cartesian_dataset(xyz_path):
     geoms = datablock
     # find atom labels
     sample = geoms[0]
-    atom_labels = [re.findall('\w+', s)[0] for s in sample]
+    atom_labels = [re.findall(r'\w+', s)[0] for s in sample]
     natoms = len(atom_labels)
     # convert atom labels to standard order (most common element first, alphabetical tiebreaker)
     sorted_atom_counts = collections.Counter(atom_labels).most_common()

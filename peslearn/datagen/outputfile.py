@@ -24,7 +24,7 @@ class OutputFile(object):
             self.output_str = f.read()
 
     def extract_energy_with_regex(self, energy_regex):
-        """
+        r"""
         Finds the energy value (a float) in an output file according to a user supplied
         regular expression identifier.
     
@@ -34,7 +34,7 @@ class OutputFile(object):
         FINAL ELECTRONIC ENERGY (Eh):   -2.3564983498
 
         One can obtain this floating point number with the regex identifier:
-        \s*FINAL ELECTRONIC ENERGY \(Eh\):\s+(-\d+\.\d+)
+        r"\s*FINAL ELECTRONIC ENERGY \(Eh\):\s+(-\d+\.\d+)"
 
         Checking ones regular expression is easy with online utilities such as pythex (see pythex.org)
 
@@ -42,7 +42,7 @@ class OutputFile(object):
         ---------
         energy_regex : str
             A string containing the regex code for capturing an energy floating point number.
-                e.g. "\s*FINAL ELECTRONIC ENERGY \(Eh\):\s+(-\d+\.\d+)"
+                e.g. r"\s*FINAL ELECTRONIC ENERGY \(Eh\):\s+(-\d+\.\d+)"
 
         Returns
         -------
@@ -126,11 +126,11 @@ class OutputFile(object):
         """
         if driver == "energy":
             energy = []
-            energy = re.findall("\s\'return_energy\'\:\s+(-\d+\.\d+)", self.output_str)
+            energy = re.findall(r"\s\'return_energy\'\:\s+(-\d+\.\d+)", self.output_str)
             if energy:
                 return energy
             else:
-                success = re.findall("\s\'success\'\:\s+(\S+)\}", self.output_str)
+                success = re.findall(r"\s\'success\'\:\s+(\S+)\}", self.output_str)
                 if success[0] == 'False':
                     energy = 'False'
                     return energy
@@ -140,7 +140,7 @@ class OutputFile(object):
                     return energy
 
         if driver == "gradient":
-            gradient = re.findall("\s\'return_gradient\'\:\s+array\(([\s\S]*?)\)\,", self.output_str)
+            gradient = re.findall(r"\s\'return_gradient\'\:\s+array\(([\s\S]*?)\)\,", self.output_str)
             if gradient:
                 import ast
                 gradient = re.sub(r'\s+', "", str(gradient))
@@ -150,7 +150,7 @@ class OutputFile(object):
                 gradient = np.asarray(ast.literal_eval(gradient)).astype(np.float64)
                 return gradient
             else:
-                success = re.findall("\s\'success\'\:\s+(\S+)\}", self.output_str)
+                success = re.findall(r"\s\'success\'\:\s+(\S+)\}", self.output_str)
                 if success[0] == 'False':
                     gradient = 'False'
                     return gradient
@@ -160,7 +160,7 @@ class OutputFile(object):
 
 
         if driver == "hessian":
-            hessian = re.findall("\s\'return_hessian\'\:\s+array\(([\s\S]*?)\)\,", self.output_str)
+            hessian = re.findall(r"\s\'return_hessian\'\:\s+array\(([\s\S]*?)\)\,", self.output_str)
             if hessian:
                 import ast
                 hessian = re.sub(r'\s+', "", str(hessian))
@@ -170,7 +170,7 @@ class OutputFile(object):
                 hessian = np.asarray(ast.literal_eval(hessian)).astype(np.float64)
                 return hessian
             else:
-                success = re.findall("\s\'success\'\:\s+(\S+)\}", self.output_str)
+                success = re.findall(r"\s\'success\'\:\s+(\S+)\}", self.output_str)
                 if success[0] == 'False':
                     hessian = 'False'
                     return hessian
@@ -185,7 +185,7 @@ class OutputFile(object):
             return properties
 
     def extract_cartesian_gradient_with_regex(self, header, footer, grad_line_regex):
-        """
+        r"""
         Extracts cartesian gradients according to user supplied regular expressions.
         A bit more tedious to use than the energy regex extractor as the size of the regular expressions may be quite long.
         Requires that the electronic structure theory code prints the cartesian gradient in a logical way.
@@ -214,7 +214,7 @@ class OutputFile(object):
             Atom 1 Cl 0.00000 0.23410 0.32398 
             Atom 2 H  0.02101 0.09233 0.01342     
             Atom 3 N  0.01531 0.04813 0.06118
-            A valid argument for grad_line_regex would be "Atom\s+\d+\s+[A-Z,a-z]+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"
+            A valid argument for grad_line_regex would be r"Atom\s+\d+\s+[A-Z,a-z]+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)"
             This can easily be tested with online utilities such as pythex (see pythex.org)
         Returns
         -------

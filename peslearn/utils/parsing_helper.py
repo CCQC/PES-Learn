@@ -22,7 +22,7 @@ def parse(input_obj, mol):
                 energy = output_obj.extract_energy_with_regex(input_obj.keywords['energy_regex'])
                 return energy
         else:
-            raise Exception("\n energy_regex value not assigned in input. Please add a regular expression which captures the energy value, e.g. energy_regex = 'RHF Final Energy: \s+(-\d+\.\d+)'")
+            raise Exception("\n energy_regex value not assigned in input. Please add a regular expression which captures the energy value, see docs for more info.")
         
     if input_obj.keywords['energy'] == 'schema':
         def extract_energy(input_obj, output_obj):

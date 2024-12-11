@@ -26,7 +26,7 @@ def two_or_more(string):
 # save some common regex features as human readable variables
 letter           = r'[a-zA-Z]'
 # floating point number with optional scientific notation
-double           = r'-?\d+\.' + maybe('\d+') + maybe('[E,e]' + '[\-,\+]?\d+')
+double           = r'-?\d+\.' + maybe(r'\d+') + maybe(r'[E,e]' + r'[\-,\+]?\d+')
 integer          = r'\d+'
 whitespace       = r'\s'
 endline          = r'\n'

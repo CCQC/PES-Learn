@@ -472,8 +472,8 @@ class NeuralNetwork(Model):
         print("Saving ML model data...") 
         model_path = "model1_data"
         while os.path.isdir(model_path):
-            new = int(re.findall("\d+", model_path)[0]) + 1
-            model_path = re.sub("\d+",str(new), model_path)
+            new = int(re.findall(r"\d+", model_path)[0]) + 1
+            model_path = re.sub(r"\d+",str(new), model_path)
         os.mkdir(model_path)
         os.chdir(model_path)
         torch.save(model, 'model.pt')
