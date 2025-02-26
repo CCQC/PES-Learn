@@ -294,6 +294,7 @@ class NeuralNetwork(Model):
             model = model.double() 
 
         metric = torch.nn.MSELoss()
+        mae = torch.nn.L1Loss()
         # Define optimizer
         if 'lr' in params:
             lr = params['lr']
@@ -420,7 +421,12 @@ class NeuralNetwork(Model):
             full_pred = model(self.X)
             full_loss = metric(full_pred, self.y)
             full_error_rmse = np.sqrt(full_loss.item() * loss_descaler) * hartree2cm
+            test_mae = mae(test_pred, self.ytest)
+            mae_test = (test_mae.item() * loss_descaler) * hartree2cm
+            full_mae = mae(full_pred, self.y)
+            mae_full = (full_mae * loss_descaler) * hartree2cm
         print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f} Full dataset RMSE (cm-1): {:5.2f}".format(test_error_rmse, val_error_rmse, full_error_rmse))
+        print("Test set MAE (cm-1): {:5.2f} Full MAE (cm-1): {:5.2f}".format(mae_test, mae_full))
         if return_model:
             return model, test_error_rmse, val_error_rmse, full_error_rmse 
         else:
@@ -520,6 +526,59 @@ class NeuralNetwork(Model):
         if Xscaler:
             newX = Xscaler.transform(newX)
         return newX
+    
+    def torch_transform_new_X(self, newX, params, Xscaler=None):
+        if len(newX.shape) == 1:
+            newX = torch.unsqueeze(newX,0)
+        if params['morse_transform']['morse']:
+            newX = torch.exp(-newX / params['morse_transform']['morse_alpha'])
+#            print('dont worry the morse has been morsed')
+        if Xscaler:
+            # newx2 = Xscaler.transform(newX)
+
+            def cust_trans(scale_type, data):
+                """
+                feature range is tup of the form (min, max)
+                """
+
+                if scale_type == 'std':
+                    u = torch.tensor(Xscaler.mean_, dtype=torch.float32, requires_grad=True)
+                    s = torch.tensor(Xscaler.scale_, dtype=torch.float32, requires_grad=True)
+#                    print(f'u: {u}')
+#                    print(f's: {s}')
+                    xscaled = (data - u) / s
+                    return xscaled
+                elif scale_type == 'mm01':
+                    feature_range = (0, 1)
+#                    print('mm01 scale type')
+                elif scale_type == 'mm11':
+                    feature_range = (-1, 1)
+#                    print('mm11 scale type')
+                min_val = feature_range[0]
+                max_val = feature_range[1]
+                # min_val = torch.min(data, axis=0)[0]
+                # print(f'min_val: {min_val}')
+                # max_val = torch.max(data, axis=0)[0]
+                # print(f'max_val: {max_val}')
+                datamin = torch.tensor(Xscaler.data_min_, dtype=torch.float32, requires_grad=True)
+                datamax = torch.tensor(Xscaler.data_max_, dtype=torch.float32, requires_grad=True)
+                # print(f'datamin_X: {datamin}')
+                # print(f'datamax_X: {datamax}')
+                xstd = (data - datamin) / (datamax - datamin)
+                xscaled = xstd * (max_val - min_val) + min_val
+                return xscaled
+
+            # newX = torch.from_numpy(newX)
+            newX = cust_trans(params['scale_X']['scale_X'], newX)
+            # m = torch.mean(newX, keepdim=True)
+            # s = torch.std(newX, unbiased=False, keepdim=True)
+            # newX -= m
+            # newX /= s
+            # print(f'newx2: {newx2}')
+            # print(f'newX: {newX}')
+            # print(f'please be true: {torch.allclose(newX, torch.from_numpy(newx2))}')
+        return newX
+
 
     def transform_new_y(self, newy, yscaler=None):    
         if yscaler:
@@ -530,6 +589,30 @@ class NeuralNetwork(Model):
         if yscaler:
             newy = yscaler.inverse_transform(newy)
         return newy
+    
+    def alt_inverse_new_y(self, newy, params, yscaler=None):
+        if yscaler:
+            if params['scale_y'] == 'mm01':
+                feature_range = (0, 1)
+                # print('mm01 scale type - y')
+            elif params['scale_y'] == 'mm11':
+                feature_range = (-1, 1)
+#                print('mm11 scale type - y')
+            datamin = torch.tensor(yscaler.data_min_, dtype=torch.float32, requires_grad=True)
+            datamax = torch.tensor(yscaler.data_max_, dtype=torch.float32, requires_grad=True)
+#            print(f'datamin_y: {datamin}')
+#            print(f'datamax_y: {datamax}')
+            ytemp = (newy - feature_range[0]) / (feature_range[1] - feature_range[0])
+            newesty = (ytemp * (datamax - datamin)) + datamin
+        return newesty
+
+    def inverse_transform_new_x(self, newX, Xscaler=None):    
+        if Xscaler:
+            datamin = torch.tensor(Xscaler.data_min_, requires_grad=True)
+            datamax = torch.tensor(Xscaler.data_max_, requires_grad=True)
+            xtemp = (newX - -1) / (1 - -1)
+            newestX = (xtemp * (datamax - datamin)) + datamin
+        return newestX
 
     def write_convenience_function(self):
         string = "from peslearn.ml import NeuralNetwork\nfrom peslearn import InputProcessor\nimport torch\nimport numpy as np\nfrom itertools import combinations\n\n"
