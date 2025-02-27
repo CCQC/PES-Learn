@@ -592,18 +592,22 @@ class NeuralNetwork(Model):
     
     def alt_inverse_new_y(self, newy, params, yscaler=None):
         if yscaler:
-            if params['scale_y'] == 'mm01':
+            if params['scale_y'] == 'std':
+                u = torch.tensor(yscaler.mean_, dtype=torch.float32, requires_grad=True)
+                s = torch.tensor(yscaler.scale_, dtype=torch.float32, requires_grad=True)
+                newesty = (newy * s) + u
+            elif params['scale_y'] == 'mm01':
                 feature_range = (0, 1)
-                # print('mm01 scale type - y')
+                datamin = torch.tensor(yscaler.data_min_, dtype=torch.float32, requires_grad=True)
+                datamax = torch.tensor(yscaler.data_max_, dtype=torch.float32, requires_grad=True)
+                ytemp = (newy - feature_range[0]) / (feature_range[1] - feature_range[0])
+                newesty = (ytemp * (datamax - datamin)) + datamin
             elif params['scale_y'] == 'mm11':
                 feature_range = (-1, 1)
-#                print('mm11 scale type - y')
-            datamin = torch.tensor(yscaler.data_min_, dtype=torch.float32, requires_grad=True)
-            datamax = torch.tensor(yscaler.data_max_, dtype=torch.float32, requires_grad=True)
-#            print(f'datamin_y: {datamin}')
-#            print(f'datamax_y: {datamax}')
-            ytemp = (newy - feature_range[0]) / (feature_range[1] - feature_range[0])
-            newesty = (ytemp * (datamax - datamin)) + datamin
+                datamin = torch.tensor(yscaler.data_min_, dtype=torch.float32, requires_grad=True)
+                datamax = torch.tensor(yscaler.data_max_, dtype=torch.float32, requires_grad=True)
+                ytemp = (newy - feature_range[0]) / (feature_range[1] - feature_range[0])
+                newesty = (ytemp * (datamax - datamin)) + datamin
         return newesty
 
     def inverse_transform_new_x(self, newX, Xscaler=None):    
