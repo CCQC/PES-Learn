@@ -40,6 +40,9 @@ xyz_line_regex = r'[ \t]*' + letter + maybe(letter) + 3 * ws_double + ws_endline
 # an xyz style geometry block of any size
 xyz_block_regex = two_or_more(xyz_line_regex)
 
+# a regex for the atom symbol only in an xyz style geometry line
+atom_symbol = r'[ \t]*' + letter + maybe(letter)
+
 # define generalized compact internal coordinates regex identifier
 # e.g.
 # O

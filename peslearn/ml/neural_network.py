@@ -9,7 +9,7 @@ import copy
 
 from .model import Model
 from .data_sampler import DataSampler 
-from ..constants import hartree2cm, package_directory, nn_convenience_function
+from ..constants import hartree2cm, package_directory, nn_convenience_function, gradient_nn_convenience_function
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
 from ..utils.printing_helper import hyperopt_complete
 from sklearn.model_selection import train_test_split   
@@ -503,6 +503,8 @@ class NeuralNetwork(Model):
         self.dataset.to_csv('PES.dat', sep=',',index=False,float_format='%12.12f')
         with open('compute_energy.py', 'w+') as f:
             print(self.write_convenience_function(), file=f)
+        with open('compute_gradient.py', 'w+') as g:
+            print(self.write_gradient_function(), file=g)
         os.chdir("../")
 
     def transform_new_X(self, newX, params, Xscaler=None):
@@ -617,7 +619,7 @@ class NeuralNetwork(Model):
             xtemp = (newX - -1) / (1 - -1)
             newestX = (xtemp * (datamax - datamin)) + datamin
         return newestX
-
+    
     def write_convenience_function(self):
         string = "from peslearn.ml import NeuralNetwork\nfrom peslearn import InputProcessor\nimport torch\nimport numpy as np\nfrom itertools import combinations\n\n"
         if self.pip:
@@ -630,6 +632,17 @@ class NeuralNetwork(Model):
         string += "X, y, Xscaler, yscaler =  nn.preprocess(params, nn.raw_X, nn.raw_y)\n"
         string += "model = torch.load('model.pt')\n"
         string += nn_convenience_function
+        return string
+
+    def write_gradient_function(self):
+        string = "from peslearn.ml import NeuralNetwork\nfrom peslearn import InputProcessor\nfrom peslearn.utils import geometry_transform_helper\nimport torch\nimport re\nimport os\n\n"
+        string += "nn = NeuralNetwork('PES.dat', InputProcessor(''))\n"
+        with open('hyperparameters', 'r') as f:
+            hyperparameters = f.read()
+        string += "params = {}\n".format(hyperparameters)
+        string += "X, y, Xscaler, yscaler =  nn.preprocess(params, nn.raw_X, nn.raw_y)\n"
+        string += "model = torch.load('model.pt')\n"
+        string += gradient_nn_convenience_function
         return string
 
 

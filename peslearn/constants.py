@@ -180,3 +180,41 @@ def cart1d_to_distances1d(vec):
     distance_vector = distance_matrix[np.tril_indices(len(distance_matrix),-1)]
     return distance_vector
 """
+
+gradient_nn_convenience_function = """
+# how to use 'gradient_compute()' function
+# --------------------------------------
+# grads = gradient_compute(cartesian_dataset_path)
+# 'cartesian_dataset_path' is a path to a dataset with cartesian coordinates that will be used with model to predict gradients.
+# Cartesian geometries should contain atomic symbol (e.g. H, C, Br, etc.) followed by XYZ cartesian coordinates each separated by spaces.
+# The dataset may contain one or multiple geometries, if given multiple geometries it will return a list of multiple gradients
+# The output of the 'gradient_compute()' function will be the negative derivative of the predicted energy from the model with respect to
+# the cartesian coordinate of the provided geometry. 
+# i.e. ouput = -dE/dq, where output is the returned value from the 'gradient_compute()' function, E is the model predicted energy, and q are the cartesian coordinates
+# Input coordinates need not be in standard order, they will however be transformed into standard order for the output. 
+# Standard order in PES-Learn lists most common atoms first with alphabetical tiebreakers. 
+# e.g. If the input provided for water lists the XYZ coordinates in order of O H1 H2, then the output gradient will be in the order H1 H2 O.
+# The returned gradients will be in units of Hartree/distance where distance is either Bohr or Angstrom. 
+# The distance unit used to construct the model should be the same distance unit used to predict gradients.
+# Outputs are of the form of a list of torch tensors, where each tensor is a predicted gradient in the order provided in the catesian dataset.
+# Using this function for the first time creates a new file containing a function tailored to the given input molecule.
+
+def gradient_compute(cart_dataset_path):
+    grad = []
+    # transform 
+    sorted_atoms, geoms = geometry_transform_helper.load_cartesian_dataset(cart_dataset_path, no_energy=True)
+    for i in range(len(geoms)):
+        geoms[i] = geometry_transform_helper.remove_atom_labels(geoms[i])
+    if not os.path.exists('grad_func.py'):
+        geometry_transform_helper.write_grad_input(sorted_atoms)
+    from grad_func import gradient_prediction
+    for g in range(len(geoms)):
+        grad.append(gradient_prediction(nn, params, model, Xscaler, yscaler, geoms[g]))
+    return grad
+"""
+
+
+
+
+
+
