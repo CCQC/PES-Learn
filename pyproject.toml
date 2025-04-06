@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "peslearn"
-version = "1.0.0"
+version = "1.0.1"
 authors = [{name = "Adam Abbott"}, {name = "Ian Beck"},]
 description = "Automated Construction of Machine Learning Models of Molecular Potential Energy Surfaces."
 readme = "README.md"
