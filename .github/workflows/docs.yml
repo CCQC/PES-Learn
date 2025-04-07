@@ -25,7 +25,7 @@ jobs:
           activate-environment: docs-env
           environment-file: docs/requirements.yml
           python-version: ${{ matrix.cfg.python-version }}
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           use-mamba: true
           add-pip-as-python-dependency: true
           channels: conda-forge
