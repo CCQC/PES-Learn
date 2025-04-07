@@ -11,7 +11,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "BSD-3-Clause"}
 dependencies = [
-    "numpy==1.24.4",
+    "numpy (>=1.24.4, <2.0.0)",
     "GPy>=1.9",
     "scikit-learn>=0.20",
     "pandas>=2.0",
