@@ -27,7 +27,7 @@ jobs:
         conda install python=3.12
         conda install -c conda-forge gpy
         conda install numpy
-        conda install pytorch
+        conda install pytorch=2.1.2
         conda install pandas
         conda install -c conda-forge cclib
         conda install -c conda-forge hyperopt
