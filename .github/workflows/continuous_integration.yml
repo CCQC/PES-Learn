@@ -12,7 +12,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python 3.12
       uses: actions/setup-python@v2
       with:
@@ -27,7 +27,7 @@ jobs:
         conda install python=3.12
         conda install -c conda-forge gpy
         conda install numpy
-        conda install pytorch
+        conda install -c conda-forge pytorch=2.1.2
         conda install pandas
         conda install -c conda-forge cclib
         conda install -c conda-forge hyperopt
