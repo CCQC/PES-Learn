@@ -56,10 +56,20 @@ class Model(ABC):
                     self.raw_Xvalid = self.validdata.values[:, :-1]
                     self.raw_yvalid = self.validdata.values[:,-1].reshape(-1,1)
 
+
         self.dataset = data.sort_values("E")
         self.n_datapoints = self.dataset.shape[0]
-        self.raw_X = self.dataset.values[:, :-1]
-        self.raw_y = self.dataset.values[:,-1].reshape(-1,1)
+        idx = 0 # My code I think...
+        for i in self.dataset:
+            if 'E' in i:
+                idx += 1
+        if idx > 1 and False:
+            self.raw_X = self.dataset.values[:,:-idx]
+            self.raw_y = self.dataset.values[:,-idx].reshape(-1,1)
+            self.raw_y_l = self.dataset.values[:,-1].reshape(-1,1)
+        else:
+            self.raw_X = self.dataset.values[:,:-1]
+            self.raw_y = self.dataset.values[:,-1].reshape(-1,1)
         self.input_obj = input_obj
 
         self.pip = False
@@ -133,17 +143,12 @@ class Model(ABC):
                 #try:
                 #    data = pd.read_csv(path, sep=None)
         return data
-
-    @abstractmethod
     def build_model(self):
         pass
-    @abstractmethod
     def save_model(self):
         pass
-    @abstractmethod
     def preprocess(self):
         pass
-    @abstractmethod
     def split_train_test(self):
         pass
 

@@ -15,7 +15,7 @@ from ..utils.printing_helper import hyperopt_complete
 from sklearn.model_selection import train_test_split   
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
 from .preprocessing_helper import sort_architectures
-
+from copy import deepcopy
 
 torch.set_printoptions(precision=15)
 
@@ -23,11 +23,11 @@ class NeuralNetwork(Model):
     """
     Constructs a Neural Network Model using PyTorch
     """
-    def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None, valid_path=None):
+    def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None, valid_path=None, precision=32):
         super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path, valid_path)
         self.trial_layers = self.input_obj.keywords['nas_trial_layers']
         self.set_default_hyperparameters()
-        
+        self.precision = precision
         if self.input_obj.keywords['validation_points']:
             self.nvalid = self.input_obj.keywords['validation_points']
             if (self.nvalid + self.ntrain + 1) > self.n_datapoints:
@@ -131,7 +131,6 @@ class NeuralNetwork(Model):
         print("Fine-tuning final model...")
         model, test_error, val_error, full_error = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=100, opt='lbfgs', tol=0.1,  decay=True, verbose=True,precision=precision,return_model=True)
         performance = [test_error, val_error, full_error]
-        self.test_error = test_error
         print("Model optimization complete. Saving final model...")
         self.save_model(self.optimal_hyperparameters, model, performance)
 
@@ -189,6 +188,7 @@ class NeuralNetwork(Model):
         self.Xvalid : validation input data, transformed
         self.yvalid : validation output data, transformed
         """
+        old_raw_X = deepcopy(self.raw_X)
         self.X, self.y, self.Xscaler, self.yscaler = self.preprocess(params, self.raw_X, self.raw_y)
         if self.sampler == 'user_supplied':
             self.Xtr = self.transform_new_X(self.raw_Xtr, params, self.Xscaler)
@@ -211,6 +211,28 @@ class NeuralNetwork(Model):
                 self.Xtest = self.X[self.new_test_indices]
                 self.ytest = self.y[self.new_test_indices]
 
+            #self.Xtmp = self.X[self.test_indices]
+            #self.ytmp = self.y[self.test_indices]
+            #if validation_size:
+            #    self.Xvalid, self.Xtest, self.yvalid, self.ytest =  train_test_split(self.Xtmp,
+            #                                                                         self.ytmp, 
+            #                                                       train_size = validation_size, 
+            #                                                                    random_state=42)
+
+            ## temporary implementation: structure based validation set sample
+            #if validation_size:
+            #    data = np.hstack((self.Xtmp, self.ytmp))
+            #    col = [str(i) for i in range(data.shape[1])]
+            #    col[-1] = 'E'
+            #    df = pd.DataFrame(data, columns=col)
+            #    df.columns.values[-1] = 'E'
+            #    sample = DataSampler(df, validation_size)
+            #    sample.structure_based()
+            #    validation_indices, test_indices = sample.get_indices()
+            #    self.Xvalid = self.Xtmp[validation_indices]
+            #    self.yvalid = self.ytmp[validation_indices]
+            #    self.Xtest = self.Xtmp[test_indices]
+            #    self.ytest = self.ytmp[test_indices]
             else:
                 raise Exception("Please specify a validation set size for Neural Network training.")
 
@@ -240,6 +262,7 @@ class NeuralNetwork(Model):
         rate = lr
         if opt_type == 'lbfgs':
             #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-5, tolerance_change=1e-9, history_size=100) # Defaults
+            #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=100, max_eval=None, tolerance_grad=1e-10, tolerance_change=1e-14, history_size=200)
             optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-8, tolerance_change=1e-12, history_size=100)
         if opt_type == 'adam':
             optimizer = torch.optim.Adam(mdata, lr=rate)
@@ -310,12 +333,13 @@ class NeuralNetwork(Model):
         decay_attempts = 0
         prev_best = None
         decay_start = False
-    
+        #labmda = 1e-4
         for epoch in range(1,maxit):
             def closure():
                 optimizer.zero_grad()
                 y_pred = model(self.Xtr)
-                loss = torch.sqrt(metric(y_pred, self.ytr)) # passing RMSE instead of MSE improves precision IMMENSELY
+                #l2_norm = sum(p.pow(2.0).sum() for p in model.parameters())
+                loss = torch.sqrt(metric(y_pred, self.ytr)) #+ labmda*l2_norm # passing RMSE instead of MSE improves precision IMMENSELY
                 loss.backward()
                 return loss
             optimizer.step(closure)
@@ -532,16 +556,18 @@ class NeuralNetwork(Model):
         return newy
 
     def write_convenience_function(self):
-        string = "from peslearn.ml import NeuralNetwork\nfrom peslearn import InputProcessor\nimport torch\nimport numpy as np\nfrom itertools import combinations\n\n"
+        string = "from peslearn.ml import NeuralNetwork\nfrom peslearn import InputProcessor\nimport torch\nimport numpy as np\nfrom itertools import combinations\nimport os\n\n"
+        string += "cwd = os.path.realpath(__file__).replace('compute_energy.py', '')\n"
+        string += f"model_dtype = torch.float{self.precision}\n"
         if self.pip:
-            string += "nn = NeuralNetwork('PES.dat', InputProcessor(''), molecule_type='{}')\n".format(self.molecule_type)
+            string += "nn = NeuralNetwork(cwd+'PES.dat', InputProcessor(''), molecule_type='{}')\n".format(self.molecule_type)
         else:
-            string += "nn = NeuralNetwork('PES.dat', InputProcessor(''))\n"
+            string += "nn = NeuralNetwork(cwd+'PES.dat', InputProcessor(''))\n"
         with open('hyperparameters', 'r') as f:
             hyperparameters = f.read()
         string += "params = {}\n".format(hyperparameters)
         string += "X, y, Xscaler, yscaler =  nn.preprocess(params, nn.raw_X, nn.raw_y)\n"
-        string += "model = torch.load('model.pt')\n"
+        string += "model = torch.load(cwd+'model.pt')\n"
         string += nn_convenience_function
         return string
 

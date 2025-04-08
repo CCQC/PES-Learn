@@ -29,7 +29,7 @@ class GaussianProcess(Model):
         Set default hyperparameter space. If none is provided, default is used.
         """
         self.hyperparameter_space = {
-                                    'scale_X': hp.choice('scale_X', ['std', 'mm01', 'mm11', None]),
+                                    #'scale_X': hp.choice('scale_X', ['std', 'mm01', 'mm11', None]),
                                     'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11', None]),
                                     }
 
@@ -75,6 +75,7 @@ class GaussianProcess(Model):
             self.ytest = self.y[self.test_indices]
 
     def build_model(self, params, nrestarts=10, maxit=1000, seed=0):
+        params['scale_X'] = 'std'
         print("Hyperparameters: ", params)
         self.split_train_test(params)
         np.random.seed(seed)     # make GPy deterministic for a given hyperparameter config
@@ -87,7 +88,11 @@ class GaussianProcess(Model):
             ard_val = False
         kernel = RBF(dim, ARD=ard_val)  # TODO add HP control of kernel
         self.model = GPRegression(self.Xtr, self.ytr, kernel=kernel, normalizer=False)
-        self.model.optimize_restarts(nrestarts, optimizer="lbfgsb", robust=True, verbose=False, max_iters=maxit, messages=False)
+        #self.model.optimize_restarts(nrestarts, optimizer="lbfgsb", robust=True, verbose=False, max_iters=maxit, messages=False)
+        self.model.optimize(optimizer="lbfgsb", max_iters=maxit, messages=False)
+        #TODO
+        err = self.vet_model(self.model)
+        #TODO
         gc.collect(2) #fixes some memory leak issues with certain BLAS configs
 
     def hyperopt_model(self, params):
@@ -117,8 +122,7 @@ class GaussianProcess(Model):
         print("Full Dataset {}".format(round(hartree2cm * error_full,2)), end='     ')
         print("Median error: {}".format(np.round(median_error[0],2)), end='  ')
         print("Max 5 errors: {}".format(np.sort(np.round(max_errors.flatten(),1))),'\n')
-        error_test_invcm = round(hartree2cm * error_test,2)
-        return error_test_invcm 
+        return error_test
      
     def preprocess(self, params, raw_X, raw_y):
         """
@@ -135,7 +139,6 @@ class GaussianProcess(Model):
             raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
-        
         if params['scale_X']:
             X, Xscaler = general_scaler(params['scale_X'], raw_X)
         else:

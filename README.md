@@ -1,6 +1,29 @@
 # PES-Learn
-![Continuous Integration](https://github.com/CCQC/PES-Learn/actions/workflows/continuous_integration.yml/badge.svg)
-[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+<table align="center">
+  <tr>
+    <th>CI</th>
+    <th>Citation</th>
+    <th>License</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href=https://github.com/CCQC/PES-Learn/actions/workflows/continuous_integration.yml>
+      <img src=https://github.com/CCQC/PES-Learn/actions/workflows/continuous_integration.yml/badge.svg>
+      </a>
+    </td>
+    <td align="center">
+      <a href=https://doi.org/10.1021/acs.jctc.9b00312>
+      <img src=https://img.shields.io/badge/JCP-10.1063/5.0216738-purple.svg>
+      </a>
+    </td> 
+    <td align="center">
+      <a href=https://opensource.org/licenses/BSD-3-Clause>
+      <img src=https://img.shields.io/badge/License-BSD%203--Clause-blue.svg>
+      </a>
+    </td>
+  </tr>
+</table>
+
 
 PES-Learn is a Python library designed to fit system-specific Born-Oppenheimer potential energy surfaces using modern machine learning models. PES-Learn assists in generating datasets, and features Gaussian process and neural network model optimization routines. The goal is to provide high-performance models for a given dataset without requiring user expertise in machine learning.
 
@@ -25,7 +48,12 @@ This project is young and under active development. It is recommended to take a 
 * **Automated Machine Learning Model Generation**
   * Neural network models are built using PyTorch
   * Gaussian process models are built using GPy
-
+  * Kernel ridge regression
+  * Multifidelity neural networks
+      * Delta learning
+      * Transfer learning
+      * [And more](https://doi.org/10.1063/5.0158919)
+  * Model training with gradients and Hessians
 * **Hyperparameter Optimization**
 
 
