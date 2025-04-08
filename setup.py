@@ -10,7 +10,7 @@ if __name__ == "__main__":
         license='BSD-3C',
         packages=setuptools.find_packages(),
         install_requires=[
-            'numpy==1.24.4','GPy>=1.9','scikit-learn>=0.20','pandas>=2.0','hyperopt>=0.1.1','cclib>=1.6', 'torch>=1.0.1', 'joblib>=1.3.0', 'qcelemental>=0.27.1', 'qcengine>=0.26.0', 'scipy>=1.10.0'
+            'numpy==1.24.4','GPy>=1.9','scikit-learn>=0.20','pandas>=2.0','hyperopt>=0.1.1','cclib>=1.6', 'torch>=1.0.1', 'joblib>=1.3.0', 'qcelemental>=0.27.1', 'qcengine>=0.26.0', 'sympy>=1.13.0'
         ],
         extras_require={
             'docs': [
