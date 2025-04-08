@@ -136,6 +136,7 @@ class DataSampler(object):
 
         The Sobol expression is as implemented in Manzhos, Carrington J Chem Phys 145, 2016, and papers they cite.
         """
+        #TODO add option for delta
         # Problems:
         # 1. not easily reproducible with a random seed.
         # 2. Scaling. could in principle improve scaling by doing minibatches in while loop... e.g. test.sample(n=minibatch)

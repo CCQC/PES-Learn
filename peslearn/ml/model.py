@@ -19,6 +19,7 @@ class Model(ABC):
     Subclasses which inherit from Model: 
     - GaussianProcess
     - NeuralNetwork
+    - KernelRidgeReg
 
     Parameters
     ----------
@@ -188,7 +189,7 @@ class Model(ABC):
         Returns
         -------
         error : float
-            Root mean square error in wavenumbers (cm-1)
+            Root mean square error in energy units provided (typically Hartree)
         """
         if known_y.shape != prediction.shape:
             raise Exception("Shape of known_y and prediction must be the same")

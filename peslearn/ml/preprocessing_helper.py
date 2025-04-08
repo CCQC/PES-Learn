@@ -100,12 +100,9 @@ def sort_architectures(layers, inp_dim):
         size += out_dim * struct[-1]
         sizes.append(size)
     sorted_indices = np.argsort(sizes).tolist()
-    print(layers)
-    print(sorted_indices)
-    #layers = np.array(layers)
-    #layers = layers[sorted_indices].tolist()
-    layers2 = [layers[i] for i in sorted_indices]
-    return layers2
+    layers = np.asarray(layers, dtype=object)
+    layers = layers[sorted_indices].tolist()
+    return layers
 
 
 
