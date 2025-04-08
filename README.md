@@ -48,7 +48,12 @@ This project is young and under active development. It is recommended to take a 
 * **Automated Machine Learning Model Generation**
   * Neural network models are built using PyTorch
   * Gaussian process models are built using GPy
-
+  * Kernel ridge regression
+  * Multifidelity neural networks
+      * Delta learning
+      * Transfer learning
+      * [And more](https://doi.org/10.1063/5.0158919)
+  * Model training with gradients and Hessians
 * **Hyperparameter Optimization**
 
 
