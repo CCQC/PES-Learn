@@ -17,7 +17,7 @@ class Pip_B():
         for i in range(nbonds):
             symbols += f"x{i} "
 
-        variables = sympy.symbols(symbols)
+        variables = sympy.symbols(symbols, seq=True)
         for i in range(1, nbonds+1):
             data = re.sub('x{}(\D)'.format(str(i)), 'x{}\\1'.format(i-1), data)
 
@@ -80,21 +80,23 @@ class Pip_B():
         ndat, nbonds = X.shape
         new_X = np.zeros((ndat, len(self.polys)))
         # Evaluate polynomials
-        for i, p in enumerate(self.polys):    # evaluate each FI 
-            # convert the FI to a python expression of raw_X, e.g. x1 + x2 becomes raw_X[:,1] + raw_X[:,2]
-            eval_string = re.sub(r"(x)(\d+)", r"X[:,\2]", p)
-            # evaluate that column's FI from columns of raw_X
-            new_X[:,i] = eval(eval_string)
-
+        def pip_transform_inner1(X, new_X):
+            for i, p in enumerate(self.polys):    # evaluate each FI 
+                # convert the FI to a python expression of raw_X, e.g. x1 + x2 becomes raw_X[:,1] + raw_X[:,2]
+                eval_string = re.sub(r"(x)(\d+)", r"X[:,\2]", p)
+                # evaluate that column's FI from columns of raw_X
+                new_X[:,i] = eval(eval_string)
+        pip_transform_inner1(X=X, new_X=new_X)
         # Evaluate polynomial derivatives
         egrad = np.zeros((ndat, len(self.polys), nbonds))
         ehess = np.zeros((ndat, len(self.polys), nbonds, nbonds))
         
-        for pi, xi in self.grad_not_const:
-            egrad[:,pi,xi] = eval(self.grad_lambda[pi][xi])
-        for pi, xi in self.grad_const:
-            egrad[:,pi,xi] = float(self.grad[pi][xi])
-
+        def pip_transform_inner2(X, egrad):
+            for pi, xi in self.grad_not_const:
+                egrad[:,pi,xi] = eval(self.grad_lambda[pi][xi])
+            for pi, xi in self.grad_const:
+                egrad[:,pi,xi] = float(self.grad[pi][xi])
+        pip_transform_inner2(X=X, egrad=egrad)
         if do_hess:
             for pi, xi, xj in self.hess_not_const:
                 ehess[:,pi,xi,xj] = eval(self.hess_lambda[pi][xi][xj])
@@ -102,13 +104,14 @@ class Pip_B():
                 ehess[:,pi,xi,xj] = float(self.hess[pi][xi][xj])
 
         degrees = []
-        for p in self.polys:
-            # just checking first, assumes every term in each FI polynomial has the same degree (seems to always be true)
-            tmp = p.split('+')[0]
-            # count number of exponents and number of occurances of character 'x'
-            exps = [int(i) - 1 for i in re.findall("\*\*(\d+)", tmp)]
-            ndegrees = len(re.findall("x", tmp)) + sum(exps)
-            degrees.append(ndegrees)
-
+        def pip_transform_inner3(degrees):
+            for p in self.polys:
+                # just checking first, assumes every term in each FI polynomial has the same degree (seems to always be true)
+                tmp = p.split('+')[0]
+                # count number of exponents and number of occurances of character 'x'
+                exps = [int(i) - 1 for i in re.findall("\*\*(\d+)", tmp)]
+                ndegrees = len(re.findall("x", tmp)) + sum(exps)
+                degrees.append(ndegrees)
+        pip_transform_inner3(degrees=degrees)
         return new_X, degrees, egrad, ehess # PIP values, degrees, B1, and B2
 

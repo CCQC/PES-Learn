@@ -3,8 +3,6 @@ from ..model import Model
 from .diff_model import DiffModel
 import torch
 import torch.nn as nn
-torch.set_num_threads(8)
-print(torch.get_num_threads())
 from torch import autograd
 import numpy as np
 from collections import OrderedDict
@@ -15,7 +13,7 @@ from .utils import Pip_B
 from .utils.transform_deriv import degree_B1, degree_B2, morse, morse_B1, morse_B2
 from .utils.cart_dist import cart_dist_B_2
 import os
-from ...constants import package_directory, hartree2cm
+from ...constants import package_directory, hartree2cm, nn_convenience_function
 import re
 from ..preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
 
@@ -26,6 +24,7 @@ class DiffNeuralNetwork(NeuralNetwork):
         super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path, valid_path)
         # Assume raw_X is Cartesian, if not we got problems. Same with grad and Hess data, assume Cartesian basis 
         # Calc. X in interatomic distance basis
+        
         nletters = re.findall(r"[A-Z]", self.molecule_type)
         nnumbers = re.findall(r"\d", self.molecule_type)
         nnumbers2 = [int(i) for i in nnumbers]
@@ -35,9 +34,7 @@ class DiffNeuralNetwork(NeuralNetwork):
         if self.pip:
             path = os.path.join(package_directory, "lib", self.molecule_type, "output")
             self.pip_B = Pip_B(path, self.n_interatomics)
-        #self.raw_X_mod = self.raw_X.reshape((self.raw_X.shape[0], self.natoms, 3))
-        #self.raw_Xr = np.zeros((self.raw_X.shape[0], self.n_interatomics))
-
+        
         self.train_grad = der_lvl == 1 or der_lvl == 2
         self.train_hess = der_lvl == 2
         self.grad = False
@@ -45,23 +42,10 @@ class DiffNeuralNetwork(NeuralNetwork):
 
         self.fullraw_X = deepcopy(self.raw_X)
         self.fullraw_y = deepcopy(self.raw_y)
-        self.raw_Xr = self.cart_to_interatomic(self.raw_X)
+        self.raw_Xr = self.cart_to_interatomic(self.fullraw_X)
+        #self.raw_Xr = self.cart_to_interatomic(self.raw_X)
         #self.fullraw_X.reshape((-1,1))
         
-        #for atom in range(1, self.natoms):
-        #    # Create an array of duplicated cartesian coordinates of this particular atom, for every geometry, which is the same shape as 'cartesians'
-        #    tmp1 = np.broadcast_to(self.raw_X_mod[:,atom,:], (self.raw_X.shape[0], 3))
-        #    tmp2 = np.tile(tmp1, (self.natoms,1,1)).transpose(1,0,2)
-        #    # Take the non-redundant norms of this atom to all atoms after it in cartesian array
-        #    diff = tmp2[:, 0:atom,:] - self.raw_X_mod[:, 0:atom,:]
-        #    norms = np.sqrt(np.einsum('...ij,...ij->...i', diff , diff))
-        #    # Fill in the norms into interatomic distances 2d array , n_interatomic_distances)
-        #    if atom == 1:
-        #        idx1, idx2 = 0, 1
-        #    if atom > 1:
-        #        x = int((atom**2 - atom) / 2)
-        #        idx1, idx2 = x, x + atom
-        #    self.raw_Xr[:, idx1:idx2] = norms 
         if grad_input_obj is not None:
             self.grad = True
             self.grad_model = DiffModel(grad_data_path, grad_input_obj, molecule_type, molecule, der_lvl=1)
@@ -92,11 +76,11 @@ class DiffNeuralNetwork(NeuralNetwork):
             else:
                 self.nvalid_grad = round((self.grad_model.n_datapoints - self.grad_model.ntrain)  / 2)
         if not self.grad and not self.hess:
-            raise Exception("Not much point in using this Neural Network without gradients or Hessians")
+            print("Not much point in using this Neural Network without gradients or Hessians")
 
         self.ndat_full = self.fullraw_X.shape[0]
         self.fullraw_Xr = self.cart_to_interatomic(self.fullraw_X)
-
+        
     def cart_to_interatomic(self, cartflat):
         ndat = cartflat.shape[0]
         cart_3d = cartflat.reshape((ndat, self.natoms, 3))
@@ -117,12 +101,13 @@ class DiffNeuralNetwork(NeuralNetwork):
             Xr[:, idx1:idx2] = norms
         return Xr 
 
+    
     def split_train_test(self, params, validation_size=None, grad_validation_size=None, hess_validation_size=None, precision=32):
         # Do preprocess with interatomic distances
         #self.full_X, self.full_y, self.Xscaler, self.yscaler = self.preprocess(params, self.fullraw_Xr, self.fullraw_y)
         # All geometries and energies preprocessed
         self.full_X, self.full_y, self.Xscaler, self.yscaler = self.preprocess(params, self.fullraw_Xr, self.fullraw_y) # Cartesian inputs
-
+        #self.full_X, self.full_y, self.Xscaler, self.yscaler = self.preprocess(params, self.raw_Xr, self.raw_y) # Cartesian inputs
         # Full partitions of energy, gradient, and Hessian datasets
         self.X = self.full_X[0:self.n_datapoints]
         self.y = self.full_y[0:self.n_datapoints]
@@ -148,7 +133,7 @@ class DiffNeuralNetwork(NeuralNetwork):
         
         if self.sampler == 'user_supplied':
             # TODO: Not implemented
-            raise Exception("User supplied sampling not supported for differentiable neural networks")
+            #raise Exception("User supplied sampling not supported for differentiable neural networks")
             self.Xtr = self.transform_new_X(self.raw_Xtr, params, self.Xscaler)
             self.ytr = self.transform_new_y(self.raw_ytr, self.yscaler)
             self.Xtest = self.transform_new_X(self.raw_Xtest, params, self.Xscaler)
@@ -273,24 +258,29 @@ class DiffNeuralNetwork(NeuralNetwork):
                 self.X_hess = torch.tensor(self.X_hess,dtype=torch.float32)
                 self.y_hess = torch.tensor(self.y_hess,dtype=torch.float32)
         elif precision == 64:
-            raise Exception("64 bit float in diff_neural_network not supported currently")
-            self.Xtr    = torch.tensor(self.Xtr,   dtype=torch.float64)
+            self.Xtr    = torch.tensor(self.Xtr,   dtype=torch.float64, requires_grad=True)
             self.ytr    = torch.tensor(self.ytr,   dtype=torch.float64)
-            self.Xtest  = torch.tensor(self.Xtest, dtype=torch.float64)
+            self.Xtest  = torch.tensor(self.Xtest, dtype=torch.float64, requires_grad=True)
             self.ytest  = torch.tensor(self.ytest, dtype=torch.float64)
-            self.Xvalid = torch.tensor(self.Xvalid,dtype=torch.float64)
+            self.Xvalid = torch.tensor(self.Xvalid,dtype=torch.float64, requires_grad=True)
             self.yvalid = torch.tensor(self.yvalid,dtype=torch.float64)
-            self.X = torch.tensor(self.X,dtype=torch.float64)
+            self.X = torch.tensor(self.X,dtype=torch.float64, requires_grad=True)
             self.y = torch.tensor(self.y,dtype=torch.float64)
+            
             if self.grad:
-                self.Xtr_grad   = torch.tensor(self.Xtr_grad,   dtype=torch.float64, requires_grad=True)
-                self.ytr_grad   = torch.tensor(self.ytr_grad,   dtype=torch.float64)
-                self.Xtest_grad = torch.tensor(self.Xtest_grad, dtype=torch.float64, requires_grad=True)
-                self.ytest_grad = torch.tensor(self.ytest_grad, dtype=torch.float64)
-                self.Xvalid_grad = torch.tensor(self.Xvalid_grad,dtype=torch.float64, requires_grad=True)
-                self.yvalid_grad = torch.tensor(self.yvalid_grad,dtype=torch.float64)
-                self.X_grad = torch.tensor(self.X_grad,dtype=torch.float64, requires_grad=True)
-                self.y_grad = torch.tensor(self.y_grad,dtype=torch.float64)
+                self.Xtr_grad       = torch.tensor(self.Xtr_grad,       dtype=torch.float64, requires_grad=True)
+                self.ytr_grad       = torch.tensor(self.ytr_grad,       dtype=torch.float64)
+                self.gradtr_grad    = torch.tensor(self.gradtr_grad,    dtype=torch.float64, requires_grad=True)
+                self.Xtest_grad     = torch.tensor(self.Xtest_grad,     dtype=torch.float64, requires_grad=True)
+                self.ytest_grad     = torch.tensor(self.ytest_grad,     dtype=torch.float64)
+                self.gradtest_grad  = torch.tensor(self.gradtest_grad,  dtype=torch.float64, requires_grad=True)
+                self.Xvalid_grad    = torch.tensor(self.Xvalid_grad,    dtype=torch.float64, requires_grad=True)
+                self.yvalid_grad    = torch.tensor(self.yvalid_grad,    dtype=torch.float64)
+                self.gradvalid_grad = torch.tensor(self.gradvalid_grad, dtype=torch.float64, requires_grad=True)
+                # Full gradient data sets
+                self.X_grad    = torch.tensor(self.X_grad,    dtype=torch.float64, requires_grad=True)
+                self.y_grad    = torch.tensor(self.y_grad,    dtype=torch.float64)
+                self.grad_grad = torch.tensor(self.grad_grad, dtype=torch.float64, requires_grad=True)
             if self.hess:
                 self.Xtr_hess   = torch.tensor(self.Xtr_hess,   dtype=torch.float64)
                 self.ytr_hess   = torch.tensor(self.ytr_hess,   dtype=torch.float64)
@@ -302,7 +292,8 @@ class DiffNeuralNetwork(NeuralNetwork):
                 self.y_hess = torch.tensor(self.y_hess,dtype=torch.float64)
         else:
             raise Exception("Invalid option for 'precision'")
-
+            
+    #"""
     def build_model(self, params, maxit=1000, val_freq=10, es_patience=2, opt='lbfgs', tol=1, decay=False, verbose=False, precision=32, return_model=False):
         #params["morse_transform"]["morse"] = False
         #params["pip"]["pip"] = False
@@ -371,7 +362,8 @@ class DiffNeuralNetwork(NeuralNetwork):
                     #grad_error = torch.sqrt(torch.sum((gradpred_cart - self.gradtr_grad)**2))
                     grad_e_error = torch.sqrt(metric(y_pred_grad, self.ytr_grad))
                     grad_grad_error = torch.sqrt(torch.mean(torch.sum(1.0*(gradpred_cart - self.gradtr_grad) ** 2,dim=1).reshape(-1,1)))
-                    floss = loss + grad_e_error + grad_grad_error
+                    floss = loss + grad_e_error + 0.1 * grad_grad_error # Was 0.1, train on grad energies
+                    #floss = loss + 0.1 * grad_grad_error # Was 0.1, No train on grad energies
                 if self.train_hess:
                     floss += 0.0
                 if self.train_grad:
@@ -497,24 +489,27 @@ class DiffNeuralNetwork(NeuralNetwork):
             full_error_rmse = np.sqrt(full_loss.item() * loss_descaler) * hartree2cm
         
         # Error w/ grad
-        grad_full_pred = model(self.X_grad)
-        full_gradspred, = autograd.grad(grad_full_pred, self.X_grad, 
-                           grad_outputs=grad_full_pred.data.new(grad_full_pred.shape).fill_(1),
-                           create_graph=True)
-        with torch.no_grad():
-            grad_full_loss = metric(grad_full_pred, self.y_grad)
-            grad_test_loss = metric(grad_full_pred, self.y_grad)
-            grad_val_loss = metric(grad_full_pred, self.y_grad)
-            grad_full_E_error_rmse = np.sqrt(grad_full_loss.item() * loss_descaler) * hartree2cm
-            grad_test_E_error_rmse = np.sqrt(grad_test_loss.item() * loss_descaler) * hartree2cm
-            grad_val_E_error_rmse = np.sqrt(grad_val_loss.item() * loss_descaler) * hartree2cm
-            grad_full_gradcart = self.transform_grad(slice(self.grad_offset, self.ndat_full), full_gradspred, params, self.Xscaler, self.yscaler, precision=precision)
-            grad_test_gradcart = grad_full_gradcart[self.new_test_indices_grad]
-            grad_val_gradcart = grad_full_gradcart[self.valid_indices_grad]
+        if self.grad:
+            grad_full_pred = model(self.X_grad)
+            grad_test_pred = grad_full_pred[self.new_test_indices_grad]
+            grad_val_pred = grad_full_pred[self.valid_indices_grad]
+            full_gradspred, = autograd.grad(grad_full_pred, self.X_grad, 
+                               grad_outputs=grad_full_pred.data.new(grad_full_pred.shape).fill_(1),
+                               create_graph=True)
+            with torch.no_grad():
+                grad_full_loss = metric(grad_full_pred, self.y_grad)
+                grad_test_loss = metric(grad_test_pred, self.y_grad[self.new_test_indices_grad])
+                grad_val_loss = metric(grad_val_pred, self.y_grad[self.valid_indices_grad])
+                grad_full_E_error_rmse = np.sqrt(grad_full_loss.item() * loss_descaler) * hartree2cm
+                grad_test_E_error_rmse = np.sqrt(grad_test_loss.item() * loss_descaler) * hartree2cm
+                grad_val_E_error_rmse = np.sqrt(grad_val_loss.item() * loss_descaler) * hartree2cm
+                grad_full_gradcart = self.transform_grad(slice(self.grad_offset, self.ndat_full), full_gradspred, params, self.Xscaler, self.yscaler, precision=precision)
+                grad_test_gradcart = grad_full_gradcart[self.new_test_indices_grad]
+                grad_val_gradcart = grad_full_gradcart[self.valid_indices_grad]
         
-            grad_full_grad_error_rmse = torch.sqrt(torch.mean(torch.sum(1.0*(grad_full_gradcart - self.grad_grad) ** 2,dim=1).reshape(-1,1))) * hartree2cm
-            grad_test_grad_error_rmse = torch.sqrt(torch.mean(torch.sum(1.0*(grad_test_gradcart - self.gradtest_grad) ** 2,dim=1).reshape(-1,1))) * hartree2cm
-            grad_val_grad_error_rmse = torch.sqrt(torch.mean(torch.sum(1.0*(grad_val_gradcart - self.gradvalid_grad) ** 2,dim=1).reshape(-1,1))) * hartree2cm
+                grad_full_grad_error_rmse = torch.sqrt(torch.mean(torch.sum(1.0*(grad_full_gradcart - self.grad_grad) ** 2,dim=1).reshape(-1,1))) * hartree2cm
+                grad_test_grad_error_rmse = torch.sqrt(torch.mean(torch.sum(1.0*(grad_test_gradcart - self.gradtest_grad) ** 2,dim=1).reshape(-1,1))) * hartree2cm
+                grad_val_grad_error_rmse = torch.sqrt(torch.mean(torch.sum(1.0*(grad_val_gradcart - self.gradvalid_grad) ** 2,dim=1).reshape(-1,1))) * hartree2cm
         
         #print(f"Grad. Energy Error: {full_grad_E_error_rmse.item()}   Gradient Error: {full_grad_grad_error_rmse.item()}")
         
@@ -540,7 +535,7 @@ class DiffNeuralNetwork(NeuralNetwork):
             return model, test_error_rmse, val_error_rmse, full_error_rmse 
         else:
             return test_error_rmse, val_error_rmse
-    
+    """
     def holland(self, X, grad_vec):
         # Assume PIP true, scale_X/y std, and noting else (default params of NN architecture search)
         # Transfrom known gradient from Cartesian to PIP, NOT GENERALIZABLE!!!
@@ -580,12 +575,12 @@ class DiffNeuralNetwork(NeuralNetwork):
         G_scale *= self.Xscaler.scale_[None,:]
         print(G_scale)
         return G_scale
-
-    def preprocess(self, params, raw_X, raw_y):
+    """
+    def preprocess(self, params, raw_X_in, raw_y):
         """
         Preprocess raw data according to hyperparameters
         """
-        #raw_X = deepcopy(raw_X_in)
+        raw_X = deepcopy(raw_X_in)
         if params['morse_transform']['morse']:
             raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])
             self.raw_Xm = deepcopy(raw_X)
@@ -657,10 +652,28 @@ class DiffNeuralNetwork(NeuralNetwork):
         #return scaled_grad
         # r to Cart.
         X_r, B1_r, B2_r = cart_dist_B_2(self.fullraw_X[Xindices]) # dr/dx
-        #print(B1_r[5,:])
         grad_cart = torch.einsum("np,npi->ni", scaled_grad, torch.tensor(B1_r, dtype=dtype))
         return grad_cart
 
     def transform_hess(self, hess, params):
         # Transform Hessian from NN to Cartesian
         pass
+
+    def write_convenience_function(self):
+        string = "from peslearn.ml.diff_nn import DiffNeuralNetwork\nfrom peslearn import InputProcessor\nimport torch\nimport numpy as np\nfrom itertools import combinations\nimport os\n\n"
+        string += "cwd = os.path.realpath(__file__).replace('compute_energy.py', '')\n"
+        string += f"model_dtype = torch.float{self.precision}\n"
+        if self.pip:
+            #TODO
+            string += "nn = DiffNeuralNetwork(cwd+'PES.dat', InputProcessor(''), molecule_type='{}', grad_input_obj=InputProcessor(''), grad_data_path=cwd+'../pes_grad.dat')\n".format(self.molecule_type)
+        else:
+            #TODO Change ../pes_grad.dat to a copied grad file in the model directory
+            string += "nn = DiffNeuralNetwork(cwd+'PES.dat', InputProcessor(''), grad_input_obj=InputProcessor(''), grad_data_path=cwd+'../pes_grad.dat')\n"
+        with open('hyperparameters', 'r') as f:
+            hyperparameters = f.read()
+        string += "params = {}\n".format(hyperparameters)
+        #TODO consider modifying
+        string += "X, y, Xscaler, yscaler =  nn.preprocess(params, nn.fullraw_Xr, nn.fullraw_y)\n"
+        string += "model = torch.load(cwd+'model.pt')\n"
+        string += nn_convenience_function
+        return string

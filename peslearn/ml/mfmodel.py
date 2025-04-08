@@ -16,9 +16,6 @@ from sklearn.model_selection import train_test_split
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
 from .preprocessing_helper import sort_architectures
 
-
-torch.set_printoptions(precision=15)
-
 class MFModel(Model):
     """
     A class that handles data processing and other convenience functions for multifidelity models
@@ -320,8 +317,8 @@ class MFModel(Model):
         print("Saving ML model data...") 
         model_path = "model1_data"
         while os.path.isdir(model_path):
-            new = int(re.findall("\d+", model_path)[0]) + 1
-            model_path = re.sub("\d+",str(new), model_path)
+            new = int(re.findall(r"\d+", model_path)[0]) + 1
+            model_path = re.sub(r"\d+",str(new), model_path)
         os.mkdir(model_path)
         os.chdir(model_path)
         torch.save(model, 'model.pt')

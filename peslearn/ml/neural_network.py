@@ -23,11 +23,11 @@ class NeuralNetwork(Model):
     """
     Constructs a Neural Network Model using PyTorch
     """
-    def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None, valid_path=None):
+    def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None, valid_path=None, precision=32):
         super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path, valid_path)
         self.trial_layers = self.input_obj.keywords['nas_trial_layers']
         self.set_default_hyperparameters()
-        
+        self.precision = precision
         if self.input_obj.keywords['validation_points']:
             self.nvalid = self.input_obj.keywords['validation_points']
             if (self.nvalid + self.ntrain + 1) > self.n_datapoints:
@@ -557,16 +557,18 @@ class NeuralNetwork(Model):
         return newy
 
     def write_convenience_function(self):
-        string = "from peslearn.ml import NeuralNetwork\nfrom peslearn import InputProcessor\nimport torch\nimport numpy as np\nfrom itertools import combinations\n\n"
+        string = "from peslearn.ml import NeuralNetwork\nfrom peslearn import InputProcessor\nimport torch\nimport numpy as np\nfrom itertools import combinations\nimport os\n\n"
+        string += "cwd = os.path.realpath(__file__).replace('compute_energy.py', '')\n"
+        string += f"model_dtype = torch.float{self.precision}\n"
         if self.pip:
-            string += "nn = NeuralNetwork('PES.dat', InputProcessor(''), molecule_type='{}')\n".format(self.molecule_type)
+            string += "nn = NeuralNetwork(cwd+'PES.dat', InputProcessor(''), molecule_type='{}')\n".format(self.molecule_type)
         else:
-            string += "nn = NeuralNetwork('PES.dat', InputProcessor(''))\n"
+            string += "nn = NeuralNetwork(cwd+'PES.dat', InputProcessor(''))\n"
         with open('hyperparameters', 'r') as f:
             hyperparameters = f.read()
         string += "params = {}\n".format(hyperparameters)
         string += "X, y, Xscaler, yscaler =  nn.preprocess(params, nn.raw_X, nn.raw_y)\n"
-        string += "model = torch.load('model.pt')\n"
+        string += "model = torch.load(cwd+'model.pt')\n"
         string += nn_convenience_function
         return string
 

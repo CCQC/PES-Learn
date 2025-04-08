@@ -6,18 +6,22 @@ def cart_dist_B_2(X, do_hess=False):
     X = X.reshape((ndat,natom,3))
     nr = round((natom**2 - natom) / 2)
     R = np.zeros((ndat, nr))
-    ctr = 0
-    for atomi in range(natom):
-        for atomj in range(atomi):
-            R[:,ctr] = np.linalg.norm(X[:,atomi,:] - X[:,atomj,:], axis=1)
-            ctr += 1
+    def cart_dist_inner1(R):
+        ctr = 0
+        for atomi in range(natom):
+            for atomj in range(atomi):
+                R[:,ctr] = np.linalg.norm(X[:,atomi,:] - X[:,atomj,:], axis=1)
+                ctr += 1
+    cart_dist_inner1(R=R)
     B1 = np.zeros((ndat, nr, nvar))
     B2 = np.zeros((ndat, nr, nvar, nvar))
-    for atomi in range(natom):
-        for atomj in range(atomi):
-            r = round((atomi*(atomi-1))/2) + atomj
-            B1[:, r, 3*atomi:3*(atomi+1)] = np.divide((X[:,atomi,:] - X[:,atomj,:]), R[:,r][:,None])
-            B1[:, r, 3*atomj:3*(atomj+1)] = -B1[:, r, 3*atomi:3*(atomi+1)]
+    def cart_dist_inner2(B1):
+        for atomi in range(natom):
+            for atomj in range(atomi):
+                r = round((atomi*(atomi-1))/2) + atomj
+                B1[:, r, 3*atomi:3*(atomi+1)] = np.divide((X[:,atomi,:] - X[:,atomj,:]), R[:,r][:,None])
+                B1[:, r, 3*atomj:3*(atomj+1)] = -B1[:, r, 3*atomi:3*(atomi+1)]
+    cart_dist_inner2(B1=B1)
     if do_hess:
         for atomi in range(natom):
             for atomj in range(atomi):

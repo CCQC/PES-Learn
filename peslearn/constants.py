@@ -107,7 +107,7 @@ def pes(geom_vectors, cartesian=True):
             axis = 0
         g = np.apply_along_axis(cart1d_to_distances1d, axis, g)
     newX = nn.transform_new_X(g, params, Xscaler)
-    x = torch.tensor(data=newX)
+    x = torch.tensor(data=newX, dtype=model_dtype)
     with torch.no_grad():
         E = model(x)
     e = nn.inverse_transform_new_y(E, yscaler)
