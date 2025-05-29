@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>PES-Learn Command-Line Interface (CLI) Tutorial &#8212; PES-Learn 1.0.0 documentation</title>
   
@@ -15,35 +14,35 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
-  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
-    <script src="../_static/clipboard.min.js"></script>
-    <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/documentation_options.js?v=f9c1cefe"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guides/cli';</script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -59,28 +58,23 @@
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
-  <label class="overlay overlay-primary" for="__primary"></label>
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
-  <label class="overlay overlay-secondary" for="__secondary"></label>
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
@@ -102,12 +96,20 @@
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -123,6 +125,8 @@
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
+  
+    
   
 
 <a class="navbar-brand logo" href="../index.html">
@@ -143,36 +147,47 @@
     <p class="title logo__title">PES-Learn</p>
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../started/main.html">Getting Started</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../started/main.html">Getting Started</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../started/installation.html">Installation</a></li>
 </ul>
-</li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="guide.html">User Guides</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l2 current active has-children"><a class="reference internal" href="tutorials.html">Tutorials</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="guide.html">User Guides</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="tutorials.html">Tutorials</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">Command line interface (CLI)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api.html">Application porgram interface (API)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ext_data.html">Loading external datasets</a></li>
 </ul>
-</li>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="gp_ex.html">Gaussian Process (GP)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nn_ex.html">Neural Network (NN)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="krr_ex.html">Kernel Ridge Regression (KRR)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="data_gen.html">Data Generation</a></li>
 </ul>
-</li>
+</details></li>
 </ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../community/community.html">PES-Learn Community</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../community/community.html">PES-Learn Community</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../community/support.html">Support</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../community/contribute.html">Contribute</a></li>
 </ul>
-</li>
+</details></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/keywords.html">Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../develop/dev_docs.html">Developers Documentation</a></li>
 </ul>
@@ -190,7 +205,7 @@
 
       </div>
       
-      <main id="main-content" class="bd-main">
+      <main id="main-content" class="bd-main" role="main">
         
         
 
@@ -199,14 +214,14 @@
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article">
+              <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
   
     <div class="header-article-items__start">
       
-        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
-</label></div>
+</button></div>
       
     </div>
   
@@ -284,10 +299,10 @@
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
   </button>
 `);
 </script>
@@ -295,14 +310,14 @@ document.write(`
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
-<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
-</label>
+</button>
 </div></div>
       
     </div>
@@ -361,18 +376,18 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="pes-learn-command-line-interface-cli-tutorial">
-<h1>PES-Learn Command-Line Interface (CLI) Tutorial<a class="headerlink" href="#pes-learn-command-line-interface-cli-tutorial" title="Permalink to this heading">#</a></h1>
+<h1>PES-Learn Command-Line Interface (CLI) Tutorial<a class="headerlink" href="#pes-learn-command-line-interface-cli-tutorial" title="Link to this heading">#</a></h1>
 <p>PES-Learn is designed to work similarly to standard electronic structure theory packages:
 users can generate an input file with appropriate keywords, run the software, and get a result.
 This tutorial covers how to do exactly that. Here we generate a machine-learning model of the PES
 of water from start to finish (no knowledge of Python required!).</p>
 <section id="generating-data">
-<h2><strong>Generating Data</strong><a class="headerlink" href="#generating-data" title="Permalink to this heading">#</a></h2>
+<h2><strong>Generating Data</strong><a class="headerlink" href="#generating-data" title="Link to this heading">#</a></h2>
 <section id="defining-an-internal-coordinate-grid">
-<h3>Defining an internal coordinate grid<a class="headerlink" href="#defining-an-internal-coordinate-grid" title="Permalink to this heading">#</a></h3>
+<h3>Defining an internal coordinate grid<a class="headerlink" href="#defining-an-internal-coordinate-grid" title="Link to this heading">#</a></h3>
 <p>Currently PES-Learn supports generating points across PESs by displacing in simple internal coordinates
 (a ‘Z-Matrix’). To do this, we must define a Z-Matrix in the input file. We first create an input file called <code class="docutils literal notranslate"><span class="pre">input.dat</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vi</span> <span class="nb">input</span><span class="o">.</span><span class="n">dat</span>
@@ -401,7 +416,7 @@ order the internal coordinates appear with</p>
 <p>and this will also be included.</p>
 </section>
 <section id="schemas-and-templates">
-<h3>Schemas and Templates<a class="headerlink" href="#schemas-and-templates" title="Permalink to this heading">#</a></h3>
+<h3>Schemas and Templates<a class="headerlink" href="#schemas-and-templates" title="Link to this heading">#</a></h3>
 <p>Before we talk about building the rest of the input file by adding keywords that controll the program, lets first talk
 about schemas and template files. PES-Learn has two options to interface to the electronic structure theory
 program of choice. The first option is an interface to the QC program suite, namely <a class="reference external" href="https://github.com/MolSSI/QCEngine">QCEngine</a>. QCEngine excecutes
@@ -471,7 +486,7 @@ input files with Cartesian geometries corresponding to our internal coordinate g
 sub-directories similarly as above.</p>
 </section>
 <section id="data-generation-keywords">
-<h3>Data Generation Keywords<a class="headerlink" href="#data-generation-keywords" title="Permalink to this heading">#</a></h3>
+<h3>Data Generation Keywords<a class="headerlink" href="#data-generation-keywords" title="Link to this heading">#</a></h3>
 <p>Let’s go back to our PES-Learn input file, add a few keywords, and discuss them.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">O</span>
 <span class="n">H</span> <span class="mi">1</span> <span class="n">r1</span>
@@ -503,7 +518,7 @@ keyword or its value incorrectly it will be ignored.</em> The first occurance of
 </ul>
 </section>
 <section id="running-pes-learn-and-generating-data">
-<h3>Running PES-Learn and generating data<a class="headerlink" href="#running-pes-learn-and-generating-data" title="Permalink to this heading">#</a></h3>
+<h3>Running PES-Learn and generating data<a class="headerlink" href="#running-pes-learn-and-generating-data" title="Link to this heading">#</a></h3>
 <p>In the directory containing the PES-Learn input file <code class="docutils literal notranslate"><span class="pre">input.dat</span></code> (and <code class="docutils literal notranslate"><span class="pre">template.dat</span></code> if you so choose to use it), simply run</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">PES</span><span class="o">-</span><span class="n">Learn</span><span class="o">/</span><span class="n">peslearn</span><span class="o">/</span><span class="n">driver</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
@@ -535,7 +550,7 @@ coordinate grid are placed into a directory call <code class="docutils literal n
 <p>Now that we have built our inputs we are ready to run the computations!</p>
 <p>If you are using schemas, then each of the numbered directories in <code class="docutils literal notranslate"><span class="pre">PES_data</span></code> will contain a python script that just needs to be excecuted.
 To do this in an automated fashion one might create a simple python script like the following</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span> <span class="nn">os</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="linenos"> 2</span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;PES_data&#39;</span><span class="p">)</span>
 <span class="linenos"> 3</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">300</span><span class="p">):</span>
 <span class="linenos"> 4</span>    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
@@ -558,7 +573,7 @@ If using Psi4, for example, we can change line 7 to be</p>
 </section>
 </section>
 <section id="parsing-output-files">
-<h2><strong>Parsing output files</strong><a class="headerlink" href="#parsing-output-files" title="Permalink to this heading">#</a></h2>
+<h2><strong>Parsing output files</strong><a class="headerlink" href="#parsing-output-files" title="Link to this heading">#</a></h2>
 <p>Now that every Psi4 input file has been run, and there is a corresponding <code class="docutils literal notranslate"><span class="pre">output.dat</span></code> in each sub-directory
 of <code class="docutils literal notranslate"><span class="pre">PES_data</span></code>, we are ready to use PES-Learn to grab all of the energies, match them with the appropriate
 geometries, and create a dataset.</p>
@@ -584,7 +599,7 @@ perturbation theory energy, or the highest level of theory coupled cluster energ
 routines that are version-dependent, there is no gurantee it will work! It is also a bit slower than regular
 expressions (i.e. milliseconds –&gt; seconds slower)</p>
 <section id="setting-parsing-keywords-in-the-pes-learn-input-file">
-<h3>Setting parsing keywords in the PES-Learn input file<a class="headerlink" href="#setting-parsing-keywords-in-the-pes-learn-input-file" title="Permalink to this heading">#</a></h3>
+<h3>Setting parsing keywords in the PES-Learn input file<a class="headerlink" href="#setting-parsing-keywords-in-the-pes-learn-input-file" title="Link to this heading">#</a></h3>
 <p>When using schemas, parsing the output files is as simple as adding a single keyword to our PES-Learn
 <code class="docutils literal notranslate"><span class="pre">input.dat</span></code> file.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Parsing-relevent keywords</span>
@@ -674,7 +689,7 @@ character</a>. If you want to be safe from parsing
 the wrong energy, more verbose is probably better.</p>
 </section>
 <section id="setting-up-the-input-file">
-<h3>Setting up the input file<a class="headerlink" href="#setting-up-the-input-file" title="Permalink to this heading">#</a></h3>
+<h3>Setting up the input file<a class="headerlink" href="#setting-up-the-input-file" title="Link to this heading">#</a></h3>
 <p>Here we have added out parsin keywords to out PES-Learn input file. (We could have had these
 keywords earlier as well, but to keep things simple I am only adding them when needed.)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">O</span>
@@ -710,7 +725,7 @@ or regex, then you should include the appropriate <code class="docutils literal 
 keywords, instead of the schema keywords.</p>
 </section>
 <section id="parsing-the-output-files-and-creating-a-dataset">
-<h3>Parsing the output files and creating a dataset<a class="headerlink" href="#parsing-the-output-files-and-creating-a-dataset" title="Permalink to this heading">#</a></h3>
+<h3>Parsing the output files and creating a dataset<a class="headerlink" href="#parsing-the-output-files-and-creating-a-dataset" title="Link to this heading">#</a></h3>
 <p>Just as before, we run PES-Learn</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">PES</span><span class="o">-</span><span class="n">Learn</span><span class="o">/</span><span class="n">peslearn</span><span class="o">/</span><span class="n">driver</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
@@ -738,9 +753,9 @@ in a file <code class="docutils literal notranslate"><span class="pre">errors.tx
 </section>
 </section>
 <section id="creating-auto-generated-machine-learning-models-of-the-pes">
-<h2><strong>Creating Auto-Generated Machine Learning models of the PES</strong><a class="headerlink" href="#creating-auto-generated-machine-learning-models-of-the-pes" title="Permalink to this heading">#</a></h2>
+<h2><strong>Creating Auto-Generated Machine Learning models of the PES</strong><a class="headerlink" href="#creating-auto-generated-machine-learning-models-of-the-pes" title="Link to this heading">#</a></h2>
 <section id="gaussian-process-regression">
-<h3>Gaussian Process Regression<a class="headerlink" href="#gaussian-process-regression" title="Permalink to this heading">#</a></h3>
+<h3>Gaussian Process Regression<a class="headerlink" href="#gaussian-process-regression" title="Link to this heading">#</a></h3>
 <p>We now have in our working directory a file called <code class="docutils literal notranslate"><span class="pre">PES.dat</span></code>, created with the routine above.
 An auto-optimized machine learning model of the surface can be produced by this dataset. Below
 we have added keywords to our PES-Learn input file which are relevant to training a ML model</p>
@@ -916,7 +931,7 @@ We clearly did not need more than a few hundred points to model this portion of 
 computations would have been unnecessary! This is why it is important to probe how much data one needs along
 the surface at a <em>meaningful but low level of theory</em>.</p>
 <section id="using-the-gp-model">
-<h4>Using the GP Model<a class="headerlink" href="#using-the-gp-model" title="Permalink to this heading">#</a></h4>
+<h4>Using the GP Model<a class="headerlink" href="#using-the-gp-model" title="Link to this heading">#</a></h4>
 <p>After running the above, PES-Learn creates a directory called <code class="docutils literal notranslate"><span class="pre">model1data</span></code> (subsequently trained models will
 not overwrite this, but instead create new directories <code class="docutils literal notranslate"><span class="pre">model2data</span></code>, <code class="docutils literal notranslate"><span class="pre">model3data</span></code>, etc.). Inside this
 directory is a variety of files which are self-explanatory.</p>
@@ -930,7 +945,7 @@ typical <code class="docutils literal notranslate"><span class="pre">PES_data</s
 was trained on interatomic distances or PIPs of the interatomic distances.</strong></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">compute_energy.py</span></code> file can be imported and used. Here’s an example python script <code class="docutils literal notranslate"><span class="pre">use_model.py</span></code> which
 imports the pes function and evaluates some energies at some cartesian geometries.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compute_energy</span> <span class="kn">import</span> <span class="n">pes</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">compute_energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">pes</span>
 
 <span class="n">cart_geoms</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">1.1000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.7361215932</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4250000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">],</span>
             <span class="p">[</span><span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.2000000000</span><span class="p">,</span> <span class="mf">1.2000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.7461215932</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4150000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.0000000000</span><span class="p">,</span> <span class="mf">0.1000000000</span><span class="p">],</span>
@@ -966,7 +981,7 @@ feed them all into the function at once, rather than in some loop feeding them i
 </section>
 </section>
 <section id="neural-network-regression">
-<h3>Neural Network Regression<a class="headerlink" href="#neural-network-regression" title="Permalink to this heading">#</a></h3>
+<h3>Neural Network Regression<a class="headerlink" href="#neural-network-regression" title="Link to this heading">#</a></h3>
 <p>Neural networks (NNs) are recommended for training sets of size 1000 and above for efficiency. This is because
 the hyperparameter tuning of NNs takes much longer than GPs, so there is an initial up-front cost to training
 NNs that GPs do not have. The NN building code can be broken down into three steps:</p>
@@ -1122,14 +1137,14 @@ Total run time: 957.76 seconds
 <p>The final results is a Test/Validation/Full dataset RMSE (cm-1) of 1.04, 0.95, and 0.80, respectively.
 Not quite as good as the GP models, but still about as accurate as you would ever want it to be!</p>
 <section id="using-the-nn-model">
-<h4>Using the NN model<a class="headerlink" href="#using-the-nn-model" title="Permalink to this heading">#</a></h4>
+<h4>Using the NN model<a class="headerlink" href="#using-the-nn-model" title="Link to this heading">#</a></h4>
 <p>The neural networks can be used in the exact same way as the GP models outlined above. The trained
 model is easily accessible using the <code class="docutils literal notranslate"><span class="pre">compute_energy.py</span></code> file. Model performance and the datasets
 are also saved.</p>
 </section>
 </section>
 <section id="kernel-ridge-regression">
-<h3>Kernel Ridge Regression<a class="headerlink" href="#kernel-ridge-regression" title="Permalink to this heading">#</a></h3>
+<h3>Kernel Ridge Regression<a class="headerlink" href="#kernel-ridge-regression" title="Link to this heading">#</a></h3>
 <p>Kernel ridge regression (KRR) models have the advantage that they are typically pretty quick to train, even
 though the hyperparameter space is considerably larger than the GP or NN space. The disadvantage compared
 to GP and NN models is that the KRR models are typically less accurate when generated completely automatically.</p>
@@ -1163,20 +1178,20 @@ space. The main difference is the added R <span class="math notranslate nohighli
 modify the <code class="docutils literal notranslate"><span class="pre">kernel</span></code> keyword to be <code class="docutils literal notranslate"><span class="pre">precomputed</span></code> and add an additional keyword <code class="docutils literal notranslate"><span class="pre">precomputed_kernel</span> <span class="pre">=</span></code>.
 For more information about using precomputed kernels, check out the KRR Examples page (link to be added).</p>
 <section id="using-the-krr-model">
-<h4>Using the KRR model<a class="headerlink" href="#using-the-krr-model" title="Permalink to this heading">#</a></h4>
+<h4>Using the KRR model<a class="headerlink" href="#using-the-krr-model" title="Link to this heading">#</a></h4>
 <p>The neural networks can be used in the exact same way as the GP or NN models outlined above. The trained model
 is easily accessible using the <code class="docutils literal notranslate"><span class="pre">compute_energy.py</span></code> file. Model performance and the datasets are also saved.</p>
 </section>
 </section>
 <section id="analyzing-model-performance-using-python">
-<h3>Analyzing model performance using Python<a class="headerlink" href="#analyzing-model-performance-using-python" title="Permalink to this heading">#</a></h3>
+<h3>Analyzing model performance using Python<a class="headerlink" href="#analyzing-model-performance-using-python" title="Link to this heading">#</a></h3>
 <p>One can use Python to further analyze the performance of a PES-Learn ML model. Here’s a simple example
 of how to evaluate the error of a PES-Learn ML model as a function of energy relative to the global minimum.
 The following python file <code class="docutils literal notranslate"><span class="pre">analyze.py</span></code> must be in the same directory as the auto-generated <code class="docutils literal notranslate"><span class="pre">compute_energy.py</span></code>
 file, the dataset file <code class="docutils literal notranslate"><span class="pre">PES.dat</span></code>, and the saved ML model file <code class="docutils literal notranslate"><span class="pre">model.json</span></code>, <code class="docutils literal notranslate"><span class="pre">model.pt</span></code>, or <code class="docutils literal notranslate"><span class="pre">model.joblib</span></code>
 depending on the type of ML method used to build the model.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compute_energy</span> <span class="kn">import</span> <span class="n">pes</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">compute_energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">pes</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="c1"># load data</span>
 <span class="n">full_dataset</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;PES.dat&#39;</span><span class="p">)</span>
@@ -1193,7 +1208,7 @@ depending on the type of ML method used to build the model.</p>
 
 
 <span class="c1"># Plot error distribution</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="n">relative_energies</span> <span class="o">*=</span> <span class="mf">627.509</span> <span class="c1"># convert to kcal/mol</span>
 <span class="n">errors</span> <span class="o">*=</span> <span class="mf">627.509</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">relative_energies</span><span class="p">,</span> <span class="n">errors</span><span class="p">)</span>
@@ -1218,7 +1233,7 @@ depending on the type of ML method used to build the model.</p>
               
               
               
-                <footer class="prev-next-footer">
+                <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
     <a class="left-prev"
@@ -1247,6 +1262,7 @@ depending on the type of ML method used to build the model.</p>
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -1331,8 +1347,8 @@ By PES-Learn Development Team
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>
