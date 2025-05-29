@@ -74,4 +74,4 @@ jobs:
     - name: Environment Information
       run: |
         mamba info
-        mamba list --show-channel-urls
+        mamba list

@@ -37,10 +37,10 @@ class NeuralNetwork(Model):
         
         if self.pip:
             if molecule_type:
-                path = os.path.join(package_directory, "lib", molecule_type, "output")
+                path = os.path.join(package_directory, "lib", molecule_type, "output.py")
                 self.inp_dim = len(open(path).readlines())
             if molecule:
-                path = os.path.join(package_directory, "lib", molecule.molecule_type, "output")
+                path = os.path.join(package_directory, "lib", molecule.molecule_type, "output.py")
                 self.inp_dim = len(open(path).readlines())
         else:
             self.inp_dim = self.raw_X.shape[1]
