@@ -265,7 +265,7 @@ class KernelRidgeReg(Model):
             raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])
         if params['pip']['pip']:
             # find path to fundamental invariants from molecule type AxByCz...
-            path = os.path.join(fi_dir, self.molecule_type, "output")
+            path = os.path.join(fi_dir, self.molecule_type, "output.py")
             raw_X, degrees = interatomics_to_fundinvar(raw_X, path)
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
@@ -285,8 +285,8 @@ class KernelRidgeReg(Model):
         print("Saving ML model data...")
         model_path = "model1_data"
         while os.path.isdir(model_path):
-            new = int(re.findall("\d+", model_path)[0]) +  1
-            model_path = re.sub("\d+", str(new), model_path)
+            new = int(re.findall(r"\d+", model_path)[0]) +  1
+            model_path = re.sub(r"\d+", str(new), model_path)
         os.mkdir(model_path)
         os.chdir(model_path)
         with open('hyperparameters', 'w') as f:
@@ -327,7 +327,7 @@ class KernelRidgeReg(Model):
             newX = morse(newX, params['morse_transform']['morse_alpha'])
         if params['pip']['pip']:
             # find path to fundamental invariants for an N atom subsystem with molecule type AxByCz...
-            path = os.path.join(package_directory, "lib", self.molecule_type, "output")
+            path = os.path.join(package_directory, "lib", self.molecule_type, "output.py")
             newX, degrees = interatomics_to_fundinvar(newX, path)
             if params['pip']['degree_reduction']:
                 newX = degree_reduce(newX, degrees)

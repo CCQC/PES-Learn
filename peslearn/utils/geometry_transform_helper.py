@@ -7,7 +7,7 @@ import pandas as pd
 import re
 import os
 from itertools import combinations
-from .regex import xyz_block_regex,maybe
+from .regex import xyz_block_regex, maybe, atom_symbol
 from ..constants import deg2rad, rad2deg
 import collections
 
@@ -174,7 +174,7 @@ def get_bond_vector(r, a, d):
     return bond_vector
 
 
-def load_cartesian_dataset(xyz_path):
+def load_cartesian_dataset(xyz_path, no_energy=False):
     """
     Loads a cartesian dataset with energies on their own line and with standard cartesian coordinates.
     Reorganizes atoms into standard order (most common elements first, alphabetical tiebreaker)
@@ -190,7 +190,7 @@ def load_cartesian_dataset(xyz_path):
     # extract energy,geometry pairs
     #data_regex = "\s*-?\d+\.\d+\s*\n" + xyz_re
     #data_regex = maybe("\d\d?\n") + "\s*-?\d+\.\d+\s*\n" + xyz_re
-    data_regex = maybe("\d+\n") + "\s*-?\d+\.\d+\s*\n" + xyz_re
+    data_regex = maybe(r"\d+\n") + r"\s*-?\d+\.\d+\s*\n" + xyz_re
     datablock = re.findall(data_regex, data)
     for i in range(len(datablock)):
         datablock[i] = list(filter(None, datablock[i].split('\n')))
@@ -206,7 +206,7 @@ def load_cartesian_dataset(xyz_path):
     geoms = datablock
     # find atom labels
     sample = geoms[0]
-    atom_labels = [re.findall('\w+', s)[0] for s in sample]
+    atom_labels = [re.findall(r'\w+', s)[0] for s in sample]
     natoms = len(atom_labels)
     # convert atom labels to standard order (most common element first, alphabetical tiebreaker)
     sorted_atom_counts = collections.Counter(atom_labels).most_common()
@@ -227,12 +227,16 @@ def load_cartesian_dataset(xyz_path):
     for g in range(len(geoms)):
         geoms[g] = [geoms[g][i] for i in p]
 
-    # write new xyz file with standard order
-    #with open('std_' + xyz_path, 'w+') as f:
-    #    for i in range(len(energies)):
-    #        f.write(energies[i] +'\n')
-    #        for j in range(natoms):
-    #            f.write(geoms[i][j] +'\n')
+
+    # return standard order and atom counts if no_energy is True
+    if no_energy:
+        # with open('std_' + xyz_path, 'w+') as f:
+        #     f.write(str(sorted_atom_counts))
+        #     f.write('\n')
+        #     for i in range(natoms):
+        #         # f.write(geoms[i][j] +'\n')
+        #         f.write(str(geoms[0][i]))
+        return sorted_atom_labels, geoms
 
     # remove everything from XYZs except floats and convert to numpy arrays
     for i,geom in enumerate(geoms):
@@ -263,6 +267,53 @@ def load_cartesian_dataset(xyz_path):
     DF.to_csv(finalpath + '_interatomics.dat',index=False, float_format='%12.10f')
     return DF
 
+def remove_atom_labels(geom):
+    for i in range(len(geom)):
+        tmp = re.sub(atom_symbol, '', geom[i]).lstrip()
+        geom[i] = [float(g) for g in tmp.split()]
+    return geom
 
+def write_grad_input(sorted_atoms):
+    input_string = ''
+    distance_list = ''
+    atom_grad_label = ''
+    new_atom_label = sorted_atoms
 
+    input_string += 'import torch\nimport peslearn\n\n'
+    input_string += 'def gradient_prediction(nn, params, model, Xscaler, yscaler, coord):\n'
+    input_string += '\t"""\n\tdescription here\n\toutput in hartrees\n\t"""\n'
 
+    for i in range(len(sorted_atoms)):
+        new_atom_label[i] = str(sorted_atoms[i]) + str(i)
+        input_string += '\t' + new_atom_label[i] + ' = torch.tensor([coord[{}]], requires_grad=True, dtype=torch.float32)\n'.format(str(i))
+
+    input_string += '\n'
+
+    for i in range(len(sorted_atoms)):
+        for j in range(i):
+            input_string += '\t' + str(sorted_atoms[j]) + str(sorted_atoms[i]) + ' = torch.cdist({}, {})\n'.format(sorted_atoms[j], sorted_atoms[i])
+            if i == len(sorted_atoms) - 1:
+                if j == i - 1:
+                    distance_list += str(sorted_atoms[j]) + str(sorted_atoms[i])
+                else:
+                    distance_list += str(sorted_atoms[j]) + str(sorted_atoms[i]) + ', '
+            else:
+                distance_list += str(sorted_atoms[j]) + str(sorted_atoms[i]) + ', '
+
+    input_string += '\n'
+    input_string += '\tinput_tensor = torch.cat(({}), dim=1)\n\n'.format(distance_list)
+    input_string += '\tpreprocessed_input = nn.torch_transform_new_X(input_tensor, params, Xscaler)\n'
+    input_string += '\tmodel_output = model(preprocessed_input)\n'
+    input_string += '\ttransf_output = nn.alt_inverse_new_y(model_output, params, yscaler=yscaler)\n'
+    input_string += '\ttransf_output.sum().backward()\n\n'
+
+    for k in range(len(new_atom_label)):
+        atom_grad_label += '{}grad'.format(new_atom_label[k])
+        input_string += '\t{}grad = -{}.grad\n'.format(new_atom_label[k], new_atom_label[k])
+        if k != len(new_atom_label) - 1:
+            atom_grad_label += ', '
+
+    input_string += '\tgrad_pred = torch.cat(({}), dim=0)\n\n'.format(atom_grad_label)
+    input_string += '\treturn grad_pred'
+    with open('grad_func.py', 'w+') as f:
+        f.write(input_string)

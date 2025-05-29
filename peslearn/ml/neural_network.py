@@ -9,7 +9,7 @@ import copy
 
 from .model import Model
 from .data_sampler import DataSampler 
-from ..constants import hartree2cm, package_directory, nn_convenience_function
+from ..constants import hartree2cm, package_directory, nn_convenience_function, gradient_nn_convenience_function
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
 from ..utils.printing_helper import hyperopt_complete
 from sklearn.model_selection import train_test_split   
@@ -37,10 +37,10 @@ class NeuralNetwork(Model):
         
         if self.pip:
             if molecule_type:
-                path = os.path.join(package_directory, "lib", molecule_type, "output")
+                path = os.path.join(package_directory, "lib", molecule_type, "output.py")
                 self.inp_dim = len(open(path).readlines())
             if molecule:
-                path = os.path.join(package_directory, "lib", molecule.molecule_type, "output")
+                path = os.path.join(package_directory, "lib", molecule.molecule_type, "output.py")
                 self.inp_dim = len(open(path).readlines())
         else:
             self.inp_dim = self.raw_X.shape[1]
@@ -294,6 +294,7 @@ class NeuralNetwork(Model):
             model = model.double() 
 
         metric = torch.nn.MSELoss()
+        mae = torch.nn.L1Loss()
         # Define optimizer
         if 'lr' in params:
             lr = params['lr']
@@ -420,7 +421,12 @@ class NeuralNetwork(Model):
             full_pred = model(self.X)
             full_loss = metric(full_pred, self.y)
             full_error_rmse = np.sqrt(full_loss.item() * loss_descaler) * hartree2cm
+            test_mae = mae(test_pred, self.ytest)
+            mae_test = (test_mae.item() * loss_descaler) * hartree2cm
+            full_mae = mae(full_pred, self.y)
+            mae_full = (full_mae * loss_descaler) * hartree2cm
         print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f} Full dataset RMSE (cm-1): {:5.2f}".format(test_error_rmse, val_error_rmse, full_error_rmse))
+        print("Test set MAE (cm-1): {:5.2f} Full MAE (cm-1): {:5.2f}".format(mae_test, mae_full))
         if return_model:
             return model, test_error_rmse, val_error_rmse, full_error_rmse 
         else:
@@ -452,7 +458,7 @@ class NeuralNetwork(Model):
             raw_X = morse(raw_X, params['morse_transform']['morse_alpha'])
         if params['pip']['pip']:
             # find path to fundamental invariants form molecule type AxByCz...
-            path = os.path.join(package_directory, "lib", self.molecule_type, "output")
+            path = os.path.join(package_directory, "lib", self.molecule_type, "output.py")
             raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
@@ -472,8 +478,8 @@ class NeuralNetwork(Model):
         print("Saving ML model data...") 
         model_path = "model1_data"
         while os.path.isdir(model_path):
-            new = int(re.findall("\d+", model_path)[0]) + 1
-            model_path = re.sub("\d+",str(new), model_path)
+            new = int(re.findall(r"\d+", model_path)[0]) + 1
+            model_path = re.sub(r"\d+",str(new), model_path)
         os.mkdir(model_path)
         os.chdir(model_path)
         torch.save(model, 'model.pt')
@@ -497,6 +503,8 @@ class NeuralNetwork(Model):
         self.dataset.to_csv('PES.dat', sep=',',index=False,float_format='%12.12f')
         with open('compute_energy.py', 'w+') as f:
             print(self.write_convenience_function(), file=f)
+        with open('compute_gradient.py', 'w+') as g:
+            print(self.write_gradient_function(), file=g)
         os.chdir("../")
 
     def transform_new_X(self, newX, params, Xscaler=None):
@@ -513,13 +521,66 @@ class NeuralNetwork(Model):
             newX = morse(newX, params['morse_transform']['morse_alpha'])
         if params['pip']['pip']:
             # find path to fundamental invariants for an N atom system with molecule type AxByCz...
-            path = os.path.join(package_directory, "lib", self.molecule_type, "output")
+            path = os.path.join(package_directory, "lib", self.molecule_type, "output.py")
             newX, degrees = interatomics_to_fundinvar(newX,path)
             if params['pip']['degree_reduction']:
                 newX = degree_reduce(newX, degrees)
         if Xscaler:
             newX = Xscaler.transform(newX)
         return newX
+    
+    def torch_transform_new_X(self, newX, params, Xscaler=None):
+        if len(newX.shape) == 1:
+            newX = torch.unsqueeze(newX,0)
+        if params['morse_transform']['morse']:
+            newX = torch.exp(-newX / params['morse_transform']['morse_alpha'])
+#            print('dont worry the morse has been morsed')
+        if Xscaler:
+            # newx2 = Xscaler.transform(newX)
+
+            def cust_trans(scale_type, data):
+                """
+                feature range is tup of the form (min, max)
+                """
+
+                if scale_type == 'std':
+                    u = torch.tensor(Xscaler.mean_, dtype=torch.float32, requires_grad=True)
+                    s = torch.tensor(Xscaler.scale_, dtype=torch.float32, requires_grad=True)
+#                    print(f'u: {u}')
+#                    print(f's: {s}')
+                    xscaled = (data - u) / s
+                    return xscaled
+                elif scale_type == 'mm01':
+                    feature_range = (0, 1)
+#                    print('mm01 scale type')
+                elif scale_type == 'mm11':
+                    feature_range = (-1, 1)
+#                    print('mm11 scale type')
+                min_val = feature_range[0]
+                max_val = feature_range[1]
+                # min_val = torch.min(data, axis=0)[0]
+                # print(f'min_val: {min_val}')
+                # max_val = torch.max(data, axis=0)[0]
+                # print(f'max_val: {max_val}')
+                datamin = torch.tensor(Xscaler.data_min_, dtype=torch.float32, requires_grad=True)
+                datamax = torch.tensor(Xscaler.data_max_, dtype=torch.float32, requires_grad=True)
+                # print(f'datamin_X: {datamin}')
+                # print(f'datamax_X: {datamax}')
+                xstd = (data - datamin) / (datamax - datamin)
+                xscaled = xstd * (max_val - min_val) + min_val
+                return xscaled
+
+            # newX = torch.from_numpy(newX)
+            newX = cust_trans(params['scale_X']['scale_X'], newX)
+            # m = torch.mean(newX, keepdim=True)
+            # s = torch.std(newX, unbiased=False, keepdim=True)
+            # newX -= m
+            # newX /= s
+            # print(f'newx2: {newx2}')
+            # print(f'newX: {newX}')
+            # print(f'please be true: {torch.allclose(newX, torch.from_numpy(newx2))}')
+        return newX
+
 
     def transform_new_y(self, newy, yscaler=None):    
         if yscaler:
@@ -530,7 +591,35 @@ class NeuralNetwork(Model):
         if yscaler:
             newy = yscaler.inverse_transform(newy)
         return newy
+    
+    def alt_inverse_new_y(self, newy, params, yscaler=None):
+        if yscaler:
+            if params['scale_y'] == 'std':
+                u = torch.tensor(yscaler.mean_, dtype=torch.float32, requires_grad=True)
+                s = torch.tensor(yscaler.scale_, dtype=torch.float32, requires_grad=True)
+                newesty = (newy * s) + u
+            elif params['scale_y'] == 'mm01':
+                feature_range = (0, 1)
+                datamin = torch.tensor(yscaler.data_min_, dtype=torch.float32, requires_grad=True)
+                datamax = torch.tensor(yscaler.data_max_, dtype=torch.float32, requires_grad=True)
+                ytemp = (newy - feature_range[0]) / (feature_range[1] - feature_range[0])
+                newesty = (ytemp * (datamax - datamin)) + datamin
+            elif params['scale_y'] == 'mm11':
+                feature_range = (-1, 1)
+                datamin = torch.tensor(yscaler.data_min_, dtype=torch.float32, requires_grad=True)
+                datamax = torch.tensor(yscaler.data_max_, dtype=torch.float32, requires_grad=True)
+                ytemp = (newy - feature_range[0]) / (feature_range[1] - feature_range[0])
+                newesty = (ytemp * (datamax - datamin)) + datamin
+        return newesty
 
+    def inverse_transform_new_x(self, newX, Xscaler=None):    
+        if Xscaler:
+            datamin = torch.tensor(Xscaler.data_min_, requires_grad=True)
+            datamax = torch.tensor(Xscaler.data_max_, requires_grad=True)
+            xtemp = (newX - -1) / (1 - -1)
+            newestX = (xtemp * (datamax - datamin)) + datamin
+        return newestX
+    
     def write_convenience_function(self):
         string = "from peslearn.ml import NeuralNetwork\nfrom peslearn import InputProcessor\nimport torch\nimport numpy as np\nfrom itertools import combinations\n\n"
         if self.pip:
@@ -543,6 +632,17 @@ class NeuralNetwork(Model):
         string += "X, y, Xscaler, yscaler =  nn.preprocess(params, nn.raw_X, nn.raw_y)\n"
         string += "model = torch.load('model.pt')\n"
         string += nn_convenience_function
+        return string
+
+    def write_gradient_function(self):
+        string = "from peslearn.ml import NeuralNetwork\nfrom peslearn import InputProcessor\nfrom peslearn.utils import geometry_transform_helper\nimport torch\nimport re\nimport os\n\n"
+        string += "nn = NeuralNetwork('PES.dat', InputProcessor(''))\n"
+        with open('hyperparameters', 'r') as f:
+            hyperparameters = f.read()
+        string += "params = {}\n".format(hyperparameters)
+        string += "X, y, Xscaler, yscaler =  nn.preprocess(params, nn.raw_X, nn.raw_y)\n"
+        string += "model = torch.load('model.pt')\n"
+        string += gradient_nn_convenience_function
         return string
 
 
