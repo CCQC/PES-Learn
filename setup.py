@@ -16,7 +16,7 @@ if __name__ == "__main__":
             'pandas>=2.0',
             'hyperopt>=0.1.1',
             'cclib>=1.6',
-            'torch==2.1.2',
+            'torch==2.7.1',
             'joblib>=1.3.0',
             'qcelemental>=0.27.1',
             'qcengine>=0.26.0'
